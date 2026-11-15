@@ -1,0 +1,1589 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Marble Rush</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Lilita+One&display=swap">
+<style>
+/* Layout: a chunky toy-box cabinet in a cartoon sky — clear glass tubes on top zigzag down into a 7×7 pit, control panel and lucky-marble picker below. One bright world, light only. */
+:root {
+  --sky-top: #5cb9ff;
+  --sky-low: #c9efff;
+  --ink: #2a1650;        /* every outline and all text */
+  --paper: #fff8e8;      /* panels */
+  --sun: #ffd23f;
+  --sun-deep: #f5a300;
+  --pop: #ff4f87;        /* spin button, slides */
+  --pop-deep: #d12c63;
+  --grape: #5a35b8;      /* the marble pit */
+  --mint: #4fd69c;
+  --grass: #6fd35b;
+  --muted: #6b5a96;
+  --display: "Lilita One", "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
+  --body: "Fredoka", "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
+  --outline: 3px 0 0 var(--ink), -3px 0 0 var(--ink), 0 3px 0 var(--ink), 0 -3px 0 var(--ink),
+             2px 2px 0 var(--ink), -2px 2px 0 var(--ink), 2px -2px 0 var(--ink), -2px -2px 0 var(--ink);
+  color-scheme: light;
+}
+[hidden] { display: none !important; }
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  background: linear-gradient(var(--sky-top), var(--sky-low) 70%) fixed var(--sky-top);
+  color: var(--ink);
+  font-family: var(--body);
+  font-weight: 500;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 12px 120px;
+  overflow-x: hidden;
+}
+
+/* ---- scenery ---- */
+.scenery { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+.sun { position: absolute; top: -38px; right: -38px; width: 160px; height: 160px; }
+.sun .rays { transform-origin: 80px 80px; animation: turn 40s linear infinite; }
+.cloud { position: absolute; left: 0; width: 150px; height: 75px; animation: drift linear infinite; }
+.c1 { top: 9%; animation-duration: 75s; animation-delay: -18s; }
+.c2 { top: 34%; width: 110px; height: 55px; animation-duration: 95s; animation-delay: -60s; }
+.c3 { top: 60%; width: 130px; height: 65px; animation-duration: 85s; animation-delay: -38s; }
+@keyframes drift { from { transform: translateX(-180px); } to { transform: translateX(calc(100vw + 40px)); } }
+@keyframes turn { to { transform: rotate(360deg); } }
+.hills { position: absolute; left: -2%; width: 104%; bottom: 0; height: 130px; }
+
+.wrap { position: relative; z-index: 1; width: min(100%, 560px, max(320px, calc((100dvh - 250px) * 0.8))); margin: 0 auto; display: grid; gap: 14px; }
+
+/* ---- header ---- */
+header { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+h1 { margin: 0; font-family: var(--display); font-weight: 400; font-size: clamp(2rem, 9vw, 3rem); line-height: 1.05; letter-spacing: 0.01em; }
+h1 .l { display: inline-block; color: var(--c); text-shadow: var(--outline), 0 5px 0 var(--ink); animation: bob 2.8s ease-in-out infinite; animation-delay: calc(var(--i) * -0.2s); }
+h1 .sp { display: inline-block; width: 0.28em; }
+@keyframes bob { 0%, 100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-5px) rotate(4deg); } }
+.credits { display: flex; align-items: center; gap: 8px; background: var(--paper); border: 3px solid var(--ink); border-radius: 999px; padding: 4px 14px 4px 6px; box-shadow: 0 4px 0 var(--ink); }
+.coin { width: 26px; height: 26px; border-radius: 50%; border: 3px solid var(--ink); background: radial-gradient(circle at 35% 30%, #fff6c0 0 18%, var(--sun) 45%, var(--sun-deep) 100%); display: grid; place-items: center; font-family: var(--display); font-size: 0.8rem; }
+.credits b { font-family: var(--display); font-weight: 400; font-size: 1.3rem; font-variant-numeric: tabular-nums; }
+
+/* ---- stage ---- */
+.stage { position: relative; width: 100%; max-width: 100%; aspect-ratio: 9.15 / 12.15; }
+.stage.shake { animation: shake 0.45s; }
+@keyframes shake { 20% { transform: translate(-6px, 2px) rotate(-1deg); } 40% { transform: translate(6px, -3px) rotate(1deg); } 60% { transform: translate(-4px, 2px); } 80% { transform: translate(3px, -1px); } }
+#board, #fx { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+#fx { pointer-events: none; z-index: 3; }
+.banner { position: absolute; z-index: 4; left: 50%; top: 40%; pointer-events: none; text-align: center; font-family: var(--display); font-size: clamp(2.1rem, 11vw, 3.5rem); line-height: 1; color: var(--sun); white-space: nowrap;
+  text-shadow: 4px 0 0 var(--ink), -4px 0 0 var(--ink), 0 4px 0 var(--ink), 0 -4px 0 var(--ink), 3px 3px 0 var(--ink), -3px 3px 0 var(--ink), 3px -3px 0 var(--ink), -3px -3px 0 var(--ink), 0 8px 0 var(--ink);
+  transform: translate(-50%, -50%) rotate(-4deg); }
+.banner small { display: block; margin-top: 8px; font-size: 0.42em; color: #fff; }
+.banner.go { animation: boom 1.6s both; }
+@keyframes boom {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.2) rotate(-14deg); }
+  14% { opacity: 1; transform: translate(-50%, -50%) scale(1.18) rotate(5deg); }
+  26% { transform: translate(-50%, -50%) scale(0.96) rotate(-4deg); }
+  34%, 82% { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(-3deg); }
+  100% { opacity: 0; transform: translate(-50%, -64%) scale(0.92) rotate(-3deg); }
+}
+
+/* ---- bonus layer ---- */
+#bonusLayer { position: absolute; inset: 1.5%; z-index: 2; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; border-radius: 28px; background: var(--grape); border: 4px solid var(--ink); box-shadow: 0 6px 0 var(--ink); overflow: hidden; }
+.bhead { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 14px 0; }
+.bhead h2 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 1.7rem; color: var(--sun); text-shadow: var(--outline), 0 4px 0 var(--ink); transform: rotate(-3deg); }
+.bhead .meta { color: #fff; font-weight: 600; font-size: 0.85rem; text-align: right; line-height: 1.35; font-variant-numeric: tabular-nums; }
+.bhead .meta b { color: var(--sun); font-family: var(--display); font-weight: 400; font-size: 1.05rem; }
+#bonusCanvas { width: 100%; height: 100%; display: block; min-height: 0; }
+.bfoot { display: flex; align-items: center; gap: 10px; padding: 6px 12px 12px; }
+.bfoot .say { flex: 1; min-width: 0; font-size: 0.85rem; line-height: 1.25; min-height: calc(3.75em + 22px); display: flex; align-items: center; }
+
+/* ---- controls ---- */
+.rail { display: grid; grid-template-columns: minmax(max-content, 1fr) auto minmax(0, 1fr); align-items: center; gap: 10px; background: var(--paper); border: 4px solid var(--ink); border-radius: 26px; padding: 10px 14px; box-shadow: 0 6px 0 var(--ink); }
+.lbl { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.09em; font-weight: 700; color: var(--muted); }
+.rail output { font-family: var(--display); font-size: 1.35rem; font-variant-numeric: tabular-nums; }
+.bet { display: flex; align-items: center; gap: 8px; }
+.bet > div { position: relative; }
+.costnote { position: absolute; left: 50%; top: 100%; transform: translateX(-50%); font-size: 0.68rem; font-weight: 700; color: var(--pop-deep); white-space: nowrap; }
+@media (max-width: 420px) { .bfoot .say { min-height: 0; font-size: 0.8rem; } .bhead { padding-top: 6px; } }
+.lastwin { text-align: right; position: relative; }
+.sessline { position: absolute; right: 0; top: 100%; font-size: 0.68rem; font-weight: 700; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+button { font: inherit; color: inherit; cursor: pointer; border: 0; }
+button:focus-visible { outline: 3px dashed var(--ink); outline-offset: 4px; }
+.round { width: 36px; height: 36px; flex: none; border-radius: 50%; background: var(--sun); border: 3px solid var(--ink); box-shadow: 0 3px 0 var(--ink); font-family: var(--display); font-size: 1.3rem; line-height: 1; padding: 0; }
+.round:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
+.round:disabled { opacity: 0.4; cursor: default; }
+#spin { width: 104px; height: 104px; margin-block: -36px -12px; border-radius: 50%; border: 4px solid var(--ink); box-shadow: 0 7px 0 var(--ink);
+  background: radial-gradient(circle at 34% 28%, #ffd0e0 0 10%, var(--pop) 38%, var(--pop-deep) 100%);
+  color: #fff; font-family: var(--display); font-size: 1.55rem; letter-spacing: 0.02em; text-shadow: var(--outline);
+  transition: transform 0.08s, box-shadow 0.08s; }
+#spin:hover:not(:disabled) { animation: wiggle 0.5s; }
+#spin:active:not(:disabled) { transform: translateY(5px) scale(0.97); box-shadow: 0 2px 0 var(--ink); }
+#spin:disabled { filter: saturate(0.7) brightness(1.04); opacity: 0.85; transform: translateY(4px); box-shadow: 0 3px 0 var(--ink); cursor: default; }   /* pressed in while marbles roll */
+@keyframes wiggle { 25% { transform: rotate(-7deg) scale(1.04); } 50% { transform: rotate(6deg) scale(1.06); } 75% { transform: rotate(-3deg); } }
+.btn { background: var(--pop-deep); color: #fff; font-family: var(--display); font-size: 1.05rem; padding: 10px 16px; border-radius: 999px; border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink); white-space: nowrap; text-shadow: 2px 2px 0 var(--ink); }
+.btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+.btn:disabled { opacity: 0.5; cursor: default; }
+
+@media (max-width: 480px) {   /* phones: a smaller Spin ball and bet buttons, so nothing hides under the ball */
+  .rail { gap: 6px; padding: 10px 10px; }
+  .bet { gap: 5px; }
+  .round { width: 31px; height: 31px; font-size: 1.15rem; }
+  .rail output { font-size: 1.2rem; }
+  #spin { width: 86px; height: 86px; margin-block: -30px -10px; font-size: 1.3rem; }
+  .sessline { font-size: 0.62rem; }
+}
+@media (max-width: 360px) {   /* the tiniest phones: an even smaller ball, and the session line is just the numbers */
+  .rail { gap: 4px; padding-inline: 8px; }
+  .bet { gap: 3px; }
+  .round { width: 28px; height: 28px; font-size: 1.05rem; }
+  #spin { width: 74px; height: 74px; margin-block: -24px -8px; font-size: 1.12rem; }
+  .sessline { font-size: 0.58rem; }
+  .sessline .sw { display: none; }
+}
+.say { position: relative; background: var(--paper); border: 3px solid var(--ink); border-radius: 18px; padding: 8px 14px; font-weight: 600; box-shadow: 0 4px 0 var(--ink); margin: 0; }
+#status { text-align: center; min-height: 2.6em; display: grid; place-items: center; }
+#status::after { content: ""; position: absolute; top: -10px; left: 50%; width: 16px; height: 16px; background: var(--paper); border-left: 3px solid var(--ink); border-top: 3px solid var(--ink); transform: translateX(-50%) rotate(45deg); }
+
+.substrip { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.sockets { display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 0.85rem; background: var(--paper); border: 3px solid var(--ink); border-radius: 999px; padding: 4px 12px 4px 5px; box-shadow: 0 3px 0 var(--ink); }   /* a pill, so passing clouds stay behind it */
+.sock { width: 22px; height: 22px; border-radius: 50%; border: 3px solid var(--ink); background: rgba(42,22,80,.18); transition: transform 0.2s; }
+.sock.on { background: radial-gradient(circle at 35% 30%, #fff6c0 0 18%, var(--sun) 45%, var(--sun-deep) 100%); transform: scale(1.18) rotate(-10deg); }
+.toggles { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.chip { background: var(--paper); border: 3px solid var(--ink); box-shadow: 0 3px 0 var(--ink); font-weight: 700; font-size: 0.85rem; padding: 5px 14px; border-radius: 999px; white-space: nowrap; }
+.chip[aria-pressed="true"] { background: var(--sun); }
+.chip:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
+
+.card { background: var(--paper); border: 3px solid var(--ink); border-radius: 22px; box-shadow: 0 5px 0 var(--ink); padding: 12px 16px; }
+.picker { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.picker .name { font-family: var(--display); font-size: 1.3rem; line-height: 1.1; }
+.picker .perk { color: var(--pop-deep); font-weight: 700; font-size: 0.92rem; }
+.swatches { display: flex; gap: 6px; flex-wrap: wrap; }
+.swatch { width: 50px; height: 50px; padding: 2px; border-radius: 50%; background: transparent; transition: transform 0.18s cubic-bezier(.3, 1.8, .5, 1); }
+.swatch img { width: 100%; height: 100%; display: block; }
+.swatch:hover:not(:disabled) { transform: translateY(-4px) rotate(-10deg); }
+.swatch[aria-pressed="true"] { background: var(--sun); box-shadow: 0 0 0 3px var(--ink); transform: scale(1.08); }
+.swatch:disabled { cursor: default; opacity: 0.6; }
+
+details summary { cursor: pointer; font-family: var(--display); font-size: 1.2rem; }
+details ul { padding-left: 1.2em; }
+details li, details p { font-size: 0.9rem; line-height: 1.5; max-width: 65ch; }
+.tablewrap { overflow-x: auto; margin-bottom: 8px; }
+table { border-collapse: collapse; width: 100%; font-size: 0.85rem; font-variant-numeric: tabular-nums; }
+th, td { padding: 6px; text-align: right; border-bottom: 2px dashed rgba(42,22,80,.15); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { color: var(--muted); font-weight: 700; }
+td img { width: 26px; height: 26px; vertical-align: -8px; margin-right: 6px; }
+tr.lucky td { background: #fff0a8; font-weight: 700; }
+.tag { display: inline-block; margin-left: 6px; font-size: 0.7rem; background: var(--pop-deep); color: #fff; border-radius: 999px; padding: 1px 7px; border: 2px solid var(--ink); }
+.fine { font-size: 0.8rem; text-align: center; margin: 0; font-weight: 600; }
+
+/* ---- buy bonus ---- */
+.chip.buy { background: var(--pop-deep); color: #fff; text-shadow: 1px 1px 0 var(--ink); }
+.chip:disabled { opacity: 0.45; cursor: default; }
+#buyLayer { width: min(calc(100vw - 32px), 460px); max-height: calc(100dvh - 32px); padding: 16px; border-radius: 28px; background: var(--paper); color: var(--ink); border: 4px solid var(--ink); box-shadow: 0 8px 0 var(--ink); font-family: var(--body); }
+#buyLayer[open] { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; gap: 12px; }
+#buyLayer::backdrop { background: rgba(42, 22, 80, 0.5); }
+#buyTitle:focus { outline: none; }
+#buyTitle:focus-visible { outline: 3px dashed var(--ink); outline-offset: 4px; }
+#buyLayer h2 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 1.8rem; line-height: 1.1; color: var(--pop); text-shadow: var(--outline), 0 4px 0 var(--ink); transform: rotate(-3deg); transform-origin: left; }
+#buyLayer .sub { margin: 4px 0 0; font-size: 0.85rem; color: var(--muted); }
+.tiers { display: grid; gap: 10px; align-content: start; overflow-y: auto; min-height: 0; padding: 2px 2px 6px; }
+.tier { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; background: #fff; border: 3px solid var(--ink); border-radius: 18px; padding: 8px 10px; box-shadow: 0 4px 0 var(--ink); }
+.tier .golds { display: flex; padding-left: 8px; }
+.tier .golds img { width: 30px; height: 30px; margin-left: -10px; }
+.tier .what { min-width: 0; }
+.tier .what b { display: block; font-family: var(--display); font-weight: 400; font-size: 1.2rem; }
+.tier .what span { font-size: 0.8rem; color: var(--muted); }
+.tier .btn { font-size: 0.95rem; padding: 8px 12px; }
+.buyfoot { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.buyfoot p { margin: 0; font-size: 0.78rem; color: var(--muted); min-width: 0; }
+@media (max-width: 420px) {
+  .tier { grid-template-columns: auto minmax(0, 1fr); }
+  .tier .btn { grid-column: 1 / -1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  h1 .l, .cloud, .sun .rays, #spin:hover, .banner.go { animation: none !important; }
+  .stage.shake { animation: none; }
+}
+/* the free-spins counter over the sky window */
+.hud { position: absolute; z-index: 3; top: 2.2%; left: 40%; transform: translateX(-50%); display: flex; gap: 14px; align-items: baseline; white-space: nowrap;
+  background: var(--paper); border: 3px solid var(--ink); border-radius: 999px; box-shadow: 0 4px 0 var(--ink); padding: 4px 14px; font-weight: 700; font-size: 0.8rem; pointer-events: none; }
+.hud b { font-family: var(--display); font-weight: 400; font-size: 1.35rem; font-variant-numeric: tabular-nums; }
+.hud small { color: var(--muted); font-size: 0.75rem; }
+.hud.pop { animation: hudpop 0.5s; }
+@keyframes hudpop { 30% { transform: translateX(-50%) scale(1.18) rotate(-3deg); } }
+/* side panels only group things on wide screens; on phones their contents stack in the page as before */
+.side { display: contents; }
+/* ---- computer layout: the cabinet in the middle, features on the left, lucky marble on the right, and a full-width
+   control bar along the bottom with Spin between − and + ---- */
+@media (min-width: 1000px) and (orientation: landscape) {
+  .wrap { width: min(calc(100% - 32px), 1240px); grid-template-columns: minmax(220px, 1fr) auto minmax(220px, 1fr); column-gap: 22px; row-gap: 12px; align-items: start; }
+  header { grid-column: 1 / -1; justify-content: center; gap: 28px; }
+  .stage { grid-column: 2; grid-row: 2; width: auto; height: max(470px, calc(100dvh - 240px)); justify-self: center; }
+  .side { display: flex; flex-direction: column; gap: 14px; grid-row: 2; align-self: center; max-width: 320px; width: 100%; }
+  .side-l { grid-column: 1; justify-self: end; }
+  .side-r { grid-column: 3; justify-self: start; }
+  #status { min-height: 4.2em; }
+  #status::after { display: none; }   /* no tail: Spin isn't right below it here */
+  .substrip { flex-direction: column; align-items: stretch; background: var(--paper); border: 3px solid var(--ink); border-radius: 22px; box-shadow: 0 5px 0 var(--ink); padding: 14px; gap: 12px; }
+  .sockets { justify-content: center; box-shadow: none; }
+  .toggles { flex-direction: column; align-items: stretch; gap: 10px; }
+  .toggles .chip { font-size: 1.05rem; padding: 10px 16px; }
+  .picker { flex-direction: column; align-items: stretch; text-align: center; }
+  .swatches { display: grid; grid-template-columns: repeat(3, 54px); justify-content: center; gap: 8px; }
+  .rail { grid-column: 1 / -1; grid-row: 3; grid-template-columns: auto minmax(0, 1fr) auto minmax(0, 1fr) auto auto auto; column-gap: 16px; padding: 10px 26px; }
+  .bet { display: contents; }
+  .bet > div { grid-column: 1; grid-row: 1; }
+  .lastwin { grid-column: 3; grid-row: 1; text-align: center; }
+  .rail output { font-size: 1.9rem; }
+  .sessline { right: 50%; transform: translateX(50%); }
+  #betDown { grid-column: 5; grid-row: 1; }
+  #spin { grid-column: 6; grid-row: 1; }
+  #betUp { grid-column: 7; grid-row: 1; }
+  .round { width: 42px; height: 42px; }
+  details.card, .fine { grid-column: 1 / -1; }
+}
+</style>
+
+<div class="scenery" aria-hidden="true">
+  <svg width="0" height="0" style="position:absolute">
+    <defs>
+      <symbol id="cloud" viewBox="0 0 160 80">
+        <g fill="#2a1650"><circle cx="45" cy="50" r="28"/><circle cx="82" cy="34" r="33"/><circle cx="117" cy="50" r="28"/><rect x="40" y="46" width="82" height="31" rx="15"/></g>
+        <g fill="#ffffff"><circle cx="45" cy="50" r="24"/><circle cx="82" cy="34" r="29"/><circle cx="117" cy="50" r="24"/><rect x="44" y="50" width="74" height="23" rx="11"/></g>
+      </symbol>
+    </defs>
+  </svg>
+  <svg class="sun" viewBox="0 0 160 160">
+    <g class="rays" stroke="#2a1650" stroke-width="4" stroke-linejoin="round" fill="#ffd23f">
+      <path d="M80 2 L90 30 L70 30 Z"/><path d="M80 158 L70 130 L90 130 Z"/><path d="M2 80 L30 70 L30 90 Z"/><path d="M158 80 L130 90 L130 70 Z"/>
+      <path d="M25 25 L48 40 L40 48 Z"/><path d="M135 135 L112 120 L120 112 Z"/><path d="M135 25 L120 48 L112 40 Z"/><path d="M25 135 L40 112 L48 120 Z"/>
+    </g>
+    <circle cx="80" cy="80" r="44" fill="#ffd23f" stroke="#2a1650" stroke-width="5"/>
+    <circle cx="66" cy="74" r="5" fill="#2a1650"/><circle cx="94" cy="74" r="5" fill="#2a1650"/>
+    <circle cx="58" cy="90" r="7" fill="#ff8fb3" opacity=".7"/><circle cx="102" cy="90" r="7" fill="#ff8fb3" opacity=".7"/>
+    <path d="M64 92 Q80 108 96 92" fill="none" stroke="#2a1650" stroke-width="5" stroke-linecap="round"/>
+  </svg>
+  <svg class="cloud c1"><use href="#cloud"/></svg>
+  <svg class="cloud c2"><use href="#cloud"/></svg>
+  <svg class="cloud c3"><use href="#cloud"/></svg>
+  <svg class="hills" viewBox="0 0 1000 130" preserveAspectRatio="none">
+    <path d="M0 70 Q120 10 260 60 T540 55 T820 50 T1000 60 V130 H0 Z" fill="#8fe070" stroke="#2a1650" stroke-width="5"/>
+    <path d="M0 100 Q180 50 380 95 T760 90 T1000 92 V130 H0 Z" fill="#6fd35b" stroke="#2a1650" stroke-width="5"/>
+  </svg>
+</div>
+
+<div class="wrap">
+  <header>
+    <h1 aria-label="Marble Rush"><span aria-hidden="true"><span class="l" style="--i:0;--c:#ff4f87">M</span><span class="l" style="--i:1;--c:#ffd23f">a</span><span class="l" style="--i:2;--c:#4fd69c">r</span><span class="l" style="--i:3;--c:#3ea0ff">b</span><span class="l" style="--i:4;--c:#ff9f1c">l</span><span class="l" style="--i:5;--c:#b98bff">e</span><span class="sp"></span><span class="l" style="--i:6;--c:#ffd23f">R</span><span class="l" style="--i:7;--c:#ff4f87">u</span><span class="l" style="--i:8;--c:#3ea0ff">s</span><span class="l" style="--i:9;--c:#4fd69c">h</span></span></h1>
+    <div class="credits" title="Play credits"><span class="coin" aria-hidden="true">c</span><b id="credits">10,000</b></div>
+  </header>
+
+  <div class="stage" id="stage">
+    <canvas id="board" aria-label="Marble pit with glass tubes"></canvas>
+    <div class="hud" id="hud" hidden aria-live="off"><span><b id="hudSpins">0</b> <small id="hudSpinsLbl">free spins left</small></span><span><small>Won</small> <b id="hudWin">0</b></span></div>
+    <section id="bonusLayer" hidden aria-label="Marble Run bonus">
+      <div class="bhead">
+        <h2 id="bonusTitle">Marble Run!</h2>
+        <div class="meta"><span id="dropsLeft"></span><br>Won <b id="bonusWin">0</b><span id="bonusPerk"></span></div>
+      </div>
+      <canvas id="bonusCanvas"></canvas>
+      <div class="bfoot">
+        <p class="say" id="bonusMsg" role="status" aria-atomic="true"></p>
+        <button class="btn" id="dropBtn" disabled>Drop!</button>
+      </div>
+    </section>
+    <canvas id="fx" aria-hidden="true"></canvas>
+    <div class="banner" id="banner" hidden aria-live="polite"></div>
+  </div>
+
+  <dialog id="buyLayer" aria-labelledby="buyTitle" aria-describedby="buySub">
+    <div>
+      <h2 id="buyTitle" tabindex="-1">Buy Ladder Spins</h2>
+      <p class="sub" id="buySub">Spend play credits and go straight into free spins.</p>
+    </div>
+    <div class="tiers" id="tiers"></div>
+    <div class="buyfoot">
+      <span></span>
+      <button class="chip" id="buyClose">Not now</button>
+    </div>
+  </dialog>
+
+  <div class="rail">
+    <div class="bet">
+      <button class="round" id="betDown" aria-label="Lower bet">−</button>
+      <div><div class="lbl">Bet</div><output id="bet">20</output><div class="costnote" id="costNote" hidden></div></div>
+      <button class="round" id="betUp" aria-label="Raise bet">+</button>
+    </div>
+    <button id="spin">SPIN</button>
+    <div class="lastwin"><div class="lbl">Win</div><output id="lastWin">0</output><div class="sessline" id="sessLine" aria-live="off">Session 0 · 0 min</div></div>
+  </div>
+
+  <aside class="side side-l" aria-label="Features">
+  <p class="say" id="status" aria-live="polite">Press Spin or the space bar. Wheee!</p>
+
+  <div class="substrip">
+    <div class="sockets" title="Gold marbles on the grid">
+      <span class="sock" id="s0"></span><span class="sock" id="s1"></span><span class="sock" id="s2"></span>
+      <span>3 gold = Ladder Spins</span>
+    </div>
+    <div class="toggles">
+      <button class="chip buy" id="buyOpen" aria-haspopup="dialog">Buy bonus</button>
+      <button class="chip" id="boost" aria-pressed="false" title="Ladder Spins come up twice as often; each spin costs 1.2× your bet">Bonus ×2</button>
+      <button class="chip" id="sound" aria-pressed="true">Sound</button>
+    </div>
+  </div>
+  </aside>
+
+  <aside class="side side-r">
+  <section class="card picker" aria-labelledby="pickLbl">
+    <div>
+      <div class="lbl" id="pickLbl">Your lucky marble</div>
+      <div class="name" id="pickName">Gold star</div>
+      <div class="perk" id="pickPerk"></div>
+    </div>
+    <div class="swatches" id="swatches" role="group" aria-labelledby="pickLbl"></div>
+  </section>
+  </aside>
+
+  <details class="card">
+    <summary>How it plays</summary>
+    <ul>
+      <li>Each spin fills a 7×7 pit with 49 marbles: they ride up the glass lift at the side, out of the top and back down their own glass tube into their column. The lift then shows the next marbles in line: when marbles pop, those are exactly the ones that roll in to fill the gaps.</li>
+      <li><b>7 or more</b> touching marbles of one colour (up, down, left, right) pop and pay. Bigger clusters pay a lot more.</li>
+      <li><b>Ladder Climb:</b> new marbles fall into the gaps, and every pop after the first climbs a rung on the ladder: ×1, ×2, ×3, then ×5 for every pop after that, all in the same spin.</li>
+      <li><b>Gold marbles</b> (the ones in sunglasses) never pop. Finish a spin with 3 on the grid to win <b>Ladder Spins</b>: 10 free spins, 11 with 4 gold, 12 with 5 or more.</li>
+      <li>In Ladder Spins the ladder <b>never resets</b>. It grows to 13 rungs (×1, ×2, ×3, ×4, ×5, ×6, ×8, ×10, ×12, ×15, ×20, ×25, ×50): every pop pays at the rung your marble is on, then climbs one, and it stays up there for the rest of the bonus. Every gold marble that lands climbs a rung too, and 3 gold in a free spin win 3 more spins.</li>
+      <li>Reach the <b>top rung</b> and the Marble Run opens when the spins are over: tap the peg wall to drop 5 marbles into 9 slots. Each slot hides a multiplier card from ×1 to ×100, drawn before your first drop, so every spot pays the same on average. The cards flip once every marble has landed.</li>
+      <li><b>Bonus ×2</b> makes Ladder Spins come up twice as often. Each spin then costs 1.2× your bet; wins still pay on your bet.</li>
+      <li><b>Buy bonus</b> starts Ladder Spins right away: 12 free spins for 50× your bet, or start higher up the ladder for 100× or 200×.</li>
+      <li><b>Your lucky marble</b> picks your perk. Each colour marble makes clusters of its colour pay more, and rarer colours get bigger boosts. The Gold star makes the ladder climb faster, and in Ladder Spins its rungs are richer from ×5 up. Every choice is worth about the same over time.</li>
+    </ul>
+    <div class="tablewrap"><table id="paytable"></table></div>
+    <p id="rtpNote">The table shows first-pop payouts in credits at your current bet, with your lucky boost applied; ladder rungs multiply them. Over millions of simulated spins the game paid back about 97%, with or without Bonus ×2 and whichever lucky marble you pick. About 1 spin in 5 wins, and Ladder Spins come up about once every 150 spins (about every 75 with Bonus ×2). Wins of 100× your bet or more come about once every 2,400–2,900 spins, depending on your lucky marble. Bought Ladder Spins pay back between about 93% and 102% depending on the tier and your lucky marble, and most return less than their price.</p>
+  </details>
+  <p class="fine">Play credits only. No real money, and credits can’t be bought. Buy bonus spends play credits.</p>
+</div>
+
+<script src="engine.js?v=11"></script>
+<script>
+(() => {
+const E = window.MarbleEngine;
+const { COLS, ROWS } = E;
+const BETS = [10, 20, 50, 100, 200];
+const START_CREDITS = 10000;
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const $ = id => document.getElementById(id);
+const fmt = n => Math.round(n).toLocaleString('en-US');
+const cents = n => Math.round(n * 100) / 100;
+// the balance never shows more than you can actually spend
+const fmtCredits = n => Math.floor(n + 1e-9).toLocaleString('en-US');
+const sleep = ms => new Promise(r => setTimeout(r, reduceMotion ? ms * 0.4 : ms));
+const rng = () => { const a = new Uint32Array(1); crypto.getRandomValues(a); return a[0] / 4294967296; };
+const pick = a => a[Math.floor(rng() * a.length)];
+const TAU = Math.PI * 2;
+const INK = '#2a1650', SUN = '#ffd23f', POP = '#ff4f87', GRAPE = '#5a35b8', GRAPE_DEEP = '#3f2290', PAPER = '#fff8e8', MINT = '#4fd69c';
+const DISPLAY = '"Lilita One", "Arial Rounded MT Bold", "Trebuchet MS", sans-serif';
+
+// ---------- state ----------
+const store = {
+  get(k, d) { try { const v = localStorage.getItem('ml_' + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem('ml_' + k, JSON.stringify(v)); } catch {} },
+};
+const hot = window.claude?.hot?.data;
+const S = {
+  credits: cents(+(hot?.credits ?? store.get('credits', START_CREDITS)) || 0),
+  owed: 0,        // prizes already decided but not yet shown landing; saved with the balance
+  spinning: false,
+  betIdx: Math.max(0, Math.min(BETS.length - 1, hot?.betIdx ?? store.get('betIdx', 1))),
+  runner: hot?.runner ?? store.get('runner', 'gold'),
+  sound: store.get('sound', true),
+  boost: !!(hot?.boost ?? store.get('boost', false)),
+  busy: false, auto: false, inBonus: false,
+};
+if (!E.LUCKY[S.runner]) S.runner = 'gold';
+// one-time top-up when the default moved to 10,000: anyone below it starts the new default
+if (!store.get('topup10k', false)) { if (S.credits < START_CREDITS) S.credits = START_CREDITS; store.set('topup10k', true); }
+window.claude?.hot?.snapshot?.(() => ({ credits: cents(S.credits + S.owed), betIdx: S.betIdx, runner: S.runner, boost: S.boost }));
+const addCredits = d => { S.credits = cents(S.credits + d); };
+// Game Lobby: inside the lobby this game plays from the lobby's shared wallet (nothing changes when the game is opened on its own)
+const LOBBY = (() => { try { return window.parent !== window && window.parent.LobbyWallet || null; } catch (e) { return null; } })();
+if (LOBBY) S.credits = cents(LOBBY.attach(() => S.credits + S.owed));
+// the session: net result (money in and out this session) and time played, always shown under Win
+const SESS = { t0: Date.now(), net: 0 };
+const sessAdd = d => { SESS.net = cents(SESS.net + d); renderSession(); };
+function renderSession() {
+  const el = document.getElementById('sessLine'); if (!el) return;
+  const min = Math.floor((Date.now() - SESS.t0) / 60000), n = Math.round(SESS.net);
+  el.innerHTML = `<span class="sw">Session </span>${n > 0 ? '+' : n < 0 ? '−' : ''}${Math.abs(n).toLocaleString('en-US')} · ${min} min`;
+}
+setInterval(renderSession, 1000);
+const bet = () => BETS[S.betIdx];
+const NAMES = { ruby: 'ruby', amber: 'amber', jade: 'jade', sapphire: 'sapphire', amethyst: 'amethyst', gold: 'gold' };
+
+// ---------- cartoon marbles ----------
+// [fill, shade, light]
+const PAL = {
+  ruby:     ['#ff5468', '#d12a48', '#ffb0b9'],
+  amber:    ['#ff9f1c', '#e06c00', '#ffd59a'],
+  jade:     ['#4fd16a', '#25a047', '#b4f5c0'],
+  sapphire: ['#3ea0ff', '#1f68d8', '#b3dcff'],
+  amethyst: ['#a86bff', '#7a3fe0', '#dcc4ff'],
+  gold:     ['#ffd93d', '#f2a900', '#fff5b8'],
+  galaxy:   ['#4542bd', '#26237a', '#a9b0ff'],
+  oilslick: ['#ff6fb5', '#b44fd6', '#ffd23f'],
+  seaglass: ['#7ff0d0', '#35b894', '#e0fff6'],
+  lava:     ['#ff6a2b', '#c2300f', '#ffd166'],
+};
+const sprites = new Map();
+function sprite(kind, color, px) {
+  const key = kind + color + px;
+  if (sprites.has(key)) return sprites.get(key);
+  const c = document.createElement('canvas'); c.width = c.height = px;
+  const g = c.getContext('2d'), r = px / 2, lw = Math.max(1.5, r * 0.13), R = r - lw / 2 - 0.5;
+  const [fill, shade, light] = PAL[color];
+  g.save(); g.beginPath(); g.arc(r, r, R, 0, TAU); g.clip();
+  if (kind === 'body') {
+    g.fillStyle = fill; g.fillRect(0, 0, px, px);
+    if (color === 'galaxy') {
+      let s = 11; const rnd = () => ((s = (s * 16807) % 2147483647) / 2147483647);
+      g.fillStyle = '#fff';
+      for (let i = 0; i < 16; i++) { g.beginPath(); g.arc(rnd() * px, rnd() * px, R * (0.03 + rnd() * 0.05), 0, TAU); g.fill(); }
+      g.fillStyle = light; g.beginPath(); g.ellipse(r, r, R * 0.9, R * 0.25, 0.5, 0, TAU); g.globalAlpha = 0.45; g.fill(); g.globalAlpha = 1;
+    } else if (color === 'oilslick') {
+      const bands = ['#ff6fb5', '#ffd23f', '#4fd16a', '#3ea0ff', '#a86bff'];
+      g.translate(r, r); g.rotate(0.6);
+      for (let i = -6; i < 6; i++) { g.fillStyle = bands[(i + 60) % 5]; g.fillRect(i * R * 0.38, -px, R * 0.38, px * 2); }
+      g.setTransform(1, 0, 0, 1, 0, 0);
+    } else if (color === 'lava') {
+      g.fillStyle = '#7a1405';
+      for (const [x, y, rr] of [[0.55, 0.6, 0.3], [1.45, 0.8, 0.26], [0.85, 1.45, 0.3], [1.5, 1.5, 0.18], [1.05, 0.25, 0.16]]) { g.beginPath(); g.arc(r * x, r * y, r * rr, 0, TAU); g.fill(); }
+    } else if (color === 'seaglass') {
+      g.strokeStyle = '#ffffff'; g.lineWidth = R * 0.07;
+      for (const [x, y, rr] of [[0.6, 1.3, 0.18], [1.35, 0.7, 0.13], [1.25, 1.45, 0.1], [0.75, 0.6, 0.08]]) { g.beginPath(); g.arc(r * x, r * y, r * rr, 0, TAU); g.stroke(); }
+    } else {
+      // a fat cartoon swirl
+      g.strokeStyle = light; g.lineWidth = R * 0.24; g.lineCap = 'round';
+      g.beginPath(); g.moveTo(r - R * 0.95, r + R * 0.35);
+      g.bezierCurveTo(r - R * 0.3, r - R * 0.6, r + R * 0.2, r + R * 0.7, r + R * 0.95, r - R * 0.25); g.stroke();
+      if (color === 'gold') {
+        g.fillStyle = '#fff';
+        for (const [x, y, s2] of [[0.5, 1.4, 0.14], [1.5, 1.35, 0.1]]) {
+          g.beginPath(); const cx = r * x, cy = r * y, a = r * s2;
+          g.moveTo(cx, cy - a); g.quadraticCurveTo(cx, cy, cx + a, cy); g.quadraticCurveTo(cx, cy, cx, cy + a); g.quadraticCurveTo(cx, cy, cx - a, cy); g.quadraticCurveTo(cx, cy, cx, cy - a); g.fill();
+        }
+      }
+    }
+  } else {
+    g.fillStyle = shade; g.beginPath(); g.arc(r, r, R + 1, 0, TAU); g.arc(r - R * 0.2, r - R * 0.24, R * 0.96, 0, TAU); g.fill('evenodd');
+    g.fillStyle = 'rgba(255,255,255,.92)';
+    g.beginPath(); g.ellipse(r - R * 0.45, r - R * 0.52, R * 0.2, R * 0.11, -0.75, 0, TAU); g.fill();
+    g.beginPath(); g.arc(r - R * 0.14, r - R * 0.74, R * 0.065, 0, TAU); g.fill();
+  }
+  g.restore();
+  if (kind === 'over') { g.lineWidth = lw; g.strokeStyle = INK; g.beginPath(); g.arc(r, r, R, 0, TAU); g.stroke(); }
+  sprites.set(key, c); return c;
+}
+function drawFace(g, R, color, face, look, lookY) {
+  const lw = Math.max(1, R * 0.09);
+  g.lineCap = 'round'; g.lineJoin = 'round'; g.strokeStyle = INK; g.lineWidth = lw;
+  g.fillStyle = 'rgba(255,95,150,.45)';
+  g.beginPath(); g.ellipse(-R * 0.55, R * 0.22, R * 0.14, R * 0.09, 0, 0, TAU); g.ellipse(R * 0.55, R * 0.22, R * 0.14, R * 0.09, 0, 0, TAU); g.fill();
+  const ex = R * 0.3, ey = -R * 0.08;
+  if (color === 'gold' && face !== 'grin') {
+    // cool shades
+    g.fillStyle = INK;
+    g.beginPath(); g.ellipse(-ex, ey, R * 0.25, R * 0.17, 0, 0, TAU); g.ellipse(ex, ey, R * 0.25, R * 0.17, 0, 0, TAU); g.fill();
+    g.beginPath(); g.moveTo(-ex, ey - R * 0.08); g.lineTo(ex, ey - R * 0.08); g.stroke();
+    g.strokeStyle = 'rgba(255,255,255,.8)'; g.lineWidth = lw * 0.6;
+    g.beginPath(); g.moveTo(-ex - R * 0.12, ey - R * 0.04); g.lineTo(-ex - R * 0.02, ey - R * 0.1); g.moveTo(ex - R * 0.12, ey - R * 0.04); g.lineTo(ex - R * 0.02, ey - R * 0.1); g.stroke();
+    g.strokeStyle = INK; g.lineWidth = lw;
+    g.beginPath(); g.moveTo(-R * 0.18, R * 0.3); g.quadraticCurveTo(R * 0.05, R * 0.44, R * 0.26, R * 0.22); g.stroke();
+    return;
+  }
+  if (face === 'grin') {
+    for (const s of [-1, 1]) { g.beginPath(); g.arc(s * ex, ey + R * 0.08, R * 0.13, Math.PI * 1.15, Math.PI * 1.85); g.stroke(); }
+  } else if (face === 'blink') {
+    for (const s of [-1, 1]) { g.beginPath(); g.moveTo(s * ex - R * 0.12, ey + R * 0.02); g.quadraticCurveTo(s * ex, ey + R * 0.09, s * ex + R * 0.12, ey + R * 0.02); g.stroke(); }
+  } else {
+    const er = face === 'oh' ? R * 0.23 : R * 0.19;
+    for (const s of [-1, 1]) {
+      g.fillStyle = '#fff'; g.beginPath(); g.arc(s * ex, ey, er, 0, TAU); g.fill(); g.lineWidth = lw * 0.75; g.stroke();
+      g.fillStyle = INK; g.beginPath(); g.arc(s * ex + look * er * 0.42, ey + lookY * er * 0.42, er * 0.5, 0, TAU); g.fill();
+      g.fillStyle = '#fff'; g.beginPath(); g.arc(s * ex + look * er * 0.42 - er * 0.18, ey + lookY * er * 0.42 - er * 0.2, er * 0.15, 0, TAU); g.fill();
+    }
+    g.lineWidth = lw;
+  }
+  g.fillStyle = INK;
+  if (face === 'oh') { g.beginPath(); g.ellipse(0, R * 0.36, R * 0.11, R * 0.14, 0, 0, TAU); g.fill(); }
+  else if (face === 'grin' || face === 'open') {
+    const w = face === 'grin' ? 0.3 : 0.22, d = face === 'grin' ? 0.62 : 0.52;
+    g.beginPath(); g.moveTo(-R * w, R * 0.2); g.quadraticCurveTo(0, R * d, R * w, R * 0.2); g.closePath(); g.fill();
+    g.fillStyle = '#ff7fa5'; g.beginPath(); g.ellipse(0, R * (0.2 + (d - 0.2) * 0.6), R * w * 0.45, R * 0.07, 0, 0, TAU); g.fill();
+  } else { g.beginPath(); g.arc(0, R * 0.1, R * 0.24, Math.PI * 0.22, Math.PI * 0.78); g.stroke(); }
+}
+// opt: { scale, alpha, sq (squash +, stretch −), face, look, lookY, shadow }
+function drawMarble(g, x, y, rad, color, spin, opt = {}) {
+  const px = Math.max(12, Math.round(rad * 2));
+  const R = rad * (opt.scale ?? 1), sq = opt.sq || 0, sx = 1 + 0.3 * sq, sy = 1 - 0.3 * sq;
+  g.save(); g.globalAlpha = opt.alpha ?? 1;
+  if (opt.shadow !== false) { g.fillStyle = 'rgba(42,22,80,.22)'; g.beginPath(); g.ellipse(x + R * 0.08, y + R * 0.95, R * 0.72 * sx, R * 0.16, 0, 0, TAU); g.fill(); }
+  g.translate(x, y + R * (1 - sy)); g.scale(sx, sy);
+  g.rotate(spin); g.drawImage(sprite('body', color, px), -R, -R, R * 2, R * 2); g.rotate(-spin);
+  g.drawImage(sprite('over', color, px), -R, -R, R * 2, R * 2);
+  if (opt.face !== 'none') drawFace(g, R, color, opt.face || 'smile', opt.look || 0, opt.lookY || 0);
+  g.restore();
+}
+function outlinedText(g, text, x, y, size, fill, rot = 0) {
+  g.save(); g.translate(x, y); g.rotate(rot);
+  g.font = `${size}px ${DISPLAY}`; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.lineJoin = 'round'; g.lineWidth = size * 0.24; g.strokeStyle = INK;
+  g.strokeText(text, 0, size * 0.08); g.strokeText(text, 0, 0);
+  g.fillStyle = fill; g.fillText(text, 0, 0); g.restore();
+}
+function rrect(g, x, y, w, h, r) { g.beginPath(); if (g.roundRect) g.roundRect(x, y, w, h, r); else g.rect(x, y, w, h); }
+
+// ---------- sound ----------
+let actx = null, lastTok = 0;
+function audio() {
+  if (!S.sound) return null;
+  try { actx ||= new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === 'suspended') actx.resume(); return actx; } catch { return null; }
+}
+function tone({ type = 'sine', f0, f1 = f0, dur = 0.12, vol = 0.12, delay = 0, vib = 0 }) {
+  const a = audio(); if (!a) return;
+  const t = a.currentTime + delay, o = a.createOscillator(), gn = a.createGain();
+  o.type = type; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+  if (vib) { const l = a.createOscillator(), lg = a.createGain(); l.frequency.value = vib; lg.gain.value = f0 * 0.05; l.connect(lg).connect(o.frequency); l.start(t); l.stop(t + dur); }
+  gn.gain.setValueAtTime(0.0001, t); gn.gain.exponentialRampToValueAtTime(vol, t + 0.012); gn.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(gn).connect(a.destination); o.start(t); o.stop(t + dur + 0.02);
+}
+const tok = v => { const a = audio(); if (!a || a.currentTime - lastTok < 0.03) return; lastTok = a.currentTime; tone({ f0: 700 + rng() * 300, f1: 380, dur: 0.07, vol: Math.min(0.14, 0.03 + v / 200) }); };
+const bloop = n => { tone({ f0: 260 + n * 70, f1: 900 + n * 180, dur: 0.14, vol: 0.18 }); tone({ type: 'triangle', f0: 520 + n * 140, f1: 1300 + n * 200, dur: 0.1, vol: 0.06, delay: 0.05 }); };
+const ding = n => tone({ type: 'triangle', f0: 1046 + n * 260, f1: 1046 + n * 260, dur: 0.35, vol: 0.1 });
+const boing = () => tone({ type: 'triangle', f0: 200, f1: 560, dur: 0.16, vol: 0.12, vib: 18 });
+const whistle = up => tone({ f0: up ? 380 : 1500, f1: up ? 1500 : 300, dur: up ? 0.6 : 0.85, vol: 0.13, vib: 7 });
+const coin = () => { tone({ type: 'square', f0: 988, dur: 0.08, vol: 0.05 }); tone({ type: 'square', f0: 1319, dur: 0.25, vol: 0.05, delay: 0.08 }); };
+const fanfare = () => [523, 659, 784, 1046, 784, 1046].forEach((f, i) => tone({ type: 'triangle', f0: f, dur: i === 5 ? 0.5 : 0.16, vol: 0.12, delay: i * 0.11 }));
+const trapdoor = () => tone({ type: 'triangle', f0: 300, f1: 90, dur: 0.25, vol: 0.12 });
+
+// ---------- geometry ----------
+const PADX = 0.4, PADR = 1.75, PADT = 0.15, TOP_H = 4.25, PADB = 0.75;
+const W_CELLS = COLS + PADX + PADR, TOP_AREA = PADT + TOP_H, H_CELLS = TOP_AREA + ROWS + PADB;
+const PIT_BOTTOM = TOP_AREA + ROWS;
+const WIN = { x0: -0.25, x1: COLS + 0.25, y0: 0.15, y1: TOP_AREA - 0.2 };   // the sky window behind the tubes
+const LAD = { x0: COLS + 0.5, x1: COLS + 1.4, top: TOP_AREA + 0.35, bot: PIT_BOTTOM - 0.1 };   // the Ladder Climb strip
+// A fixed marble run (only the marbles move). A glass lift tube up the right side of the cabinet shows the next
+// marbles in order; they ride up it and out of the top. Every column has its own clear glass tube that comes in from
+// above the window and winds down into the pit: each one its own shape, and a few cross each other.
+// Lift positions are measured along the lift (u), from below its porthole upward: Y = PORT_Y - (u - PORT_U).
+const LIFT_X = COLS + 0.95, PORT_Y = TOP_AREA - 0.55, PORT_U = 0.32;
+const Q_FRONT = PORT_U + (PORT_Y - 0.75), Q_STEP = 0.9, Q_EXIT = PORT_U + PORT_Y + 0.9;
+const liftY = u => PORT_Y - (u - PORT_U);
+const PATH = [{ X: -0.8 }];
+const S_FRONT = Q_FRONT - PATH[0].X, S_EXIT = Q_EXIT - PATH[0].X;   // where the front marble sits, and where it leaves
+const pathPt = s => ({ X: LIFT_X, Y: liftY(PATH[0].X + s) });
+const ZIG_BOT = TOP_AREA - 0.55, TUBE_W = 0.76, TUBE_INK = 0.9, IN_TUBE = 0.88, TUBE_IN = -1.0;   // marbles sit snug in the tubes
+// per column: x where it leaves the top, where its zigzag starts, how many zigs, how far they swing, which way, and depth (0 = back)
+const TUBES = [
+  { top: 1.3,  y0: 1.6,  n: 2, a: 0.28, d: 1,  z: 1 },   // crosses column 1's tube
+  { top: 0.45, y0: 2.0,  n: 2, a: 0.28, d: 1,  z: 3 },
+  { top: 2.5,  y0: 1.75, n: 3, a: 0.22, d: 1,  z: 0 },
+  { top: 3.9,  y0: 2.1,  n: 2, a: 0.28, d: -1, z: 4 },   // crosses column 4's tube
+  { top: 3.1,  y0: 1.65, n: 2, a: 0.28, d: -1, z: 2 },
+  { top: 5.5,  y0: 1.9,  n: 3, a: 0.22, d: 1,  z: 5 },
+  { top: 6.5,  y0: 1.7,  n: 2, a: 0.28, d: 1,  z: 6 },
+];
+const ZIG = TUBES.map((tb, c) => {
+  const bx = c + 0.5, pts = [{ X: tb.top, Y: TUBE_IN }, { X: tb.top, Y: tb.y0 }];
+  for (let j = 1; j <= tb.n; j++) { const f = j / (tb.n + 1); pts.push({ X: tb.top + (bx - tb.top) * f + tb.d * (j % 2 ? 1 : -1) * tb.a, Y: tb.y0 + (ZIG_BOT - tb.y0) * f }); }
+  pts.push({ X: bx, Y: ZIG_BOT });
+  const segs = pts.slice(1).map((b, i) => { const a = pts[i], dx = b.X - a.X, dy = b.Y - a.Y; return { a, b, dx, dy, len: Math.hypot(dx, dy) }; });
+  let s0 = 0; for (const sg of segs) { sg.s0 = s0; s0 += sg.len; }
+  return { c, z: tb.z, pts, segs, len: s0 };
+});
+const zigPt = (c, s) => { const z = ZIG[c]; for (const sg of z.segs) if (s <= sg.s0 + sg.len || sg === z.segs[z.segs.length - 1]) { const f = Math.min(1, Math.max(0, (s - sg.s0) / sg.len)); return { X: sg.a.X + sg.dx * f, Y: sg.a.Y + sg.dy * f, seg: sg }; } };
+const BACK_TO_FRONT = [...ZIG].sort((a, b) => a.z - b.z);
+// Physics constants (cells and seconds): marbles fall under gravity and land on each other as real stacks.
+const GRAV = 42, RAD = 0.43;
+const E_FLOOR = 0.3, E_MM = 0.2, V_REST = 3.5, SUB = 1 / 240;
+const V0 = 24, A_RUN = 40, GAP_S = 0.98, CLEAR = 0.95, VZ0 = 9, A_ZIG = 30, VZ_MAX = 16, T_HID = 0.12;        // marbles leave the queue at V0 and speed up along the run
+const tAt = s => { s = Math.max(0, s - S_FRONT); return (-V0 + Math.sqrt(V0 * V0 + 2 * A_RUN * s)) / A_RUN; };
+const vAt = s => V0 + A_RUN * tAt(s);
+const clearT = () => (-VZ0 + Math.sqrt(VZ0 * VZ0 + 2 * A_ZIG * CLEAR)) / A_ZIG;   // until a marble is clear of its tube mouth
+const FAST = 1;
+const FLOOR_H = 0.26;                          // the pit floor, with a trapdoor slot under each column
+//                                 // physics always runs at its natural pace (reduced motion only shortens the pauses)
+const rowY = r => TOP_AREA + r + 0.5;
+
+const stage = $('stage'), cvs = $('board'), ctx = cvs.getContext('2d'), fx = $('fx'), fctx = fx.getContext('2d');
+const bc = $('bonusCanvas'), bctx = bc.getContext('2d');
+let cell = 40, dpr = 1, OX = 0, OY = 0, bw = 0, bh = 0;
+function resize() {
+  dpr = Math.min(2, window.devicePixelRatio || 1);
+  for (const c of [cvs, fx]) { c.width = Math.round(c.clientWidth * dpr); c.height = Math.round(c.clientHeight * dpr); }
+  cell = Math.min(cvs.width / W_CELLS, cvs.height / H_CELLS);
+  OX = (cvs.width - W_CELLS * cell) / 2 + PADX * cell; OY = (cvs.height - H_CELLS * cell) / 2;
+  sizeBonus();
+}
+function sizeBonus() {
+  const w = bc.clientWidth, h = bc.clientHeight; if (!w || !h) return;
+  bc.width = Math.round(w * dpr); bc.height = Math.round(h * dpr); bw = bc.width; bh = bc.height;
+}
+const PX = X => OX + X * cell, PY = Y => OY + Y * cell;
+
+// ---------- marble physics ----------
+const marbles = new Map();
+const particles = [], bursts = [], floaters = [], confetti = [];
+const DOOR = { open: -9 };                     // when the trapdoor last opened (page seconds)
+const LADDER_UI = { rung: 0, y: LAD.bot, vy: 0, big: null };   // big: the tall Ladder Spins ladder while it's on
+let simT = 0, acc = 0;
+// New marbles wait in the queue and are released in the engine's order, each timed so it never rolls through a
+// marble that has just dropped into an earlier slot (and each slot's marbles go in one after another).
+const QUEUE_ITEMS = [];   // what the lift shows: { id, color, x, tx, fade }
+function placeGrid(grid, order, lead = 0) {
+  const fresh = new Map();
+  for (let c = 0; c < COLS; c++) grid[c].forEach((m, i) => {
+    const ty = rowY(ROWS - 1 - i);
+    let o = marbles.get(m.id);
+    if (o && o.phase !== 'drain') { o.ty = ty; o.idx = i; if (o.phase === 'rest' && o.Y < ty - 0.01) { o.phase = 'fall'; o.vy = 0; } return; }
+    o = { id: m.id, color: m.color, col: c, idx: i, X: -9, Y: -9, ty, vy: 0, v: 0, s: 0, w: 0, spin: rng() * TAU, phase: 'wait', delay: 0,
+      pop: 0, glow: 0, sq: 0, sqv: 0, xo: 0, xv: 0, ohT: 0, dropT: -9, blinkAt: 2 + rng() * 4 };
+    marbles.set(m.id, o); fresh.set(m.id, o);
+  });
+  const lastDrop = {}; let t = -1e9;
+  for (const id of order) {
+    const o = fresh.get(id); if (!o) continue;
+    // each column has its own tube, so only marbles for the same column need spacing out (they enter it in order)
+    const trip = tAt(S_EXIT) + T_HID;
+    let r = Math.max(lead, t + GAP_S / V0);
+    if (lastDrop[o.col] != null) r = Math.max(r, lastDrop[o.col] + clearT() - trip);
+    o.delay = r; t = r; lastDrop[o.col] = r + trip;
+  }
+}
+// The lift's line-up. Marbles already in it keep their place and shuffle up; new ones come out of its porthole.
+function setQueue(list) {
+  const old = QUEUE_ITEMS.splice(0);
+  let fresh = 0;   // new ones come out of the porthole in a line, one behind another
+  list.forEach((m, k) => {
+    const tx = Q_FRONT - k * Q_STEP, ex = old.find(it => it.id === m.id && !it.fade);
+    QUEUE_ITEMS.push(ex ? Object.assign(ex, { tx }) : { id: m.id, color: m.color, x: Math.min(tx, PORT_U - 0.6 - fresh++ * Q_STEP), tx, fade: 0 });
+  });
+  for (const it of old) if (!QUEUE_ITEMS.includes(it)) { it.fade = it.fade || simT; QUEUE_ITEMS.push(it); }
+}
+const reflowQueue = () => { let k = 0; for (const it of QUEUE_ITEMS) if (!it.fade) it.tx = Q_FRONT - k++ * Q_STEP; };
+const allSettled = () => { for (const o of marbles.values()) if (o.phase !== 'rest' || o.pop) return false; return true; };
+const waitSettled = () => new Promise(res => { const t = () => (allSettled() ? res() : setTimeout(t, 30)); setTimeout(t, 30); });
+
+function sub(dt) {
+  simT += dt;
+  const cols = Array.from({ length: COLS }, () => []);
+  for (const [id, o] of marbles) {
+    // jelly squash (a damped spring, ~6 Hz) and a little sideways wobble
+    o.sqv += (-1420 * o.sq - 26 * o.sqv) * dt; o.sq += o.sqv * dt;
+    o.xv += (-600 * o.xo - 24.5 * o.xv) * dt; o.xo = Math.max(-0.12, Math.min(0.12, o.xo + o.xv * dt));
+    if (o.ohT > 0) o.ohT -= dt;
+    if (o.pop) { o.pop += dt * 5.5; if (o.pop >= 1) marbles.delete(id); continue; }
+    switch (o.phase) {
+      case 'wait':
+        o.delay -= dt;
+        if (o.delay > 0) break;
+        o.phase = 'slide'; o.v = V0; o.s = S_FRONT - o.delay * V0;
+        { const i = QUEUE_ITEMS.findIndex(it => it.id === o.id); if (i >= 0) { o.s = Math.min(o.s, QUEUE_ITEMS[i].x - PATH[0].X); o.spin = QUEUE_ITEMS[i].x / RAD; QUEUE_ITEMS.splice(i, 1); } reflowQueue(); }
+        // falls through: it starts rolling this step
+      case 'slide': {
+        o.v += A_RUN * dt;
+        const s0 = o.s; o.s = Math.min(o.s + o.v * dt, S_EXIT);
+        const p = pathPt(o.s); o.X = p.X; o.Y = p.Y;
+        o.spin += (o.s - s0) / RAD;
+        if (o.s >= S_EXIT) { o.phase = 'hidden'; o.delay = T_HID; }   // out of the top, over to its tube
+        break;
+      }
+      case 'hidden':
+        o.delay -= dt;
+        if (o.delay > 0) break;
+        o.phase = 'zig'; o.s = -o.delay * VZ0; o.v = VZ0;   // and into the top of its own tube
+        // falls through
+      case 'zig': {
+        const z = ZIG[o.col];
+        o.v = Math.min(VZ_MAX, o.v + A_ZIG * dt);
+        o.s = Math.min(o.s + o.v * dt, z.len);
+        const p = zigPt(o.col, o.s); o.X = p.X; o.Y = p.Y; o.zdx = p.seg.dx;
+        o.spin += o.v * dt / RAD * (p.seg.dx >= 0 ? 1 : -1);
+        if (o.s >= z.len) { o.phase = 'fall'; o.X = o.col + 0.5; o.vy = o.v * p.seg.dy / p.seg.len; o.dropT = simT; o.w = o.v / RAD * Math.sign(p.seg.dx || 1); }
+        break;
+      }
+      case 'drain':
+        if (o.delay > 0) { o.delay -= dt; break; }
+        o.vy += GRAV * dt; o.Y += o.vy * dt; o.spin += o.w * dt;
+        if (o.Y > H_CELLS + 0.6) marbles.delete(id);
+        break;
+      case 'rest':
+        o.blinkAt -= dt; if (o.blinkAt < -0.14) o.blinkAt = 1.5 + rng() * 5;
+        o.w *= Math.exp(-dt * 6);
+        break;
+    }
+    if (o.phase === 'fall' || o.phase === 'rest') cols[o.col].push(o);
+  }
+  // each column is a real stack, solved bottom-up: a falling marble lands on the marble below it (equal masses)
+  for (const st of cols) {
+    st.sort((a, b) => a.idx - b.idx);
+    let below = null;
+    for (const o of st) {
+      if (o.phase === 'fall') {
+        o.vy += GRAV * dt; o.Y += o.vy * dt; o.spin += o.w * dt;
+        const floor = below ? Math.min(o.ty, below.Y - 1) : o.ty, bv = below ? below.vy : 0;
+        if (o.Y >= floor) {
+          o.Y = floor;
+          const vrel = o.vy - bv;
+          if (vrel > V_REST) {
+            tok(vrel); o.sq = Math.min(0.6, vrel / 30); o.sqv = 0; o.w *= 0.4;
+            if (below) below.sqv += vrel * 0.6;                                  // the marble underneath feels it too
+            if (below && below.phase === 'fall') { const j = (1 + E_MM) * vrel / 2; o.vy -= j; below.vy += j; }
+            else o.vy = bv - (below ? E_MM : E_FLOOR) * vrel;
+          } else {
+            o.vy = bv;
+            if ((!below || below.phase === 'rest') && Math.abs(o.Y - o.ty) < 0.02) { o.Y = o.ty; o.vy = 0; o.phase = 'rest'; }
+          }
+        }
+      }
+      below = o;
+    }
+  }
+}
+function stepFx(dt) {
+  for (let i = particles.length - 1; i >= 0; i--) { const p = particles[i]; p.life -= dt; if (p.life <= 0) { particles.splice(i, 1); continue; } p.vy += 22 * dt; p.X += p.vx * dt; p.Y += p.vy * dt; }
+  for (let i = bursts.length - 1; i >= 0; i--) { bursts[i].t += dt; if (bursts[i].t > 0.9) bursts.splice(i, 1); }
+  for (let i = floaters.length - 1; i >= 0; i--) { floaters[i].t += dt; if (floaters[i].t > 1.7) floaters.splice(i, 1); }
+  for (let i = confetti.length - 1; i >= 0; i--) {
+    const p = confetti[i]; p.life -= dt; if (p.life <= 0 || p.y > fx.height + 20) { confetti.splice(i, 1); continue; }
+    p.vy += 320 * dpr * dt; p.vx *= Math.exp(-dt * 1.2); p.x += p.vx * dt + Math.sin(p.life * 6 + p.ph) * 30 * dpr * dt; p.y += Math.min(p.vy, 260 * dpr) * dt; p.rot += p.vr * dt;
+  }
+  for (let i = QUEUE_ITEMS.length - 1; i >= 0; i--) {
+    const it = QUEUE_ITEMS[i];
+    if (it.fade && simT - it.fade > 0.3) { QUEUE_ITEMS.splice(i, 1); continue; }
+    const d = it.tx - it.x, v = Math.min(V0 * 0.8, Math.max(9, Math.abs(d) * 22)) * dt;   // never faster than a released marble, so they can't overlap
+    it.x = Math.abs(d) <= v ? it.tx : it.x + Math.sign(d) * v;
+  }
+  // the ladder climber hops toward its rung on a spring
+  const target = LADDER_UI.rung ? rungY(LADDER_UI.rung) : LAD.bot;
+  for (let left = dt; left > 1e-6; left -= 1 / 60) { const h = Math.min(left, 1 / 60); LADDER_UI.vy += ((target - LADDER_UI.y) * 160 - LADDER_UI.vy * 16) * h; LADDER_UI.y += LADDER_UI.vy * h; }
+  if (!Number.isFinite(LADDER_UI.y) || !Number.isFinite(LADDER_UI.vy)) { LADDER_UI.y = target; LADDER_UI.vy = 0; }
+}
+function step(dtReal) {
+  acc = Math.min(acc + dtReal * FAST, 0.5);
+  while (acc >= SUB) { sub(SUB); acc -= SUB; }
+  stepFx(dtReal);
+}
+
+// ---------- drawing the cabinet ----------
+const ladderTable = () => LADDER_UI.big || E.ladderFor(S.runner);
+const rungY = i => LAD.bot - i * (LAD.bot - LAD.top) / (ladderTable().length + 0.3);
+function draw(t) {
+  const g = ctx, k = cell;
+  g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, cvs.width, cvs.height);
+  // cabinet body
+  const lw = k * 0.09, W = W_CELLS * k;
+  rrect(g, PX(-PADX) + lw / 2, PY(0) + lw / 2, W - lw, H_CELLS * k - lw, k * 0.55);
+  g.fillStyle = SUN; g.fill(); g.lineWidth = lw; g.strokeStyle = INK; g.stroke();
+  rrect(g, PX(-PADX) + lw * 1.6, PY(0) + lw * 1.6, W - lw * 3.2, H_CELLS * k - lw * 3.2, k * 0.45);
+  g.lineWidth = k * 0.05; g.strokeStyle = 'rgba(255,255,255,.55)'; g.stroke();
+  for (const [x, y] of [[-0.15, 0.08], [COLS + PADR - 0.25, 0.08], [-0.15, H_CELLS - 0.2], [COLS + PADR - 0.25, H_CELLS - 0.2]]) {
+    g.beginPath(); g.arc(PX(x), PY(y) + k * 0.06, k * 0.07, 0, TAU); g.fillStyle = '#f5a300'; g.fill(); g.lineWidth = k * 0.03; g.strokeStyle = INK; g.stroke();
+  }
+  // sky window with drifting clouds
+  rrect(g, PX(WIN.x0), PY(WIN.y0), (WIN.x1 - WIN.x0) * k, (WIN.y1 - WIN.y0) * k, k * 0.4);
+  const sky = g.createLinearGradient(0, PY(WIN.y0), 0, PY(WIN.y1)); sky.addColorStop(0, '#8fd3ff'); sky.addColorStop(1, '#d6f2ff');
+  g.fillStyle = sky; g.fill();
+  g.save(); g.clip();
+  for (const [off, y, s] of [[0, 0.55, 0.9], [4.5, 1.35, 0.7]]) {
+    const x = ((t * 0.25 + off) % (COLS + 3)) - 1.5;
+    g.fillStyle = '#fff';
+    g.beginPath(); g.arc(PX(x), PY(y), k * 0.28 * s, 0, TAU); g.arc(PX(x + 0.32 * s), PY(y - 0.12 * s), k * 0.36 * s, 0, TAU); g.arc(PX(x + 0.7 * s), PY(y), k * 0.28 * s, 0, TAU); g.fill();
+  }
+  g.restore();
+  g.save(); rrect(g, PX(WIN.x0), PY(WIN.y0), (WIN.x1 - WIN.x0) * k, (WIN.y1 - WIN.y0) * k, k * 0.4); g.rect(PX(WIN.x0), PY(WIN.y1 - 0.45), (WIN.x1 - WIN.x0) * k, (TOP_AREA - WIN.y1 + 0.45) * k); g.clip();
+  drawRun(g, k, false, t);
+  g.restore();
+  rrect(g, PX(WIN.x0), PY(WIN.y0), (WIN.x1 - WIN.x0) * k, (WIN.y1 - WIN.y0) * k, k * 0.4);
+  g.lineWidth = k * 0.07; g.strokeStyle = INK; g.stroke();
+  drawLift(g, k, t);
+  // the pit, with a trapdoor floor
+  rrect(g, PX(-0.15), PY(TOP_AREA - 0.15), (COLS + 0.3) * k, (ROWS + 0.3) * k, k * 0.38);
+  g.fillStyle = GRAPE; g.fill(); g.lineWidth = k * 0.08; g.strokeStyle = INK; g.stroke();
+  for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
+    g.beginPath(); g.arc(PX(c + 0.5), PY(rowY(r)), k * 0.36, 0, TAU); g.fillStyle = GRAPE_DEEP; g.fill();
+  }
+  // the floor under the pit: a slot under each column, and a dark chute below each slot out of the machine
+  rrect(g, PX(-0.15), PY(PIT_BOTTOM), (COLS + 0.3) * k, FLOOR_H * k, k * 0.08);
+  g.fillStyle = '#f5a300'; g.fill(); g.lineWidth = k * 0.05; g.strokeStyle = INK; g.stroke();
+  for (let c = 0; c < COLS; c++) {
+    rrect(g, PX(c + 0.07), PY(PIT_BOTTOM + 0.04), 0.86 * k, (H_CELLS - PIT_BOTTOM - 0.04) * k, k * 0.12);
+    g.fillStyle = GRAPE_DEEP; g.fill(); g.lineWidth = k * 0.04; g.strokeStyle = INK; g.stroke();
+  }
+  const hatch = c => { const a = simT - DOOR.open - Math.abs(c - 3) * 0.035; return a < 0 ? 0 : a < 0.1 ? a / 0.1 : a < 0.75 ? 1 : a < 0.9 ? 1 - (a - 0.75) / 0.15 : 0; };
+  let doorOpen = 0; for (let c = 0; c < COLS; c++) doorOpen = Math.max(doorOpen, hatch(c));
+  // marbles: clipped to the window, the gap down to the pit, and the pit (open floor lets drained ones fall out)
+  g.save();
+  // (the window's rounded corners, plus the gap and the pit below it)
+  rrect(g, PX(WIN.x0), PY(WIN.y0), (WIN.x1 - WIN.x0) * k, (WIN.y1 - WIN.y0) * k, k * 0.4);
+  g.rect(PX(WIN.x0), PY(WIN.y1 - 0.45), (WIN.x1 - WIN.x0) * k, (PIT_BOTTOM + (doorOpen > 0 ? PADB + 0.1 : 0.02) - WIN.y1 + 0.45) * k); g.clip();
+  for (const o of marbles.values()) {
+    if (o.phase === 'wait' || o.phase === 'hidden' || o.phase === 'zig' || o.phase === 'slide') continue;   // marbles in tubes are drawn with their tube
+    drawObj(g, o, k, t);
+  }
+  g.restore();
+  drawRun(g, k, true, t);
+  // the trapdoors: two plates per slot that slide apart, in a ripple from the middle
+  for (let c = 0; c < COLS; c++) {
+    const a = hatch(c), e = a * a * (3 - 2 * a), half = 0.43 * (1 - e);
+    g.save(); rrect(g, PX(c + 0.07), PY(PIT_BOTTOM + 0.02), 0.86 * k, FLOOR_H * k, k * 0.06); g.clip();
+    g.fillStyle = SUN; g.strokeStyle = INK; g.lineWidth = k * 0.04;
+    if (half > 0.005) {
+      rrect(g, PX(c + 0.07), PY(PIT_BOTTOM + 0.02), half * k, FLOOR_H * k, k * 0.05); g.fill(); g.stroke();
+      rrect(g, PX(c + 0.93 - half), PY(PIT_BOTTOM + 0.02), half * k, FLOOR_H * k, k * 0.05); g.fill(); g.stroke();
+    }
+    g.restore();
+  }
+  drawLadder(g, k, t);
+  // pop particles
+  for (const p of particles) {
+    g.globalAlpha = Math.min(1, p.life / p.max * 1.5);
+    g.beginPath(); g.arc(PX(p.X), PY(p.Y), k * p.s, 0, TAU); g.fillStyle = p.color; g.fill(); g.lineWidth = k * 0.03; g.strokeStyle = INK; g.stroke();
+  }
+  g.globalAlpha = 1;
+  // POP! starbursts
+  for (const b of bursts) {
+    const e = Math.min(1, b.t / 0.22), s = e < 1 ? e * 1.25 : 1.25 - Math.min(0.25, (b.t - 0.22) * 0.8), a = b.t < 0.6 ? 1 : 1 - (b.t - 0.6) / 0.3;
+    g.save(); g.globalAlpha = Math.max(0, a); g.translate(PX(b.X), PY(b.Y)); g.rotate(b.rot); g.scale(s, s);
+    g.beginPath();
+    for (let i = 0; i < 24; i++) { const ang = i * TAU / 24, rr = (i % 2 ? 0.55 : 0.95) * k; g.lineTo(Math.cos(ang) * rr, Math.sin(ang) * rr * 0.8); }
+    g.closePath(); g.fillStyle = b.lucky ? '#7dffb0' : SUN; g.fill(); g.lineWidth = k * 0.07; g.strokeStyle = INK; g.stroke();
+    g.restore();
+    g.save(); g.globalAlpha = Math.max(0, a);
+    outlinedText(g, b.lucky ? 'LUCKY!' : b.word, PX(b.X), PY(b.Y), k * 0.5 * s, POP, b.rot);
+    g.restore();
+  }
+  // floating win amounts
+  for (const f of floaters) {
+    const a = f.t < 1.25 ? 1 : 1 - (f.t - 1.25) / 0.45, y = PY(f.Y) - f.t * k * 0.7;
+    g.globalAlpha = Math.max(0, a);
+    outlinedText(g, f.text, PX(f.X), y, k * 0.62, f.quiet ? '#c9c1dd' : '#fff');
+    if (f.sub) outlinedText(g, f.sub, PX(f.X), y + k * 0.55, k * 0.36, SUN);
+  }
+  g.globalAlpha = 1;
+}
+function drawObj(g, o, k, t) {
+  const rad = k * RAD, x = PX(o.X + (o.phase === 'slide' || o.phase === 'zig' ? 0 : o.xo)), y = PY(o.Y);
+  let face = 'smile', look = 0, lookY = 0, sq = o.sq;
+  if (o.glow) face = 'grin';
+  else if (o.ohT > 0) { face = 'oh'; lookY = -0.6; }
+  else if (o.phase === 'slide') { face = 'open'; look = 0; lookY = -0.8; }
+  else if (o.phase === 'zig') { face = 'open'; look = Math.sign(o.zdx || 0); lookY = 0.8; }
+  else if (o.phase === 'fall' || o.phase === 'drain') { face = o.vy > 7 ? 'oh' : 'smile'; lookY = 0.8; if (o.vy > 1 && o.sq < 0.05) sq = -Math.min(0.35, o.vy / 60); }
+  else if (o.blinkAt < 0) face = 'blink';
+  if (o.glow) {
+    const pulse = 0.5 + 0.5 * Math.sin(t * 16);
+    g.beginPath(); g.arc(x, y, rad * (1.15 + 0.08 * pulse), 0, TAU); g.fillStyle = `rgba(255,236,120,${0.55 + 0.35 * pulse})`; g.fill();
+  } else if (o.color === 'gold' && o.phase === 'rest') {
+    g.beginPath(); g.arc(x, y, rad * (1.12 + 0.05 * Math.sin(t * 5)), 0, TAU); g.fillStyle = 'rgba(255,230,90,.45)'; g.fill();
+  }
+  if (o.phase === 'drain') { face = 'oh'; lookY = 1; }
+  const scale = o.pop ? 1 + 0.3 * Math.sin(o.pop * Math.PI) : o.phase === 'slide' || o.phase === 'zig' ? IN_TUBE : 1, alpha = o.pop ? 1 - o.pop : 1;
+  drawMarble(g, x, y, rad, o.color, o.spin, { scale, alpha, sq: Math.max(-0.4, Math.min(0.6, sq)), face, look, lookY, shadow: o.phase === 'rest' });
+}
+// Ladder Climb: rails beside the pit, a rung per cascade, and your lucky marble climbing it.
+function drawLadder(g, k, t) {
+  const L = ladderTable(), cx = (LAD.x0 + LAD.x1) / 2, sp = (LAD.bot - LAD.top) / (L.length + 0.3);
+  rrect(g, PX(LAD.x0 - 0.12), PY(LAD.top - 0.35), (LAD.x1 - LAD.x0 + 0.24) * k, (LAD.bot - LAD.top + 0.5) * k, k * 0.3);
+  g.fillStyle = 'rgba(42,22,80,.14)'; g.fill();
+  for (const [col, wdt] of [[INK, 0.16], ['#d98a3d', 0.09]]) {
+    g.strokeStyle = col; g.lineWidth = k * wdt; g.lineCap = 'round';
+    g.beginPath(); g.moveTo(PX(LAD.x0), PY(LAD.top - 0.2)); g.lineTo(PX(LAD.x0), PY(LAD.bot)); g.moveTo(PX(LAD.x1), PY(LAD.top - 0.2)); g.lineTo(PX(LAD.x1), PY(LAD.bot)); g.stroke();
+  }
+  for (let i = 1; i <= L.length; i++) {
+    const y = rungY(i), on = LADDER_UI.rung >= i, cur = LADDER_UI.rung === i, top = LADDER_UI.big && i === L.length;
+    for (const [col, wdt] of [[INK, 0.14], ['#d98a3d', 0.07]]) { g.strokeStyle = col; g.lineWidth = k * wdt; g.beginPath(); g.moveTo(PX(LAD.x0), PY(y)); g.lineTo(PX(LAD.x1), PY(y)); g.stroke(); }
+    const pw = 0.62, ph = Math.min(0.36, sp * 0.62), px0 = cx - pw / 2, py0 = y + Math.min(0.08, sp * 0.12);
+    rrect(g, PX(px0), PY(py0), pw * k, ph * k, k * 0.1);
+    g.fillStyle = cur ? SUN : on ? '#ffe79a' : top ? '#ffd0e0' : PAPER; g.fill(); g.lineWidth = k * 0.04; g.strokeStyle = INK; g.stroke();
+    g.font = `${k * Math.min(0.27, ph * 0.78)}px ${DISPLAY}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = INK;
+    g.fillText(`×${L[i - 1]}`, PX(cx), PY(py0 + ph / 2 + 0.02));
+  }
+  const bob = LADDER_UI.rung ? Math.sin(t * 8) * 0.03 : 0;
+  drawMarble(g, PX(cx), PY(LADDER_UI.y - 0.3 + bob), k * (LADDER_UI.big ? 0.24 : 0.3), LADDER_UI.big ? (LADDER_UI.lucky || S.runner) : S.runner, 0, { face: LADDER_UI.rung ? 'grin' : 'smile', lookY: -0.5, sq: Math.max(-0.3, Math.min(0.4, LADDER_UI.vy * 0.03)), shadow: false });
+}
+function setRung(n) {
+  const r = Math.min(n, ladderTable().length);
+  if (r > LADDER_UI.rung) { LADDER_UI.vy -= 3; boing(); }
+  else if (r < LADDER_UI.rung) whistle(false);
+  LADDER_UI.rung = r;
+}
+// The fixed run, all clear glass. Tubes don't move, so each is drawn once (outline, hollowed out so the sky shows
+// through, a light glassy tint) and kept as a picture. back: the column tubes, back to front, each with the marbles
+// inside it. The lift is drawn on the cabinet beside the window; front: the marbles riding up it, and its shine.
+let TUBE_ART = null;
+function tubePic(k, pts) {
+  const xs = pts.map(p => p.X), ys = pts.map(p => p.Y), m = TUBE_INK / 2 + 0.05;
+  const x0 = Math.min(...xs) - m, y0 = Math.min(...ys) - m, w = Math.ceil((Math.max(...xs) + m - x0) * k), h = Math.ceil((Math.max(...ys) + m - y0) * k);
+  const cv = document.createElement('canvas'); cv.width = Math.max(1, w); cv.height = Math.max(1, h);
+  const l = cv.getContext('2d'); l.lineCap = 'round'; l.lineJoin = 'round';
+  const path = () => { l.beginPath(); pts.forEach((p, i) => l[i ? 'lineTo' : 'moveTo']((p.X - x0) * k, (p.Y - y0) * k)); };
+  path(); l.strokeStyle = INK; l.lineWidth = k * TUBE_INK; l.stroke();
+  l.globalCompositeOperation = 'destination-out'; path(); l.lineWidth = k * TUBE_W; l.stroke();
+  l.globalCompositeOperation = 'source-over'; path(); l.strokeStyle = 'rgba(240,250,255,.6)'; l.stroke();   // milky enough that a tube behind reads as behind
+  return { cv, x0, y0 };
+}
+function tubeArt(k) {
+  if (TUBE_ART && TUBE_ART.k === k) return TUBE_ART;
+  TUBE_ART = { k, cols: ZIG.map(z => tubePic(k, [...z.pts, { X: z.pts[z.pts.length - 1].X, Y: TOP_AREA + 0.3 }])),
+    lift: tubePic(k, [{ X: LIFT_X, Y: PORT_Y }, { X: LIFT_X, Y: -0.8 }]) };
+  return TUBE_ART;
+}
+const blit = (g, pic) => g.drawImage(pic.cv, PX(pic.x0), PY(pic.y0));
+// the lift, clipped to the cabinet so it runs off its top edge
+const liftClip = (g, k, toPort) => { g.beginPath(); g.rect(PX(LIFT_X - 0.7), PY(0) + k * 0.13, 1.4 * k, (PORT_Y + (toPort ? 0.12 : 0.7)) * k - k * 0.13); g.clip(); };
+// the porthole's front lip, drawn over marbles rising out of it
+const portLip = (g, k) => { g.beginPath(); g.arc(PX(LIFT_X), PY(PORT_Y), k * 0.5, 0.1, Math.PI - 0.1); g.lineWidth = k * 0.09; g.strokeStyle = INK; g.stroke(); };
+function drawLift(g, k, t) {
+  g.save(); liftClip(g, k, false);
+  // a sky-blue backing so the glass reads as glass against the yellow cabinet
+  rrect(g, PX(LIFT_X - TUBE_W / 2), PY(-0.5), TUBE_W * k, (PORT_Y + 0.5) * k, k * TUBE_W / 2);
+  const sky = g.createLinearGradient(0, PY(0), 0, PY(PORT_Y)); sky.addColorStop(0, '#8fd3ff'); sky.addColorStop(1, '#d6f2ff'); g.fillStyle = sky; g.fill();
+  blit(g, tubeArt(k).lift);
+  g.restore();
+  // the porthole at the foot of the lift: marbles rise up out of it
+  g.beginPath(); g.arc(PX(LIFT_X), PY(PORT_Y), k * 0.5, 0, TAU); g.fillStyle = '#21114a'; g.fill(); g.lineWidth = k * 0.07; g.strokeStyle = INK; g.stroke();
+  g.beginPath(); g.arc(PX(LIFT_X), PY(PORT_Y), k * 0.5, Math.PI * 1.1, Math.PI * 1.6); g.lineWidth = k * 0.06; g.strokeStyle = 'rgba(255,255,255,.35)'; g.stroke();
+  g.save(); liftClip(g, k, true);
+  for (const it of QUEUE_ITEMS) {
+    if (liftY(it.x) > PORT_Y + 0.6) continue;
+    const a = it.fade ? Math.max(0, 1 - (simT - it.fade) / 0.3) : 1;
+    drawMarble(g, PX(LIFT_X), PY(liftY(it.x)), k * RAD, it.color, it.x / RAD, { face: it.dim ? 'blink' : it.x > Q_FRONT - 0.2 ? 'open' : 'smile', lookY: -1, alpha: a * (it.dim ? 0.4 : 1), scale: IN_TUBE, shadow: false });
+  }
+  g.restore();
+  portLip(g, k);
+  // little up arrows on the cabinet beside the lift
+  g.fillStyle = 'rgba(42,22,80,.35)';
+  for (const y of [1.2, 2.4]) { g.beginPath(); g.moveTo(PX(LIFT_X + 0.62), PY(y - 0.16)); g.lineTo(PX(LIFT_X + 0.74), PY(y + 0.04)); g.lineTo(PX(LIFT_X + 0.5), PY(y + 0.04)); g.closePath(); g.fill(); }
+}
+function drawRun(g, k, front, t) {
+  g.lineCap = 'round'; g.lineJoin = 'round';
+  if (front) {
+    g.save(); liftClip(g, k, true);
+    for (const o of marbles.values()) if (o.phase === 'slide' && !o.pop) drawObj(g, o, k, t);
+    g.strokeStyle = 'rgba(255,255,255,.7)'; g.lineWidth = k * 0.07;
+    g.beginPath(); g.moveTo(PX(LIFT_X - 0.25), PY(0.1)); g.lineTo(PX(LIFT_X - 0.25), PY(PORT_Y - 0.6)); g.stroke();
+    g.restore();
+    portLip(g, k);
+    return;
+  }
+  const art = tubeArt(k);
+  for (const z of BACK_TO_FRONT) {
+    blit(g, art.cols[z.c]);
+    for (const o of marbles.values()) if (o.phase === 'zig' && o.col === z.c && !o.pop) drawObj(g, o, k, t);
+    // a shine line down the tube, over the marbles inside it
+    g.strokeStyle = 'rgba(255,255,255,.65)'; g.lineWidth = k * 0.065;
+    g.beginPath(); g.moveTo(PX(z.pts[0].X - 0.24), PY(WIN.y0));
+    for (const p of z.pts.slice(1)) g.lineTo(PX(p.X - 0.24), PY(p.Y));
+    g.lineTo(PX(z.pts[z.pts.length - 1].X - 0.24), PY(TOP_AREA - 0.1)); g.stroke();
+  }
+}
+function drawFx() {
+  const g = fctx;
+  g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, fx.width, fx.height);
+  for (const p of confetti) {
+    if (p.gold) { drawMarble(g, p.x, p.y, p.w, 'gold', p.rot, { face: 'grin', shadow: false }); continue; }
+    g.save(); g.translate(p.x, p.y); g.rotate(p.rot); g.scale(1, Math.cos(p.rot * 1.7));
+    g.fillStyle = p.color; g.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+    g.lineWidth = 1.5 * dpr; g.strokeStyle = INK; g.strokeRect(-p.w / 2, -p.h / 2, p.w, p.h);
+    g.restore();
+  }
+}
+
+// ---------- loop ----------
+let last = performance.now(), shownCredits = S.credits, goldShown = -1, rafPending = false;
+function frame(now) {
+  const elapsed = Math.min(0.25, (now - last) / 1000); last = now;
+  step(elapsed);
+  draw(now / 1000);
+  if (confetti.length || fx.dataset.dirty) { drawFx(); fx.dataset.dirty = confetti.length ? '1' : ''; }
+  if (S.inBonus) { stepBonus(elapsed); drawBonus(now / 1000); }
+  // count credits up and down instead of jumping
+  if (Math.abs(shownCredits - S.credits) > 0.5) { shownCredits += (S.credits - shownCredits) * Math.min(1, elapsed * 7); if (Math.abs(shownCredits - S.credits) < 1) shownCredits = S.credits; $('credits').textContent = fmtCredits(shownCredits); }
+  // gold sockets light up the moment a gold marble lands
+  if (S.spinning) {
+    let n = 0; for (const o of marbles.values()) if (o.color === 'gold' && o.phase === 'rest') n++;
+    if (n !== goldShown) { if (n > goldShown && n > 0 && goldShown >= 0) ding(Math.min(n, 4)); setGold(n); }
+  }
+}
+function tick(now) { rafPending = false; frame(now); schedule(); }
+function schedule() { if (!rafPending) { rafPending = true; requestAnimationFrame(tick); } }
+setInterval(() => { if (performance.now() - last > 120) frame(performance.now()); }, 50);
+
+// ---------- effects ----------
+const CONF = ['#ff4f87', '#ffd23f', '#4fd69c', '#3ea0ff', '#a86bff', '#ff9f1c', '#ffffff'];
+function confettiBurst(n) {
+  if (reduceMotion) n = Math.round(n / 4);
+  for (let i = 0; i < n; i++) confetti.push({ x: rng() * fx.width, y: -rng() * fx.height * 0.3 - 10 * dpr, vx: (rng() - 0.5) * 160 * dpr, vy: rng() * 120 * dpr, rot: rng() * TAU, vr: (rng() - 0.5) * 12, w: (6 + rng() * 6) * dpr, h: (9 + rng() * 8) * dpr, color: pick(CONF), life: 3 + rng() * 1.5, ph: rng() * 6 });
+  fx.dataset.dirty = '1';
+}
+function goldRain(n) {
+  if (reduceMotion) n = Math.round(n / 4);
+  for (let i = 0; i < n; i++) confetti.push({ gold: true, x: rng() * fx.width, y: -rng() * fx.height * 0.5 - 20 * dpr, vx: (rng() - 0.5) * 80 * dpr, vy: rng() * 100 * dpr, rot: rng() * TAU, vr: (rng() - 0.5) * 6, w: (11 + rng() * 6) * dpr, h: 0, life: 3.5, ph: rng() * 6 });
+  fx.dataset.dirty = '1';
+}
+let bannerTimer = 0;
+function banner(text, sub) {
+  const el = $('banner');
+  el.innerHTML = ''; el.append(text); if (sub) { const s = document.createElement('small'); s.textContent = sub; el.append(s); }
+  el.hidden = false; el.classList.remove('go'); void el.offsetWidth; el.classList.add('go');
+  clearTimeout(bannerTimer); bannerTimer = setTimeout(() => { el.hidden = true; }, 1650);
+}
+function shake() { if (reduceMotion) return; stage.classList.remove('shake'); void stage.offsetWidth; stage.classList.add('shake'); }
+const POP_WORDS = ['POP!', 'POP!', 'BLOOP!', 'PLOP!', 'YAY!'];
+
+// ---------- UI ----------
+function renderUI() {
+  $('bet').textContent = fmt(bet());
+  $('betDown').disabled = S.busy || S.inBonus || S.betIdx === 0;
+  $('betUp').disabled = S.busy || S.inBonus || S.betIdx === BETS.length - 1;
+  const broke = S.credits < E.spinCost(bet(), S.boost);
+  $('spin').disabled = !S.auto && (S.busy || S.inBonus);
+  $('spin').textContent = S.auto ? 'STOP' : broke && !S.busy && S.credits < BETS[0] ? 'REFILL' : 'SPIN';
+  $('sound').setAttribute('aria-pressed', S.sound);
+  $('boost').setAttribute('aria-pressed', S.boost);
+  $('boost').disabled = S.busy || S.inBonus;
+  $('costNote').hidden = !S.boost;
+  $('costNote').textContent = `Spin costs ${fmt(E.spinCost(bet(), true))}`;
+  store.set('boost', S.boost);
+  for (const b of $('swatches').children) b.disabled = S.busy || S.inBonus;
+  $('buyOpen').disabled = S.busy || S.inBonus || S.auto;
+  if ($('buyLayer').open) renderBuy();
+  store.set('credits', cents(S.credits + S.owed)); store.set('betIdx', S.betIdx);
+  renderPaytable();
+}
+const pitGold = () => { let n = 0; for (const o of marbles.values()) if (o.color === 'gold' && o.phase !== 'drain') n++; return n; };
+function setGold(n) { goldShown = n; for (let i = 0; i < 3; i++) $('s' + i).classList.toggle('on', i < n); }
+const say = s => ($('status').textContent = s);
+const imgCache = new Map();
+function marbleImg(color, face = 'smile') {
+  const key = color + face; if (imgCache.has(key)) return imgCache.get(key);
+  const c = document.createElement('canvas'); c.width = c.height = 96;
+  drawMarble(c.getContext('2d'), 48, 44, 40, color, 0.5, { face });
+  const url = c.toDataURL(); imgCache.set(key, url); return url;
+}
+let ptKey = '';
+function renderPaytable() {
+  const key = bet() + S.runner; if (ptKey === key) return; ptKey = key;
+  const sizes = [7, 8, 9, 10, 12, 15, 20];
+  const L = E.LUCKY[S.runner];
+  const head = '<tr><th>Cluster</th>' + sizes.map(s => `<th>${s === 20 ? '20+' : s}</th>`).join('') + '</tr>';
+  const rows = E.COLORS.map(c => {
+    const lucky = !!L.color && L.color === c;
+    return `<tr class="${lucky ? 'lucky' : ''}"><td><img src="${marbleImg(c)}" alt="">${c[0].toUpperCase() + c.slice(1)}${lucky ? `<span class="tag">×${L.mult}</span>` : ''}</td>` +
+      sizes.map(s => `<td>${fmt(E.clusterPay(c, s, bet(), S.runner))}</td>`).join('') + '</tr>';
+  }).join('');
+  $('paytable').innerHTML = head + rows;
+}
+function renderPicker() {
+  const box = $('swatches');
+  if (!box.children.length) {
+    for (const id of Object.keys(E.LUCKY)) {
+      const b = document.createElement('button');
+      b.className = 'swatch'; b.id = 'pick-' + id; b.title = E.LUCKY[id].name; b.setAttribute('aria-label', E.LUCKY[id].name);
+      const img = new Image(); img.alt = ''; img.src = marbleImg(id, id === 'gold' ? 'smile' : 'open'); b.append(img);
+      b.addEventListener('click', () => { if (S.busy || S.inBonus) return; S.runner = id; store.set('runner', id); renderPicker(); renderUI(); boing(); });
+      box.append(b);
+    }
+  }
+  for (const id of Object.keys(E.LUCKY)) $('pick-' + id).setAttribute('aria-pressed', id === S.runner);
+  $('pickName').textContent = E.LUCKY[S.runner].name;
+  $('pickPerk').textContent = '★ ' + E.LUCKY[S.runner].perk;
+}
+
+// ---------- a spin ----------
+const MISS = ['No pops this time.', 'The marbles shrug.', 'Nothing popped.', 'All smiles, no pops.', 'A quiet one.'];
+function celebrate(x, amount) {
+  if (x >= 100) { banner('Ladder legend!', `+${fmt(amount)}`); confettiBurst(220); shake(); fanfare(); }
+  else if (x >= 25) { banner('Marble mania!', `+${fmt(amount)}`); confettiBurst(160); shake(); fanfare(); }
+  else if (x >= 8) { banner('Marblelous!', `+${fmt(amount)}`); confettiBurst(90); fanfare(); }
+}
+async function spin() {
+  if (S.busy || S.inBonus) return;
+  closeBuy();
+  if (S.credits < E.spinCost(bet(), S.boost)) {
+    if (S.credits < BETS[0]) { S.credits = START_CREDITS; SESS.t0 = Date.now(); SESS.net = 0; renderSession(); say(`New session: ${fmt(START_CREDITS)} play credits.`); }
+    else {
+      while (S.betIdx > 0 && S.credits < E.spinCost(bet(), S.boost)) S.betIdx--;
+      if (S.credits < E.spinCost(bet(), S.boost)) { S.boost = false; store.set('boost', false); say('Bonus ×2 is off, so the spin fits your credits.'); }
+      else say('Bet lowered to fit your credits.');
+    }
+    S.auto = false; renderUI(); return;
+  }
+  // bet, lucky marble and Bonus ×2 are fixed for this spin and any Ladder Spins it wins
+  const b = bet(), lucky = S.runner, boosted = S.boost, cost = E.spinCost(b, boosted);
+  S.busy = true; addCredits(-cost); sessAdd(-cost); $('lastWin').textContent = '0'; setGold(0);
+  say(pick(['Wheee!', 'Here they come!', 'Tube time!', 'Marbles incoming!']));
+  renderUI();
+  const res = E.playSpin(rng, b, lucky, boosted);
+  // decide the whole result now (spin win + any Ladder Spins) and save it, so a reload mid-animation loses nothing
+  const run = res.bonus ? { kind: 'ladder', title: 'Ladder Spins!', res: E.playLadder(rng, b, lucky, res.spins, 0), n: res.spins, b, lucky, cost: 0, idx: 0, won: 0 } : null;
+  if (run) saveLadder(run);
+  S.owed = res.total; renderUI();
+  // a spin that pays back no more than it cost gets no win fanfare: neutral pops only
+  const quiet = !res.bonus && res.total <= cost;
+  const won = await replay(res, { lucky, quiet: () => quiet, rungAt: (cas, chain) => chain, shout: true,
+    onWin: w => { $('lastWin').textContent = fmt(w); },
+    line: (cl, q) => q ? `${cl.size} ${NAMES[cl.color]} marbles popped: ${fmt(cl.pay)} back of your ${fmt(cost)}.` : null });
+  addCredits(res.total); sessAdd(res.total); S.owed = cents(S.owed - res.total);
+  setGold(res.gold);
+  celebrate(res.total / b, res.total);
+  if (!res.cascades.length) say(res.gold ? `${res.gold} gold marble${res.gold > 1 ? 's' : ''} in shades. ${pick(MISS)}` : pick(MISS));
+  else if (res.cascades.length > 1) say(`A chain of ${res.cascades.length} pops up the ladder! You won ${fmt(won)}.`);
+  if (res.cascades.length) setTimeout(() => { if (!S.spinning && !LADDER_UI.big) setRung(0); }, 700);
+  for (const it of QUEUE_ITEMS) it.dim = true;
+  if (!run) { S.busy = false; renderUI(); }
+  else {
+    renderUI();   // still busy: bet, lucky marble, Spin and Buy stay locked through the intro
+    await sleep(500);
+    banner('Ladder Spins!', `${res.gold} gold = ${res.spins} free spins`); confettiBurst(120); fanfare();
+    say(`${res.gold} gold marbles! ${res.spins} free spins, and the ladder never resets!`);
+    await sleep(1800);
+    const paid = await runLadder(run);
+    $('lastWin').textContent = fmt(res.total + paid);
+    if (res.total > 0) say(`Ladder Spins paid ${fmt(paid)}. With the spin, you won ${fmt(res.total + paid)}.`);
+  }
+}
+
+// Replays one decided spin in the pit: the trapdoor drain, the fill down the tubes, then each cascade.
+// quiet(wonSoFar): neutral pops, no fanfare. rungAt(cas, chain): the rung the climber shows while a cascade pays;
+// rungAfter (optional): where it climbs to after. line(cluster, quiet): the message, or null for the default.
+async function replay(res, { lucky, quiet, rungAt, rungAfter, shout, onWin, line }) {
+  S.spinning = true;
+  // trapdoor: each column falls out as one block, rippling out from the middle
+  for (const o of marbles.values()) { o.phase = 'drain'; o.vy = 0; o.w = (rng() - 0.5) * 8; o.delay = Math.abs(o.col - 3) * 0.035; o.glow = 0; }
+  setQueue([]);   // the old line-up fades: a new spin starts a fresh pit
+  DOOR.open = simT; trapdoor();
+  await sleep(280);
+  // the lift lines up the whole fill (in order, then the real next marbles) and the run delivers it
+  const byId = new Map(); for (const col of res.initial) for (const m of col) byId.set(m.id, m);
+  setQueue(res.initialOrder.map(id => byId.get(id)).concat(res.queue0));
+  placeGrid(res.initial, res.initialOrder, 0.35);
+  await waitSettled();
+  let won = 0, chain = 0;
+  for (const cas of res.cascades) {
+    chain++;
+    const q = quiet(won);
+    for (const cl of cas.clusters) for (const id of cl.ids) { const o = marbles.get(id); if (o) o.glow = 1; }
+    setRung(rungAt(cas, chain));
+    if (!q) tone({ type: 'triangle', f0: 660 + chain * 110, dur: 0.25, vol: 0.08 });
+    await sleep(560);
+    const popped = [];
+    for (const cl of cas.clusters) {
+      let cx = 0, cy = 0;
+      for (const id of cl.ids) {
+        const o = marbles.get(id); if (!o) continue;
+        cx += o.X; cy += o.Y; o.pop = 0.001; popped.push(o);
+        for (let i = 0; i < 6; i++) { const a = rng() * TAU, sp = 2 + rng() * 4; particles.push({ X: o.X, Y: o.Y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 4, life: 0.8, max: 0.8, s: 0.06 + rng() * 0.06, color: q ? 'rgba(255,255,255,.6)' : pick([PAL[o.color][0], PAL[o.color][2], '#fff']) }); }
+      }
+      cx /= cl.size; cy /= cl.size;
+      if (!q) bursts.push({ X: cx, Y: cy, t: 0, rot: (rng() - 0.5) * 0.5, lucky: cl.lucky, word: pick(POP_WORDS) });
+      const tags = [cl.rung > 1 ? `LADDER ×${cl.rung}` : '', cl.lucky ? `LUCKY ×${E.LUCKY[lucky].mult}` : ''].filter(Boolean).join(' · ');
+      floaters.push({ X: cx, Y: cy - 0.2, t: -0.15, text: '+' + fmt(cl.pay), sub: tags, quiet: q });
+      say((line && line(cl, q)) || `${cl.size} ${NAMES[cl.color]} marbles popped${cl.rung > 1 ? ` on ladder ×${cl.rung}` : ''}${cl.lucky ? ` (lucky ×${E.LUCKY[lucky].mult})` : ''}! +${fmt(cl.pay)}`);
+    }
+    // the neighbours flinch
+    for (const o of marbles.values()) {
+      if (o.pop || o.phase !== 'rest') continue;
+      const near = popped.find(p => Math.abs(p.X - o.X) + Math.abs(p.Y - o.Y) < 1.6);
+      if (near) { o.ohT = 0.35; o.sqv += 4; o.xv += Math.sign(o.X - near.X) * 1.2; }
+    }
+    if (q) tok(6); else bloop(chain);
+    won = cents(won + cas.win); onWin(won);
+    if (shout && chain >= 2 && !q) banner(`Ladder ×${cas.rung}!`, `${chain} pops in a row`);
+    if (rungAfter) { await sleep(200); setRung(rungAfter(cas, chain)); }
+    await sleep(110);                 // a beat to look down, then the marbles above drop into the gaps
+    const live = QUEUE_ITEMS.filter(it => !it.fade);
+    setQueue(live.concat(cas.queue.filter(m => !live.some(it => it.id === m.id))));
+    placeGrid(cas.after, cas.order, 0);
+    await waitSettled();
+  }
+  S.spinning = false;
+  return won;
+}
+
+// ---------- Ladder Spins: free spins on a ladder that never resets ----------
+// Every free spin was decided when the bonus was won or bought (run.res); this replays them in the pit.
+// run = { kind: 'ladder', title, res, n (spins it started with), b (bet), lucky, cost (0 unless bought), idx (next spin), won }
+const saveLadder = run => store.set('ladder', run);
+const clearLadder = () => { try { localStorage.removeItem('ml_ladder'); } catch {} };
+function hudSet(left, won, pop) {
+  $('hudSpins').textContent = String(left); $('hudSpinsLbl').textContent = left === 1 ? 'free spin left' : 'free spins left';
+  $('hudWin').textContent = fmt(won);
+  if (pop) { const h = $('hud'); h.classList.remove('pop'); void h.offsetWidth; h.classList.add('pop'); }
+}
+async function runLadder(run) {
+  closeBuy();
+  S.busy = true; renderUI();
+  const L = E.bigFor(run.lucky), sp = run.res.spins, TOPR = L.length;
+  LADDER_UI.big = L; LADDER_UI.lucky = run.lucky; LADDER_UI.rung = 0;
+  setRung((sp[run.idx] ? sp[run.idx].rungStart : run.res.start) + 1);
+  $('hud').hidden = false;
+  hudSet(sp[run.idx] ? sp[run.idx].left + 1 - sp[run.idx].extra : 0, run.won, false);
+  let paidBack = run.cost > 0 && run.won > run.cost, topShown = sp.slice(0, run.idx).some(x => x.rungEnd + 1 >= TOPR);
+  if (run.idx === 0) {
+    say(run.cost ? `${run.title.replace('!', '')}: ${run.n} free spins on a ladder that never resets.` : `${run.n} free spins! Every pop climbs the ladder, and it never resets.`);
+    await sleep(900);
+  } else say(`Back to your Ladder Spins: free spin ${run.idx + 1}.`);
+  for (let k = run.idx; k < sp.length; k++) {
+    const s = sp[k], before = run.won;
+    // saved first: a reload from here on resumes at the next free spin, with this one already paid
+    run.idx = k + 1; run.won = cents(run.won + s.total); saveLadder(run); S.owed = s.total; renderUI();
+    hudSet(s.left - s.extra, before, true);
+    $('lastWin').textContent = fmt(before);
+    const won = await replay(s, { lucky: run.lucky, rungAt: cas => cas.at + 1, rungAfter: cas => Math.min(TOPR, cas.at + 2), shout: false,
+      quiet: w => run.cost > 0 && before + w <= run.cost,
+      onWin: w => { hudSet(s.left - s.extra, cents(before + w), false); $('lastWin').textContent = fmt(before + w); },
+      line: (cl, q) => q ? `${cl.size} ${NAMES[cl.color]} popped on ×${cl.rung}: +${fmt(cl.pay)} · ${fmt(before + cl.pay)} of ${fmt(run.cost)} back` : null });
+    addCredits(s.total); sessAdd(s.total); S.owed = 0; renderUI();
+    if (run.cost > 0 && !paidBack && run.won > run.cost) { paidBack = true; banner('Paid back!', `${fmt(run.won)} of ${fmt(run.cost)}`); fanfare(); await sleep(1200); }
+    // gold marbles that landed: each one climbs a rung
+    const golds = [...marbles.values()].filter(o => o.color === 'gold' && o.phase === 'rest' && !o.pop);
+    if (s.gold) {
+      say(`${s.gold} gold marble${s.gold > 1 ? 's' : ''}: ${s.gold > 1 ? 'each one climbs' : 'it climbs'} a rung!`);
+      let r = s.rungCascades + 1;
+      for (const o of golds) { o.glow = 1; r = Math.min(TOPR, r + 1); setRung(r); ding(Math.min(4, r % 5 + 1)); await sleep(380); o.glow = 0; }
+      setRung(s.rungEnd + 1);
+    }
+    if (s.extra) { hudSet(s.left, run.won, true); banner(`+${s.extra} spins!`, `${s.gold} gold marbles`); confettiBurst(80); fanfare(); say(`${s.gold} gold marbles: ${s.extra} more free spins!`); await sleep(1500); }
+    if (!topShown && s.rungEnd + 1 >= TOPR) { topShown = true; banner('Top of the ladder!', `×${L[TOPR - 1]} · Marble Run unlocked`); confettiBurst(160); shake(); fanfare(); say(`Top of the ladder! Every pop now pays ×${L[TOPR - 1]}, and the Marble Run opens when the spins are over.`); await sleep(1700); }
+    else if (!s.cascades.length && !s.gold) say(pick(['No pops that time.', 'The marbles shrug.', 'Next one!']));
+    await sleep(420);
+  }
+  for (const it of QUEUE_ITEMS) it.dim = true;
+  hudSet(0, run.won, true);
+  let total = run.res.total, finalePaid = 0;
+  if (run.res.finale) {
+    // the finale is saved as a pending Marble Run before the free spins are cleared, so a reload can't lose it
+    const fin = { title: 'Marble Run!', intro: `Top of the ladder: ${run.res.finale.marbles} marbles! ${RUN_INTRO}`, marbles: run.res.finale.marbles, boost: 1, mults: run.res.finale.mults, b: run.b, cost: 0 };
+    savePending(fin); clearLadder();
+    banner('Marble Run!', 'Top-of-the-ladder finale'); fanfare(); await sleep(1500);
+    finalePaid = await runBonus(fin);
+    total = cents(total + finalePaid);
+  } else clearLadder();
+  LADDER_UI.big = null; LADDER_UI.lucky = null; LADDER_UI.rung = 0; LADDER_UI.y = LAD.bot; LADDER_UI.vy = 0;
+  $('hud').hidden = true;
+  $('lastWin').textContent = fmt(total);
+  say(run.cost ? `${run.title.replace('!', '')} paid ${fmt(total)}. It cost ${fmt(run.cost)}.` : `Ladder Spins paid ${fmt(total)}${finalePaid ? `, with ${fmt(finalePaid)} from the Marble Run` : ''}. Wheee!`);
+  if (total - run.cost > 0) celebrate((total - run.cost) / run.b, total);
+  S.busy = false; renderUI();
+  return total;
+}
+
+// ---------- the Marble Run, Ladder Spins' finale — tap to drop marbles down a peg wall, then the hidden multipliers flip ----------
+const P = E.PHYS, NS = P.NSLOTS;
+const ROW_COLORS = ['#ff8fb3', '#ffd23f', '#7fe0b0', '#8fd0ff', '#c9a8ff'];
+const CARD_H = 0.85, VIEW = { w: 11.2, top: -1.75, bottom: P.FLOOR + CARD_H + 0.3 };
+const B = { board: null, phase: 'idle', aim: 0, left: 0, acc: 0, pegHit: {}, floats: [], flip: [], dim: false, run: null, lastDrop: 0, total: 0, counts: null };
+let BU = 30, BOX = 0, BOY = 0;
+function bview() {
+  BU = Math.min(bw / VIEW.w, bh / (VIEW.bottom - VIEW.top));
+  BOX = bw / 2; BOY = (bh - (VIEW.bottom - VIEW.top) * BU) / 2 - VIEW.top * BU;
+}
+const BX = x => BOX + x * BU, BY = y => BOY + y * BU;
+function floatAt(x, y, text, color = '#fff', big = 1) { B.floats.push({ x, y, t0: performance.now() / 1000, text, color, big }); }
+let dropResolve = null;
+const waitDrop = () => new Promise(res => { dropResolve = res; $('dropBtn').disabled = false; $('dropBtn').focus({ preventScroll: true }); });
+// a pending run is saved the moment it is won or bought, and resumed (marbles re-dropped) after a reload
+const savePending = run => store.set('run', run);
+const clearPending = () => { try { localStorage.removeItem('ml_run'); } catch {} };
+const multLabel = m => `×${+m.toFixed(2)}`;
+const multColor = m => (m >= 100 ? '#ff4f87' : m >= 25 ? '#ff9f1c' : m >= 10 ? '#ffd23f' : m >= 5 ? '#4fd69c' : '#8fd0ff');
+
+function stepBonus(dt) {
+  if (!B.board) return;
+  B.acc = Math.min(B.acc + dt, 0.25);
+  while (B.acc >= P.DT) {
+    B.acc -= P.DT;
+    B.board.step((ball, peg, v) => {
+      if (peg) { B.pegHit[peg.id] = performance.now() / 1000; tone({ type: 'triangle', f0: 480 + peg.row * 60, f1: 440 + peg.row * 60, dur: 0.06, vol: Math.min(0.07, 0.015 + v / 160) }); }
+      ball.sq = Math.min(0.5, v / 12);
+    });
+  }
+  for (const b of B.board.balls) { b.sq = (b.sq || 0) * Math.exp(-dt * 10); b.ang = (b.ang || 0) + (b.x - (b.lx ?? b.x)) / P.BALL_R; b.lx = b.x; }
+}
+function canvasToX(e) { const r = bc.getBoundingClientRect(); return ((e.clientX - r.left) * dpr - BOX) / BU; }
+function setAim(x) { B.aim = Math.max(-P.AIM_MAX, Math.min(P.AIM_MAX, x)); }
+function dropOne() {
+  if (B.phase !== 'drop' || B.left <= 0) return;
+  const now = performance.now();
+  if (now - B.lastDrop < 160) return;                  // one marble at a time from the claw
+  B.lastDrop = now;
+  B.board.add(B.aim); B.left--; tok(10);
+  $('dropsLeft').textContent = B.left ? `${B.left} to drop` : 'All dropped!';
+  if (!B.left) { B.phase = 'falling'; $('dropBtn').disabled = true; }
+}
+bc.addEventListener('pointermove', e => { if (B.phase === 'drop') setAim(canvasToX(e)); });
+bc.addEventListener('pointerdown', e => { if (B.phase === 'drop') { setAim(canvasToX(e)); dropOne(); } });
+
+function drawBonus(t) {
+  const g = bctx; g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, bw, bh);
+  if (!bw) return;
+  bview();
+  const u = BU, L = -P.WALL_X, R = P.WALL_X, lw = Math.max(1.5, u * 0.06);
+  // twinkles around the board
+  g.fillStyle = 'rgba(255,255,255,.18)';
+  for (let i = 0; i < 16; i++) { const x = ((i * 97) % 100) / 100 * bw, y = ((i * 53) % 100) / 100 * bh, r = (1.5 + (i % 3)) * dpr * (0.7 + 0.3 * Math.sin(t * 2 + i)); g.beginPath(); g.arc(x, y, r, 0, TAU); g.fill(); }
+  // the board: a bright panel with a candy frame
+  rrect(g, BX(L - 0.14), BY(-1.45), (R - L + 0.28) * u, (P.FLOOR + 0.12 + 1.45) * u, u * 0.35);
+  const bg = g.createLinearGradient(0, BY(-1.4), 0, BY(P.FLOOR)); bg.addColorStop(0, '#efe6ff'); bg.addColorStop(1, '#d4ecff');
+  g.fillStyle = bg; g.fill(); g.lineWidth = u * 0.12; g.strokeStyle = INK; g.stroke();
+  g.lineWidth = u * 0.06; g.strokeStyle = POP; g.stroke();
+  // soft dot pattern
+  g.fillStyle = 'rgba(90,53,184,.07)';
+  for (let y = -1.1; y < P.JAR_TOP; y += 0.44) for (let x = L + 0.25 + ((Math.round(y / 0.44) % 2) ? 0.22 : 0); x < R - 0.1; x += 0.44) { g.beginPath(); g.arc(BX(x), BY(y), u * 0.035, 0, TAU); g.fill(); }
+  // the drop rail and the claw holding the next marble
+  rrect(g, BX(L + 0.05), BY(-1.38), (R - L - 0.1) * u, 0.2 * u, 0.1 * u); g.fillStyle = SUN; g.fill(); g.lineWidth = lw; g.strokeStyle = INK; g.stroke();
+  if (B.phase === 'drop') {
+    const ax = BX(B.aim);
+    g.setLineDash([u * 0.12, u * 0.12]); g.strokeStyle = 'rgba(90,53,184,.35)'; g.lineWidth = u * 0.04;
+    g.beginPath(); g.moveTo(ax, BY(P.START_Y + 0.25)); g.lineTo(ax, BY(0.2)); g.stroke(); g.setLineDash([]);
+    g.fillStyle = POP; g.strokeStyle = INK; g.lineWidth = lw;
+    rrect(g, ax - u * 0.32, BY(-1.42), u * 0.64, u * 0.3, u * 0.1); g.fill(); g.stroke();
+    for (const s of [-1, 1]) { g.beginPath(); g.moveTo(ax + s * u * 0.18, BY(-1.14)); g.quadraticCurveTo(ax + s * u * 0.34, BY(-1.0), ax + s * u * 0.2, BY(-0.84)); g.lineWidth = u * 0.07; g.stroke(); }
+    drawMarble(g, ax, BY(P.START_Y), P.BALL_R * u, S.runner, 0, { face: u * P.BALL_R > 9 ? 'smile' : 'none', shadow: false });
+  }
+  // pegs: candy studs that squish when hit
+  for (const peg of E.PEGS) {
+    const age = B.pegHit[peg.id] != null ? t - B.pegHit[peg.id] : 9, s = age < 0.2 ? 1.35 - age * 1.75 : 1;
+    g.beginPath(); g.arc(BX(peg.ax), BY(peg.ay), P.PEG_R * u * s, 0, TAU);
+    g.fillStyle = ROW_COLORS[peg.row % ROW_COLORS.length]; g.fill(); g.lineWidth = Math.max(1, u * 0.035); g.strokeStyle = INK; g.stroke();
+    g.beginPath(); g.arc(BX(peg.ax - 0.03), BY(peg.ay - 0.03), P.PEG_R * u * 0.35, 0, TAU); g.fillStyle = 'rgba(255,255,255,.8)'; g.fill();
+  }
+  // slots: glass bins between the dividers
+  for (let j = 0; j < NS; j++) {
+    const x0 = j === 0 ? L : j - 4.5, x1 = j === NS - 1 ? R : j - 3.5;
+    rrect(g, BX(x0 + 0.06), BY(P.JAR_TOP), (x1 - x0 - 0.12) * u, (P.FLOOR - P.JAR_TOP) * u, u * 0.12);
+    g.fillStyle = 'rgba(90,53,184,.10)'; g.fill();
+  }
+  g.lineCap = 'round';
+  for (const d of E.DIVIDERS) { for (const [col, wdt] of [[INK, 0.14], ['#fff', 0.07]]) { g.strokeStyle = col; g.lineWidth = u * wdt; g.beginPath(); g.moveTo(BX(d.ax), BY(d.ay)); g.lineTo(BX(d.bx), BY(d.by)); g.stroke(); } }
+  g.strokeStyle = INK; g.lineWidth = u * 0.08; g.beginPath(); g.moveTo(BX(L), BY(P.FLOOR + 0.04)); g.lineTo(BX(R), BY(P.FLOOR + 0.04)); g.stroke();
+  // marbles
+  if (B.board) for (const b of B.board.balls) {
+    drawMarble(g, BX(b.x), BY(b.y), P.BALL_R * u, S.runner, b.ang || 0, { face: u * P.BALL_R > 9 ? (b.sleep ? 'smile' : 'open') : 'none', sq: b.sq || 0, shadow: false });
+  }
+  // marble counts above occupied slots once everything has landed
+  if (B.counts) for (let j = 0; j < NS; j++) if (B.counts[j]) {
+    const cx = BX(j - 4), cy = BY(P.JAR_TOP - 0.35);
+    g.beginPath(); g.arc(cx, cy, u * 0.26, 0, TAU); g.fillStyle = PAPER; g.fill(); g.lineWidth = lw; g.strokeStyle = INK; g.stroke();
+    g.font = `${u * 0.3}px ${DISPLAY}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = INK; g.fillText(String(B.counts[j]), cx, cy + u * 0.02);
+  }
+  // the hidden multiplier cards under the slots
+  for (let j = 0; j < NS; j++) {
+    const cx = BX(j - 4), cy = BY(P.FLOOR + 0.2 + CARD_H / 2), w = 0.86 * u, h = CARD_H * u;
+    const f = B.flip[j], prog = f == null ? 0 : Math.min(1, (t - f) / 0.35), shown = prog >= 0.5, sx = Math.abs(Math.cos(prog * Math.PI)) || 0.02;
+    const empty = B.counts && !B.counts[j];
+    g.save(); g.translate(cx, cy); g.scale(sx, 1);
+    g.globalAlpha = shown && empty && B.dim ? 0.45 : 1;
+    rrect(g, -w / 2, -h / 2, w, h, u * 0.14);
+    if (!shown) {
+      g.fillStyle = GRAPE; g.fill(); g.lineWidth = lw; g.strokeStyle = INK; g.stroke();
+      g.save(); g.clip(); g.strokeStyle = 'rgba(255,255,255,.18)'; g.lineWidth = u * 0.12;
+      for (let k = -2; k < 4; k++) { g.beginPath(); g.moveTo(-w / 2 + k * u * 0.35, -h / 2); g.lineTo(-w / 2 + k * u * 0.35 + h * 0.7, h / 2); g.stroke(); }
+      g.restore();
+      outlinedText(g, '?', 0, u * 0.02, u * 0.55, SUN);
+    } else {
+      const m = B.run.mults[j];
+      g.fillStyle = PAPER; g.fill(); g.lineWidth = lw; g.strokeStyle = INK; g.stroke();
+      const lab = multLabel(m);
+      outlinedText(g, lab, 0, u * 0.02, Math.min(u * 0.42, (w * 1.6) / lab.length), multColor(m));
+    }
+    g.restore();
+  }
+  // floating prizes and shout-outs
+  for (let i = B.floats.length - 1; i >= 0; i--) {
+    const fl = B.floats[i], age = t - fl.t0; if (age > 1.8) { B.floats.splice(i, 1); continue; }
+    g.globalAlpha = age < 1.3 ? 1 : 1 - (age - 1.3) / 0.5;
+    outlinedText(g, fl.text, BX(fl.x), BY(fl.y) - age * u * 0.6, Math.max(12 * dpr, u * 0.5 * fl.big), fl.color);
+    g.globalAlpha = 1;
+  }
+  // the marbles still to drop, waiting in a tray at the side
+  const trayN = B.phase === 'drop' ? B.left - 1 : 0;
+  for (let i = 0; i < Math.max(0, trayN); i++) {
+    const tx = BX(R + 0.5), ty = BY(-0.8 + i * 0.5);
+    if (ty > bh - u * 0.3) break;
+    drawMarble(g, tx, ty, P.BALL_R * u, S.runner, i, { face: 'none', shadow: false });
+  }
+}
+
+// Plays out a Marble Run. run = { title, intro, marbles, boost, mults (hidden), b (bet), cost }.
+// The run is already saved as pending; it is cleared and paid when the cards are revealed.
+async function runBonus(run) {
+  closeBuy();
+  S.inBonus = true; renderUI();
+  Object.assign(B, { board: E.makeBoard(rng), phase: 'drop', aim: 0, left: run.marbles, acc: 0, pegHit: {}, floats: [], flip: [], dim: false, run, total: 0, counts: null });
+  $('bonusLayer').hidden = false; sizeBonus();
+  $('bonusTitle').textContent = run.title;
+  $('bonusWin').textContent = '0';
+  $('bonusPerk').textContent = run.boost > 1 ? ` · multipliers ×${run.boost}` : '';
+  $('dropsLeft').textContent = `${run.marbles} to drop`;
+  $('dropBtn').textContent = 'Drop!'; $('dropBtn').disabled = false;
+  $('bonusMsg').textContent = '';
+  await sleep(80);
+  $('bonusMsg').textContent = run.intro;
+  // drop phase: the player taps the board (or presses Drop!) to release each marble where the claw is
+  while (B.phase === 'drop') {
+    if (S.auto) { await sleep(420); if (S.auto && B.phase === 'drop') { setAim((rng() - 0.5) * 2 * P.AIM_MAX); dropOne(); } }
+    else await sleep(60);
+  }
+  $('bonusMsg').textContent = 'All marbles dropped. Bouncing…';
+  const t0 = performance.now();
+  while (!B.board.settled() && performance.now() - t0 < 12000) await sleep(60);
+  // the reveal: decided by where the marbles landed and the multipliers drawn before the first drop
+  const slots = B.board.balls.map(b => E.slotOfX(b.x));
+  const res = E.payRun(run.mults, slots, run.b);
+  B.counts = res.counts; B.phase = 'reveal';
+  S.owed = cents(S.owed + res.total); clearPending(); renderUI();     // saved: a reload now still pays this run
+  $('bonusMsg').textContent = 'Here come the multipliers…';
+  await sleep(500);
+  for (let j = 0; j < NS; j++) {
+    if (!res.counts[j]) continue;
+    B.flip[j] = performance.now() / 1000;
+    await sleep(320);
+    const m = run.mults[j], p = res.pays[j];
+    const before = B.total;
+    B.total = cents(B.total + p); addCredits(p); sessAdd(p); S.owed = Math.max(0, cents(S.owed - p)); renderUI();
+    $('bonusWin').textContent = fmt(B.total);
+    // a bought run is only a win once it has paid back its price: until then the reveal stays neutral
+    const ahead = B.total > run.cost, crossed = run.cost > 0 && before <= run.cost && ahead;
+    floatAt(j - 4, P.JAR_TOP - 0.7, `+${fmt(p)}`, ahead ? '#fff' : '#c9c1dd', 1);
+    $('bonusMsg').textContent = `${res.counts[j]} marble${res.counts[j] > 1 ? 's' : ''} × ${multLabel(m)} = ${fmt(p)}` + (run.cost && !ahead ? ` · ${fmt(B.total)} of ${fmt(run.cost)} back` : '');
+    const big = ahead && m >= 25 * run.boost;
+    if (big) { banner(`${multLabel(m)}!`, `+${fmt(p)}`); confettiBurst(m >= 100 * run.boost ? 200 : 110); shake(); fanfare(); }
+    else if (crossed) { banner('Paid back!', `${fmt(B.total)} of ${fmt(run.cost)}`); fanfare(); }
+    else if (!ahead) tok(8);
+    else if (m >= 5 * run.boost) ding(2); else coin();
+    await sleep(big || crossed ? 1200 : 520);
+  }
+  // the empty slots, all at once and dimmed: what they really held
+  B.dim = true; const now = performance.now() / 1000;
+  for (let j = 0; j < NS; j++) if (!res.counts[j]) B.flip[j] = now;
+  await sleep(500);
+  S.owed = 0;
+  $('bonusMsg').textContent = run.cost ? `${run.title.replace('!', '')} over. It paid ${fmt(B.total)} for ${fmt(run.cost)}.` : `Marble Run over! You won ${fmt(B.total)}.`;
+  if (B.total - run.cost >= run.b * 40) { banner('Marblelous!', `+${fmt(B.total)}`); confettiBurst(100); }
+  $('dropBtn').textContent = 'Back to the pit';
+  if (S.auto) await sleep(1800);
+  if (!S.auto) await waitDrop();
+  const hadFocus = $('bonusLayer').contains(document.activeElement);
+  $('dropBtn').disabled = true;
+  $('bonusLayer').hidden = true; $('bonusMsg').textContent = '';
+  B.board = null; B.phase = 'idle'; B.counts = null;
+  $('lastWin').textContent = fmt(B.total);
+  say(run.cost ? `Your ${run.title.replace('!', '')} paid ${fmt(B.total)}. It cost ${fmt(run.cost)}.` : `The Marble Run paid ${fmt(B.total)}. Wheee!`);
+  S.inBonus = false; renderUI();
+  if (hadFocus) $('spin').focus({ preventScroll: true });
+  return B.total;
+}
+const RUN_INTRO = 'Tap the board to drop each marble. The multipliers under the slots are hidden and random: every spot pays the same on average.';
+
+// ---------- buy bonus ----------
+function buildBuy() {
+  const box = $('tiers');
+  E.BUY.forEach((tier, i) => {
+    const row = document.createElement('div'); row.className = 'tier';
+    const golds = document.createElement('div'); golds.className = 'golds';
+    for (let n = 0; n <= i; n++) { const im = new Image(); im.alt = ''; im.src = marbleImg('gold', 'grin'); golds.append(im); }
+    const what = document.createElement('div'); what.className = 'what';
+    const name = document.createElement('b'); name.id = 'buyName-' + tier.id; name.textContent = tier.name;
+    const info = document.createElement('span'); info.id = 'buyInfo-' + tier.id;
+    what.append(name, info);
+    const b = document.createElement('button'); b.className = 'btn'; b.id = 'buy-' + tier.id;
+    b.setAttribute('aria-describedby', `buyName-${tier.id} buyInfo-${tier.id}`);
+    b.addEventListener('click', () => buyBonus(tier));
+    row.append(golds, what, b); box.append(row);
+  });
+}
+const buyBlurb = tier => `${tier.spins} free spins` + (tier.start ? `, starting on ×${E.bigFor(S.runner)[tier.start]}` : ', from ×1');
+function renderBuy() {
+  for (const tier of E.BUY) {
+    $('buyInfo-' + tier.id).textContent = buyBlurb(tier);
+    const price = E.buyPrice(tier, bet()), short = price - S.credits, b = $('buy-' + tier.id);
+    b.textContent = short > 0 ? `Need ${fmt(Math.max(1, Math.ceil(short - 1e-9)))} more` : `Buy for ${fmt(price)}`;
+    b.disabled = short > 0 || S.busy || S.inBonus;
+  }
+}
+// A real modal: the page behind is inert, it sits centred on screen, and focus starts on the heading
+// so a stray Enter or Space never buys anything.
+function openBuy() {
+  if (S.busy || S.inBonus || S.auto) return;
+  const d = $('buyLayer');
+  renderBuy();
+  try { d.showModal(); } catch { d.setAttribute('open', ''); }
+  boing();
+  $('buyTitle').focus({ preventScroll: true });
+}
+function closeBuy(refocus) {
+  const d = $('buyLayer');
+  if (!d.open) return;
+  try { d.close(); } catch { d.removeAttribute('open'); }
+  if (refocus) $('buyOpen').focus({ preventScroll: true });
+}
+async function buyBonus(tier) {
+  const b = bet(), price = E.buyPrice(tier, b);
+  if (S.busy || S.inBonus || S.auto || S.credits < price) return;
+  closeBuy();
+  // pay and save the bonus together, so a reload resumes it instead of losing it
+  const run = { kind: 'ladder', title: `${tier.name}!`, res: E.playLadder(rng, b, S.runner, tier.spins, tier.start), n: tier.spins, b, lucky: S.runner, cost: price, idx: 0, won: 0 };
+  S.busy = true; addCredits(-price); sessAdd(-price); saveLadder(run);
+  $('lastWin').textContent = '0';
+  renderUI(); trapdoor();
+  say(`${tier.name} bought for ${fmt(price)}: ${buyBlurb(tier)}.`);
+  banner(`${tier.name}!`, buyBlurb(tier));
+  await sleep(1700);
+  await runLadder(run);
+  if (S.auto) { await sleep(450); if (S.auto && S.credits >= E.spinCost(bet(), S.boost)) spin(); else { S.auto = false; renderUI(); } }
+}
+
+// ---------- controls ----------
+$('spin').addEventListener('click', () => { if (S.auto) { S.auto = false; renderUI(); return; } spin(); });
+$('betDown').addEventListener('click', () => { if (!S.busy && S.betIdx > 0) { S.betIdx--; tok(8); renderUI(); } });
+$('betUp').addEventListener('click', () => { if (!S.busy && S.betIdx < BETS.length - 1) { S.betIdx++; tok(8); renderUI(); } });
+$('boost').addEventListener('click', () => { if (S.busy || S.inBonus) return; S.boost = !S.boost; renderUI(); if (S.boost) { ding(2); say('Bonus ×2 is on: Ladder Spins come up twice as often, and each spin costs 1.2× your bet.'); } else say('Bonus ×2 is off.'); });
+$('sound').addEventListener('click', () => { S.sound = !S.sound; store.set('sound', S.sound); renderUI(); if (S.sound) ding(1); });
+$('dropBtn').addEventListener('click', () => { if (B.phase === 'drop') dropOne(); else if (dropResolve) { const r = dropResolve; dropResolve = null; r(); } });
+$('buyOpen').addEventListener('click', openBuy);
+$('buyClose').addEventListener('click', () => closeBuy(true));
+$('buyLayer').addEventListener('cancel', e => { e.preventDefault(); closeBuy(true); });   // Escape
+$('buyLayer').addEventListener('click', e => {                                            // click on the backdrop
+  if (e.target !== $('buyLayer')) return;
+  const r = $('buyLayer').getBoundingClientRect();
+  if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) closeBuy(true);
+});
+document.addEventListener('keydown', e => {
+  if (S.inBonus && B.phase === 'drop' && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) { e.preventDefault(); setAim(B.aim + (e.key === 'ArrowLeft' ? -0.5 : 0.5)); return; }
+  if (e.code !== 'Space' || $('buyLayer').open || e.target.closest?.('button, summary, input, dialog')) return;
+  e.preventDefault();
+  if (S.inBonus) $('dropBtn').click(); else if (!S.busy) spin();
+});
+
+// ---------- start: a full, smiling pit at rest ----------
+new ResizeObserver(resize).observe(stage);
+new ResizeObserver(sizeBonus).observe(bc);
+resize();
+renderPicker();
+buildBuy();
+(function seed() {
+  let id = -1;
+  const grid = Array.from({ length: COLS }, () => Array.from({ length: ROWS }, () => ({ id: id--, color: E.COLORS[Math.floor(rng() * E.COLORS.length)] })));
+  grid.forEach((col, c) => col.forEach((m, i) => marbles.set(m.id, { id: m.id, color: m.color, col: c, idx: i, X: c + 0.5, Y: rowY(ROWS - 1 - i), ty: rowY(ROWS - 1 - i),
+    vy: 0, w: 0, spin: rng() * TAU, phase: 'rest', delay: 0, pop: 0, glow: 0, sq: 0, sqv: 0, xo: 0, xv: 0, ohT: 0, blinkAt: 2 + rng() * 4 })));
+  for (let k = 0; k < 7; k++) QUEUE_ITEMS.push({ id: id--, color: E.COLORS[Math.floor(rng() * E.COLORS.length)], x: Q_FRONT - k * Q_STEP, tx: Q_FRONT - k * Q_STEP, fade: 0 });
+})();
+$('credits').textContent = fmtCredits(S.credits);
+renderUI();
+schedule();
+// Ladder Spins (or their Marble Run finale) won or bought but not finished before a reload: play them now
+(() => {
+  const lad = store.get('ladder', null), pend = store.get('run', null);
+  if (lad && lad.res && lad.res.spins) setTimeout(() => { S.busy = true; renderUI(); runLadder(lad); }, 400);
+  else if (pend && pend.mults && pend.marbles) setTimeout(() => { say('Your Marble Run is waiting for you!'); S.busy = true; runBonus(pend).then(() => { S.busy = false; renderUI(); }); }, 400);
+})();
+})();
+</script>

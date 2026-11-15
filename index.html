@@ -1,0 +1,724 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Game Lobby</title>
+<meta name="description" content="Lobby for all my games. Play money only.">
+<meta name="theme-color" content="#0f1c26">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Game Lobby">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@500;600;700&family=Barlow+Condensed:ital,wght@0,700;0,800;1,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0f1c26; --side:#0b161e; --panel:#152532; --card:#1b2e3c; --card-2:#22394a;
+  --line:#26404f; --text:#e8eef3; --muted:#8ca3b4; --dim:#5f7a8d;
+  --go:#21c25e; --go-hi:#35dc72; --go-ink:#04210f;
+  --gold:#ffb627; --hot:#ff5a3c; --new:#3fa9ff;
+  --r:10px; --side-w:236px; --top-h:64px;
+  --display:"Barlow Condensed",system-ui,sans-serif;
+  --ui:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--text);font:600 15px/1.4 var(--ui);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+a{color:inherit;text-decoration:none}
+svg{display:block}
+.ic{width:1.2em;height:1.2em;flex:none}
+.tile-play .ic{width:26px;height:26px;margin-left:3px}
+.tile-meta .ic{width:16px;height:16px}
+.btn-go .ic{width:18px;height:18px}
+:focus-visible{outline:2px solid var(--go-hi);outline-offset:2px;border-radius:6px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ---------- shell ---------- */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:25;display:none}
+.shell{display:grid;grid-template-columns:var(--side-w) 1fr;min-height:100vh}
+body.collapsed{--side-w:72px}
+
+.side{position:sticky;top:0;height:100vh;background:var(--side);border-right:1px solid #0a1219;display:flex;flex-direction:column;z-index:30;transition:width .2s}
+.side-head{height:var(--top-h);display:flex;align-items:center;gap:10px;padding:0 16px;flex:none}
+.burger{width:40px;height:40px;border-radius:8px;display:grid;place-items:center;color:var(--muted);flex:none}
+.burger:hover{background:var(--panel);color:var(--text)}
+.brand{display:flex;align-items:center;gap:8px;font:800 italic 26px/1 var(--display);letter-spacing:.5px;text-transform:uppercase;white-space:nowrap}
+.brand b{color:var(--go)}
+.brand .mark{width:30px;height:30px;flex:none}
+.side nav{overflow-y:auto;padding:8px 12px 16px;flex:1}
+.nav-group{background:var(--panel);border-radius:var(--r);padding:6px;margin-bottom:10px}
+.nav-item{display:flex;align-items:center;gap:12px;width:100%;padding:10px 10px;border-radius:8px;color:var(--muted);text-align:left;white-space:nowrap}
+.nav-item svg{width:20px;height:20px;flex:none}
+.nav-item:hover{background:var(--card);color:var(--text)}
+.nav-item[aria-current="true"]{background:var(--card-2);color:var(--text)}
+.nav-item[aria-current="true"] svg{color:var(--go)}
+.nav-item .count{margin-left:auto;font-size:12px;color:var(--dim)}
+.nav-label{font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:var(--dim);padding:8px 10px 4px}
+.side-foot{padding:14px 16px;border-top:1px solid #0f1d27;font-size:12px;color:var(--dim);line-height:1.5}
+.side-foot strong{color:var(--muted)}
+body.collapsed .brand span,body.collapsed .nav-item span,body.collapsed .nav-item .count,body.collapsed .nav-label,body.collapsed .side-foot{display:none}
+body.collapsed .side-head{justify-content:center;padding:0}
+body.collapsed .brand{display:none}
+body.collapsed .nav-item{justify-content:center}
+
+/* ---------- top bar ---------- */
+.main{min-width:0;display:flex;flex-direction:column}
+.top{position:sticky;top:0;z-index:20;height:var(--top-h);background:rgba(15,28,38,.92);backdrop-filter:blur(10px);box-shadow:0 4px 16px rgba(0,0,0,.25);display:flex;align-items:center;gap:12px;padding:0 24px}
+.top .mobile-brand{display:none}
+.search{flex:1;max-width:520px;margin:0 auto;position:relative}
+.search input{width:100%;height:42px;border-radius:999px;border:2px solid var(--line);background:var(--side);color:var(--text);font:600 15px var(--ui);padding:0 16px 0 42px}
+.search input::placeholder{color:var(--dim)}
+.search input:focus{outline:none;border-color:var(--go)}
+.search svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--dim);width:18px;height:18px}
+.pill{display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 16px;border-radius:999px;background:var(--side);border:2px solid var(--line);font-size:13px;color:var(--muted);white-space:nowrap}
+.pill i{width:8px;height:8px;border-radius:50%;background:var(--go);box-shadow:0 0 0 3px rgba(33,194,94,.2)}
+
+.wallet{display:flex;align-items:center;height:44px;border-radius:8px;background:var(--side);border:2px solid var(--line);overflow:hidden}
+.wallet-amt{display:flex;align-items:center;gap:8px;padding:0 14px;font:700 17px var(--ui);font-variant-numeric:tabular-nums;white-space:nowrap;transition:color .3s}
+.wallet-amt .coin{width:20px;height:20px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#ffe28a,#ffb627 55%,#c98200);box-shadow:inset 0 -2px 0 rgba(0,0,0,.2);flex:none}
+.wallet.up .wallet-amt{color:var(--go-hi)}
+.wallet.down .wallet-amt{color:#ff8a7a}
+.wallet .refill{height:100%;padding:0 16px;background:var(--go);color:var(--go-ink);font:800 15px var(--display);letter-spacing:.8px;text-transform:uppercase}
+.wallet .refill:hover:not(:disabled){background:var(--go-hi)}
+.wallet .refill:disabled{background:var(--card);color:var(--dim);cursor:default}
+.wchip{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);background:var(--panel);border-radius:999px;padding:5px 10px;margin-right:6px;white-space:nowrap}
+.wchip i{width:7px;height:7px;border-radius:50%;background:var(--dim)}
+.wchip.on i{background:var(--go)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);background:var(--card-2);color:var(--text);padding:12px 18px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:.25s;z-index:60;font-size:14px}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.content{padding:24px;max-width:1440px;width:100%;margin:0 auto;flex:1}
+
+/* ---------- hero promos ---------- */
+.promos{display:grid;grid-auto-flow:column;grid-auto-columns:calc((100% - 32px)/3);gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;margin-bottom:28px}
+.promos::-webkit-scrollbar{display:none}
+.promo{scroll-snap-align:start;position:relative;border-radius:14px;overflow:hidden;min-height:200px;display:flex;flex-direction:column;justify-content:flex-end;padding:20px;background:var(--card);isolation:isolate;text-align:left}
+.promo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2;transition:transform .5s}
+.promo::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,color-mix(in srgb,var(--a) 45%,#08121a) 0%,color-mix(in srgb,var(--a) 35%,rgba(8,18,26,.6)) 50%,transparent 90%),linear-gradient(0deg,rgba(8,18,26,.85),transparent 60%)}
+.promo:hover img{transform:scale(1.05)}
+.promo .kicker{font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:rgba(255,255,255,.85);background:rgba(0,0,0,.3);align-self:flex-start;padding:4px 8px;border-radius:4px;margin-bottom:auto}
+.promo h2{font:800 italic 34px/1 var(--display);text-transform:uppercase;margin:12px 0 4px;letter-spacing:.3px;text-shadow:0 2px 12px rgba(0,0,0,.5)}
+.promo p{margin:0 0 14px;max-width:30ch;color:rgba(255,255,255,.9);text-shadow:0 1px 6px rgba(0,0,0,.6)}
+
+.btn-go{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 22px;border-radius:8px;background:var(--go);color:var(--go-ink);font:800 16px var(--display);letter-spacing:.8px;text-transform:uppercase;box-shadow:0 4px 0 #148a41,0 6px 16px rgba(33,194,94,.25);transition:background .15s,transform .1s}
+.btn-go:hover{background:var(--go-hi)}
+.btn-go:active{transform:translateY(2px);box-shadow:0 2px 0 #148a41}
+.promo .btn-go{align-self:flex-start}
+
+/* ---------- tabs ---------- */
+.tabs{display:flex;gap:4px;background:var(--side);border-radius:999px;padding:5px;width:max-content;max-width:100%;overflow-x:auto;scrollbar-width:none;margin-bottom:24px}
+.tabs::-webkit-scrollbar{display:none}
+.tab{height:40px;padding:0 18px;border-radius:999px;color:var(--muted);display:flex;align-items:center;gap:8px;white-space:nowrap}
+.tab svg{width:16px;height:16px}
+.tab:hover{color:var(--text)}
+.tab[aria-selected="true"]{background:var(--card-2);color:var(--text)}
+
+/* ---------- rows ---------- */
+.row{margin-bottom:32px}
+.row-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.row-head h3{margin:0;font:800 22px/1 var(--display);text-transform:uppercase;letter-spacing:.4px;display:flex;align-items:center;gap:8px}
+.row-head h3 svg{width:20px;height:20px;color:var(--go)}
+.row-head .spacer{flex:1}
+.row-head .see{font-size:13px;color:var(--muted);padding:6px 10px;border-radius:6px}
+.row-head .see:hover{color:var(--text);background:var(--panel)}
+.arrows{display:flex;gap:4px}
+.arrow{width:36px;height:32px;border-radius:6px;background:var(--panel);display:grid;place-items:center;color:var(--muted)}
+.arrow:hover:not(:disabled){background:var(--card-2);color:var(--text)}
+.arrow:disabled{opacity:.35;cursor:default}
+.track{display:grid;grid-auto-flow:column;grid-auto-columns:calc((100% - 6*14px)/7);gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;scrollbar-width:none;padding:6px 0 4px}
+.track::-webkit-scrollbar{display:none}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}
+
+/* ---------- tile ---------- */
+.tile{scroll-snap-align:start;position:relative;min-width:0}
+.tile-art{position:relative;display:block;width:100%;aspect-ratio:3/4;border-radius:var(--r);overflow:hidden;background:var(--card);isolation:isolate;transition:transform .2s,box-shadow .2s;text-align:left}
+.tile-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2}
+.tile-art::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,transparent 30%,color-mix(in srgb,var(--a) 55%,#08121a) 72%,color-mix(in srgb,var(--a) 35%,#060d13) 100%)}
+.tile-art.has-cover::before,.tile-art.has-cover .tile-name{display:none}
+.tile-name{position:absolute;left:10px;right:10px;bottom:12px;font:800 italic 24px/.95 var(--display);text-transform:uppercase;letter-spacing:.3px;text-shadow:0 2px 8px rgba(0,0,0,.55);overflow-wrap:anywhere}
+.tile-cat{display:block;font:700 10px/1 var(--ui);letter-spacing:1.4px;color:rgba(255,255,255,.75);margin-bottom:6px;font-style:normal}
+.tile:hover .tile-art,.tile-art:focus-visible{transform:translateY(-6px);box-shadow:0 12px 24px rgba(0,0,0,.4)}
+.tile-play{position:absolute;inset:0;display:grid;place-items:center;background:rgba(8,18,26,.45);opacity:0;transition:opacity .2s}
+.tile-play span{width:56px;height:56px;border-radius:50%;background:var(--go);color:var(--go-ink);display:grid;place-items:center;box-shadow:0 6px 18px rgba(0,0,0,.4);transform:scale(.8);transition:transform .2s}
+.tile:hover .tile-play,.tile-art:focus-visible .tile-play{opacity:1}
+.tile:hover .tile-play span{transform:scale(1)}
+.badge{position:absolute;top:8px;left:8px;font:800 12px/1 var(--display);letter-spacing:1px;padding:5px 7px 4px;border-radius:4px;background:var(--hot);color:#fff;z-index:2}
+.badge.NEW{background:var(--new)}
+.badge.OG{background:linear-gradient(135deg,#ffe28a,#ffb627);color:#2b1b00}
+.badge.BETA{background:var(--gold);color:#2b1b00}
+.fav{position:absolute;top:6px;right:6px;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:rgba(8,18,26,.55);color:#fff;z-index:3;opacity:0;transition:opacity .2s}
+.fav svg{width:16px;height:16px}
+.tile:hover .fav,.fav:focus-visible,.fav[aria-pressed="true"]{opacity:1}
+.fav[aria-pressed="true"]{color:var(--gold)}
+.tile-meta{display:flex;align-items:center;gap:6px;padding:8px 2px 0;font-size:12px;color:var(--muted)}
+.tile-meta .dot{width:6px;height:6px;border-radius:50%;background:var(--go)}
+.tile-meta button{margin-left:auto;color:var(--dim);width:22px;height:22px;display:grid;place-items:center;border-radius:4px}
+.tile-meta button:hover{color:var(--text);background:var(--panel)}
+
+.empty{background:var(--panel);border-radius:var(--r);padding:32px;text-align:center;color:var(--muted)}
+.empty b{display:block;color:var(--text);font:800 22px var(--display);text-transform:uppercase;margin-bottom:4px}
+
+/* ---------- game page ---------- */
+.gameview{display:none}
+/* playing: the game owns the whole screen; the lobby chrome is hidden and a small edge tab opens the game menu */
+body.playing{overflow:hidden}
+body.playing .side,body.playing .top,body.playing .bottom-nav,body.playing .scrim{display:none!important}
+body.playing .gameview{display:block;position:fixed;inset:0;z-index:50;background:#000}
+body.playing .gameview .frame-wrap{position:absolute;inset:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);height:auto;min-height:0;border-radius:0}
+body.playing .details,body.playing #moreRow{display:none}
+.gtab{position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:3;width:26px;height:64px;border-radius:0 12px 12px 0;background:rgba(11,22,30,.6);border:1px solid rgba(255,255,255,.12);border-left:0;color:#fff;display:grid;place-items:center;opacity:.55;transition:opacity .2s,width .2s;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);padding-left:env(safe-area-inset-left)}
+.gtab svg{width:16px;height:16px}
+.gtab:hover,.gtab[aria-expanded="true"]{opacity:1;width:32px}
+.gmenu{position:fixed;left:calc(40px + env(safe-area-inset-left));top:50%;transform:translateY(-50%);z-index:4;width:250px;max-width:calc(100vw - 56px);background:rgba(21,37,50,.97);border:1px solid var(--line);border-radius:14px;padding:8px;box-shadow:0 18px 50px rgba(0,0,0,.55)}
+.gmenu[hidden]{display:none}
+.gmenu-head{padding:8px 10px 10px;border-bottom:1px solid var(--line);margin-bottom:6px}
+.gmenu-head h1{margin:0 0 6px;font:800 italic 24px/1 var(--display);text-transform:uppercase;letter-spacing:.3px}
+.gmenu-head .wchip{margin:0}
+.gm-item{display:flex;align-items:center;gap:12px;width:100%;padding:11px 10px;border-radius:8px;color:var(--text);font:600 15px var(--ui);text-align:left}
+.gm-item svg{width:20px;height:20px;color:var(--muted);flex:none}
+.gm-item:hover{background:var(--card)}
+.gm-item.primary{background:var(--go);color:var(--go-ink);font-weight:700;margin-bottom:4px}
+.gm-item.primary svg{color:var(--go-ink)}
+.gm-item.primary:hover{background:var(--go-hi)}
+.gm-item[aria-pressed="true"] svg{color:var(--gold)}
+body.playing .lobby{display:none}
+body.playing .gameview{display:block}
+.frame-wrap{position:relative;background:#000;border-radius:var(--r) var(--r) 0 0;overflow:hidden;height:min(calc(100vh - var(--top-h) - 48px - 56px - 24px),900px);min-height:420px}
+.frame-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#fff}
+.loader{position:absolute;inset:0;display:grid;place-items:center;background:var(--side);z-index:2;transition:opacity .3s}
+.loader.done{opacity:0;pointer-events:none}
+.offline{position:absolute;inset:0;z-index:2;display:grid;place-items:center;background:var(--side);padding:24px;text-align:center}
+.offline b{display:block;font:800 italic 30px/1.05 var(--display);text-transform:uppercase;margin-bottom:10px}
+.offline p{color:var(--muted);font-weight:500;max-width:40ch;margin:0 auto 18px;line-height:1.5}
+.offline code{background:var(--card);padding:2px 6px;border-radius:4px;color:var(--text)}
+.loader div{display:flex;flex-direction:column;align-items:center;gap:14px;color:var(--muted)}
+.loader b{font:800 italic 32px var(--display);text-transform:uppercase;color:var(--text)}
+.spin{width:34px;height:34px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--go);animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.gamebar{display:flex;align-items:center;gap:6px;height:56px;padding:0 10px 0 16px;background:var(--side);border-radius:0 0 var(--r) var(--r)}
+.gamebar h1{margin:0 auto 0 0;font:800 italic 22px/1 var(--display);text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.icon-btn{width:40px;height:40px;border-radius:8px;display:grid;place-items:center;color:var(--muted)}
+.icon-btn:hover{background:var(--panel);color:var(--text)}
+.icon-btn[aria-pressed="true"]{color:var(--gold)}
+.icon-btn svg{width:20px;height:20px}
+.back{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:14px;margin-bottom:12px;padding:6px 10px 6px 6px;border-radius:6px}
+.back:hover{color:var(--text);background:var(--panel)}
+.details{display:grid;grid-template-columns:1.6fr 1fr;gap:16px;margin:20px 0 32px}
+.card{background:var(--panel);border-radius:var(--r);padding:20px}
+.card h2{margin:0 0 8px;font:800 24px var(--display);text-transform:uppercase}
+.card p{margin:0;color:var(--muted);font-weight:500;line-height:1.55}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:var(--side);border-radius:8px;padding:12px}
+.stat small{display:block;font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:var(--dim)}
+.stat b{font:800 24px var(--display)}
+
+/* ---------- info dialog ---------- */
+dialog{border:0;padding:0;border-radius:14px;background:var(--panel);color:var(--text);width:min(440px,calc(100vw - 32px));box-shadow:0 24px 60px rgba(0,0,0,.5)}
+dialog::backdrop{background:rgba(5,10,14,.7);backdrop-filter:blur(3px)}
+.dlg-art{aspect-ratio:16/9;position:relative}
+.dlg-art img{width:100%;height:100%;object-fit:cover;display:block}
+.dlg-art::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,var(--panel),transparent 50%)}
+.dlg-body{padding:0 20px 20px;margin-top:-28px;position:relative}
+.dlg-body h2{margin:0 0 6px;font:800 italic 32px/1 var(--display);text-transform:uppercase}
+.dlg-body p{color:var(--muted);font-weight:500;margin:0 0 16px}
+.dlg-body .stats{margin-bottom:16px}
+.dlg-body .btn-go{width:100%}
+.dlg-close{position:absolute;top:10px;right:10px;z-index:2;background:rgba(8,18,26,.6);color:#fff}
+
+/* ---------- mobile ---------- */
+.bottom-nav{display:none}
+@media (max-width:1200px){.track{grid-auto-columns:calc((100% - 5*14px)/6)}}
+@media (max-width:1000px){
+  .track{grid-auto-columns:calc((100% - 4*14px)/5)}
+  .promos{grid-auto-columns:calc((100% - 16px)/2)}
+  .details{grid-template-columns:1fr}
+}
+@media (max-width:760px){
+  :root{--top-h:56px}
+  .shell{grid-template-columns:1fr}
+  .side{position:fixed;left:0;top:0;width:min(280px,86vw);transform:translateX(-100%);transition:transform .25s;box-shadow:12px 0 32px rgba(0,0,0,.5)}
+  body.menu-open .side{transform:none}
+  body.collapsed{--side-w:236px}
+  body.collapsed .brand,body.collapsed .brand span,body.collapsed .nav-item span,body.collapsed .nav-item .count,body.collapsed .nav-label,body.collapsed .side-foot{display:revert}
+  body.collapsed .nav-item{justify-content:flex-start}
+  body.menu-open .scrim{display:block}
+  .top{padding:0 16px;gap:8px}
+  .top .mobile-brand{display:flex;font-size:22px}
+  .top .mobile-brand .mark{width:26px;height:26px}
+  .search{display:none}
+  body.searching .search{display:block;position:absolute;inset:8px 16px;max-width:none;z-index:2}
+  .wallet{margin-left:auto;height:38px}
+  .wallet-amt{font-size:15px;padding:0 10px;gap:6px}
+  .wallet-amt .coin{width:16px;height:16px}
+  .wallet .refill{padding:0 10px;font-size:13px}
+  .wchip{display:none}
+  .toast{bottom:84px}
+  .content{padding:16px 16px 88px}
+  .promos{grid-auto-columns:88%;gap:12px}
+  .promo{min-height:180px}
+  .promo h2{font-size:30px}
+  .track{grid-auto-columns:calc((100% - 2*12px)/2.6);gap:12px}
+  .grid{grid-template-columns:repeat(2,1fr);gap:12px}
+  .arrows{display:none}
+  .tile-name{font-size:20px}
+  .fav{opacity:1}
+  .details{margin:16px}
+  .bottom-nav{display:grid;grid-template-columns:repeat(4,1fr);position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--side);border-top:1px solid var(--line);padding:6px 0 calc(6px + env(safe-area-inset-bottom))}
+  .bottom-nav button{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;color:var(--muted);padding:4px 0}
+  .bottom-nav button svg{width:22px;height:22px}
+  .bottom-nav button[aria-current="true"]{color:var(--go)}
+}
+@media (min-width:761px){.top .search-toggle,.top .menu-toggle{display:none}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation-duration:0s!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-home" viewBox="0 0 24 24"><path fill="currentColor" d="M12 3 2 11h3v9h5v-6h4v6h5v-9h3z"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path fill="currentColor" d="m12 2.5 2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6L2.5 9.4l6.6-.8z"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" d="M12 7v5l3 2"/><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.4"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><path fill="currentColor" d="M3 3h8v8H3zm10 0h8v8h-8zM3 13h8v8H3zm10 0h8v8h-8z"/></symbol>
+  <symbol id="i-slots" viewBox="0 0 24 24"><path fill="currentColor" d="M4 5h13a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2zm1 4v8h3V9zm4.5 0v8h3V9zM14 9v8h3V9zm7-3a1.5 1.5 0 1 1 0 3v6h-1V8.7A1.5 1.5 0 0 1 21 6z"/></symbol>
+  <symbol id="i-cashout" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M3 19 9 12l4 3 8-10M15 5h6v6"/></symbol>
+  <symbol id="i-board" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4" fill="none" stroke="currentColor" stroke-width="2.4"/><circle cx="8.5" cy="8.5" r="1.7" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.7" fill="currentColor"/><circle cx="12" cy="12" r="1.7" fill="currentColor"/></symbol>
+  <symbol id="i-voyages" viewBox="0 0 24 24"><path fill="currentColor" d="M11 2v12H4zm2 3 6 9h-6zM2 16h20l-2.5 4.2a2 2 0 0 1-1.7.8H6.2a2 2 0 0 1-1.7-.8z"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M4 4v16h16"/><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="m8 14 3.5-4 3 2.5L20 7"/></symbol>
+  <symbol id="i-cards" viewBox="0 0 24 24"><rect x="3" y="5" width="11" height="15" rx="2" transform="rotate(-10 8.5 12.5)" fill="none" stroke="currentColor" stroke-width="2.2"/><rect x="10" y="4" width="11" height="15" rx="2" transform="rotate(8 15.5 11.5)" fill="currentColor"/></symbol>
+  <symbol id="i-people" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5" fill="currentColor"/><circle cx="17" cy="9" r="2.8" fill="currentColor" opacity=".7"/><path fill="currentColor" d="M2.5 19.5c.6-3.6 3.3-5.5 6.5-5.5s5.9 1.9 6.5 5.5z"/><path fill="currentColor" opacity=".7" d="M15.6 14.4c2.8-.4 5.3 1 5.9 4.6h-4.2c-.2-1.8-.8-3.4-1.7-4.6z"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.6"/><path stroke="currentColor" stroke-width="2.6" stroke-linecap="round" d="m15.5 15.5 5 5"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="2.4" stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5.5v13a1 1 0 0 0 1.5.9l10.2-6.5a1 1 0 0 0 0-1.8L9.5 4.6A1 1 0 0 0 8 5.5z"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 24 24"><path fill="currentColor" d="M12 21s-7.5-4.6-9.6-9.3C.9 8.3 3 4.5 6.7 4.5c2.1 0 3.6 1.1 5.3 3 1.7-1.9 3.2-3 5.3-3 3.7 0 5.8 3.8 4.3 7.2C19.5 16.4 12 21 12 21z"/></symbol>
+  <symbol id="i-heart-o" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.2" d="M12 19.6s-6.6-4.1-8.5-8.2C2.3 8.6 4 5.5 7 5.5c1.9 0 3.2 1.1 5 3.1 1.8-2 3.1-3.1 5-3.1 3 0 4.7 3.1 3.5 5.9-1.9 4.1-8.5 8.2-8.5 8.2z"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path stroke="currentColor" stroke-width="2.4" stroke-linecap="round" d="M12 11v6"/><circle cx="12" cy="7.5" r="1.5" fill="currentColor"/></symbol>
+  <symbol id="i-left" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" d="m15 5-7 7 7 7"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" d="m9 5 7 7-7 7"/></symbol>
+  <symbol id="i-full" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></symbol>
+  <symbol id="i-theatre" viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2.4"/><path fill="currentColor" d="M6 9h12v6H6z"/></symbol>
+  <symbol id="i-reload" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/></symbol>
+  <symbol id="i-ext" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="2.6" stroke-linecap="round" d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-dice" viewBox="0 0 32 32"><rect x="3" y="3" width="26" height="26" rx="7" fill="#21c25e"/><circle cx="10" cy="10" r="2.6" fill="#04210f"/><circle cx="22" cy="22" r="2.6" fill="#04210f"/><circle cx="16" cy="16" r="2.6" fill="#04210f"/><circle cx="22" cy="10" r="2.6" fill="#04210f"/><circle cx="10" cy="22" r="2.6" fill="#04210f"/></symbol>
+</svg>
+
+<div class="shell">
+  <aside class="side" id="side" aria-label="Main menu">
+    <div class="side-head">
+      <button class="burger" id="collapse" aria-label="Collapse menu" title="Collapse menu"><svg width="22" height="22"><use href="#i-menu"/></svg></button>
+      <a class="brand" href="#/"><svg class="mark"><use href="#i-dice"/></svg><span>Game<b>Lobby</b></span></a>
+    </div>
+    <nav id="sideNav"></nav>
+    <div class="side-foot"><strong>Play money only.</strong><br>No real-money wagering. One shared wallet for every game that supports it.</div>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+
+  <div class="main">
+    <header class="top">
+      <button class="icon-btn menu-toggle" id="menuBtn" aria-label="Open menu"><svg><use href="#i-menu"/></svg></button>
+      <a class="brand mobile-brand" href="#/"><svg class="mark"><use href="#i-dice"/></svg><span>Game<b>Lobby</b></span></a>
+      <label class="search"><span class="sr">Search games</span><svg><use href="#i-search"/></svg><input id="search" type="search" placeholder="Search games" autocomplete="off"></label>
+      <button class="icon-btn search-toggle" id="searchBtn" aria-label="Search"><svg><use href="#i-search"/></svg></button>
+      <div class="wallet" id="wallet" title="Play money: one wallet shared by the games that support it"><span class="wallet-amt"><span class="coin" aria-hidden="true"></span><span id="walletAmt" aria-live="polite">0</span></span><button class="refill" id="refillBtn">Refill</button></div>
+    </header>
+
+    <main class="content">
+      <section class="lobby" id="lobby"></section>
+      <section class="gameview" id="gameview">
+        <div class="frame-wrap" id="frameWrap">
+          <div class="loader" id="loader"><div><b id="loaderName"></b><span class="spin"></span></div></div>
+        </div>
+        <button class="gtab" id="gTab" aria-label="Game menu" aria-expanded="false" aria-controls="gMenu"><svg><use href="#i-menu"/></svg></button>
+        <div class="gmenu" id="gMenu" hidden>
+          <div class="gmenu-head"><h1 id="gameTitle"></h1><span class="wchip" id="wChip"></span></div>
+          <button class="gm-item primary" id="backBtn"><svg><use href="#i-left"/></svg>Back to lobby</button>
+          <button class="gm-item" id="gFull"><svg><use href="#i-full"/></svg><span>Full screen</span></button>
+          <button class="gm-item" id="gReload"><svg><use href="#i-reload"/></svg>Restart game</button>
+          <button class="gm-item" id="gFav" aria-pressed="false"><svg><use href="#i-heart-o"/></svg><span>Add to favorites</span></button>
+          <a class="gm-item" id="gNew" target="_blank" rel="noopener"><svg><use href="#i-ext"/></svg>Open in new tab</a>
+        </div>
+        <div class="details" id="details"></div>
+        <div id="moreRow"></div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<nav class="bottom-nav" id="bottomNav" aria-label="Quick links"></nav>
+<div class="toast" id="toast" role="status"></div>
+
+<dialog id="infoDlg" aria-labelledby="dlgTitle"></dialog>
+
+<script src="games.js"></script>
+<script>
+(() => {
+  // sidebarOnly entries (tools such as Portfolio) open like a game but appear only as sidebar links
+  // localOnly entries point at apps running on this Mac (e.g. RefBet on localhost:3000): hidden on the public site
+  const onThisMac = ["localhost", "127.0.0.1", "[::1]", ""].includes(location.hostname);
+  const ALL = (window.GAMES || []).filter(g => !g.localOnly || onThisMac);
+  // what a tile shows under it: the RTP for casino games, or a short label (e.g. "P2P") for anything else
+  const statLine = g => g.rtp ? "RTP " + g.rtp : (g.meta || "");
+  const GAMES = ALL.filter(g => !g.sidebarOnly), SIDE = ALL.filter(g => g.sidebarOnly);
+  const CATS = (window.CATEGORIES || [{id:"all",label:"All games"}]).filter(c => c.id === "all" || GAMES.some(g => g.category === c.id));
+  const byId = Object.fromEntries(ALL.map(g => [g.id, g]));
+  const inLobby = id => byId[id] && !byId[id].sidebarOnly;
+  const ICON = {all:"grid", slots:"slots", cashout:"cashout", board:"board", voyages:"voyages", table:"cards", social:"people"};
+  const catLabel = id => (CATS.find(c => c.id === id) || {label:id}).label;
+  const $ = s => document.querySelector(s);
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const icon = (n, cls="") => `<svg class="ic ${cls}" aria-hidden="true"><use href="#i-${n}"/></svg>`;
+
+  // ---- storage (per browser, safe if blocked) ----
+  const load = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } };
+  const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+  let favs = load("lobby.favs", []).filter(inLobby);
+  let recent = load("lobby.recent", []).filter(inLobby);
+  if (load("lobby.collapsed", false)) document.body.classList.add("collapsed");
+
+  // ---- shared wallet ----
+  // Games that support it call window.parent.LobbyWallet.attach(getBalance, unitsPerCredit) once at start-up:
+  // they get the lobby balance back as their starting balance, and the lobby reads getBalance() while they run.
+  const START_CENTS = 1000000, REFILL_BELOW = 1000000;   // 10,000 credits; Refill tops up to that
+  const fmtCredits = c => (c / 100).toLocaleString("en-US", {minimumFractionDigits:2, maximumFractionDigits:2});
+  const Wallet = (() => {
+    let cents = load("lobby.wallet", null);
+    if (!Number.isFinite(cents)) cents = START_CENTS;
+    let getter = null, unit = 1, timer = 0, flashT = 0;
+    const show = (dir) => {
+      $("#walletAmt").textContent = fmtCredits(cents);
+      $("#refillBtn").disabled = cents >= REFILL_BELOW;
+      $("#refillBtn").title = cents >= REFILL_BELOW ? "Refill is available below " + fmtCredits(REFILL_BELOW) : "Top up to " + fmtCredits(START_CENTS);
+      if (dir) { const w = $("#wallet"); w.classList.remove("up", "down"); w.classList.add(dir); clearTimeout(flashT); flashT = setTimeout(() => w.classList.remove("up", "down"), 700); }
+    };
+    const setCents = c => {
+      c = Math.max(0, Math.round(c));
+      if (c === cents) return;
+      const dir = c > cents ? "up" : "down";
+      cents = c; save("lobby.wallet", cents); show(dir);
+    };
+    const poll = () => {
+      if (!getter) return;
+      try { const v = getter(); if (Number.isFinite(v)) setCents(v * 100 / unit); }
+      catch { getter = null; clearInterval(timer); }
+    };
+    window.LobbyWallet = {
+      attach(fn, unitsPerCredit = 1) {
+        getter = fn; unit = unitsPerCredit; clearInterval(timer); timer = setInterval(poll, 200);
+        setChip(true);
+        return cents * unit / 100;
+      },
+      balance: () => cents / 100,
+    };
+    addEventListener("storage", e => { if (e.key === "lobby.wallet" && !getter) { const v = load("lobby.wallet", cents); if (Number.isFinite(v) && v !== cents) { cents = v; show(); } } });
+    show();
+    return {
+      detach() { poll(); getter = null; clearInterval(timer); },
+      attached: () => !!getter,
+      refill() { if (cents < REFILL_BELOW) setCents(START_CENTS); },
+    };
+  })();
+  function setChip(on) {
+    const c = $("#wChip");
+    c.className = "wchip" + (on ? " on" : "");
+    c.innerHTML = on ? "<i></i>Shared wallet" : "<i></i>Own balance";
+    c.title = on ? "This game plays from your lobby wallet" : "This game keeps its own play balance; it doesn't use the lobby wallet yet";
+  }
+  let toastT = 0;
+  const toast = msg => { const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), 3200); };
+
+  // ---- routing: #/  #/c/slots  #/favorites  #/recent  #/play/fair-winds ----
+  const route = () => {
+    const h = location.hash.replace(/^#\/?/, "").split("/");
+    if (h[0] === "play" && byId[h[1]]) return {view:"play", id:h[1]};
+    if (h[0] === "c" && CATS.some(c => c.id === h[1])) return {view:"cat", cat:h[1]};
+    if (h[0] === "favorites" || h[0] === "recent") return {view:h[0]};
+    return {view:"home"};
+  };
+  const go = hash => { if (location.hash !== hash) location.hash = hash; else render(); };
+
+  // ---- pieces ----
+  const tile = g => {
+    const fav = favs.includes(g.id);
+    return `<div class="tile" style="--a:${esc(g.accent||"#21c25e")}">
+      <a class="tile-art${g.cover ? " has-cover" : ""}" href="#/play/${esc(g.id)}" aria-label="Play ${esc(g.title)}">
+        <img src="${esc(g.cover || g.thumb)}" alt="" loading="lazy" style="object-position:${esc(g.cover ? "center" : g.thumbPos||"center")}">
+        ${g.badge ? `<span class="badge ${esc(g.badge)}">${esc(g.badge)}</span>` : ""}
+        <span class="tile-name"><span class="tile-cat">${esc(catLabel(g.category))}</span>${esc(g.title)}</span>
+        <span class="tile-play"><span>${icon("play")}</span></span>
+      </a>
+      <button class="fav" data-fav="${esc(g.id)}" aria-pressed="${fav}" aria-label="${fav?"Remove from":"Add to"} favorites">${icon(fav?"heart":"heart-o")}</button>
+      <div class="tile-meta"><span class="dot"></span>${esc(statLine(g))}<button data-info="${esc(g.id)}" aria-label="About ${esc(g.title)}">${icon("info")}</button></div>
+    </div>`;
+  };
+
+  const row = (title, ico, games, seeHash) => {
+    if (!games.length) return "";
+    return `<section class="row">
+      <div class="row-head"><h3>${icon(ico)}${esc(title)}</h3><span class="spacer"></span>
+        ${seeHash ? `<a class="see" href="${seeHash}">View all ${games.length}</a>` : ""}
+        <div class="arrows"><button class="arrow" data-scroll="-1" aria-label="Scroll left">${icon("left")}</button><button class="arrow" data-scroll="1" aria-label="Scroll right">${icon("right")}</button></div>
+      </div>
+      <div class="track">${games.map(tile).join("")}</div>
+    </section>`;
+  };
+
+  const grid = (title, ico, games, emptyMsg) => `<section class="row">
+      <div class="row-head"><h3>${icon(ico)}${esc(title)}</h3></div>
+      ${games.length ? `<div class="grid">${games.map(tile).join("")}</div>` : `<div class="empty">${emptyMsg}</div>`}
+    </section>`;
+
+  const tabs = active => `<div class="tabs" role="tablist" aria-label="Categories">${CATS.map(c =>
+      `<a class="tab" role="tab" href="${c.id==="all"?"#/":"#/c/"+c.id}" aria-selected="${c.id===active}">${icon(ICON[c.id]||"grid")}${esc(c.label)}</a>`).join("")}</div>`;
+
+  const promos = () => {
+    const list = GAMES.filter(g => g.featured).sort((a, b) => (+a.featured || 99) - (+b.featured || 99));
+    if (!list.length) return "";
+    return `<div class="promos">${list.map(g => `
+      <a class="promo" href="#/play/${esc(g.id)}" style="--a:${esc(g.accent||"#21c25e")}">
+        <img src="${esc(g.wide || g.thumb)}" alt="">
+        <span class="kicker">${esc([catLabel(g.category), statLine(g)].filter(Boolean).join(" · "))}</span>
+        <h2>${esc(g.title)}</h2><p>${esc(g.tagline)}</p>
+        <span class="btn-go">${icon("play")}Play now</span>
+      </a>`).join("")}</div>`;
+  };
+
+  const matches = q => GAMES.filter(g => (g.title+" "+g.tagline+" "+catLabel(g.category)).toLowerCase().includes(q));
+
+  // ---- render ----
+  function renderLobby(r) {
+    const q = $("#search").value.trim().toLowerCase();
+    let html = "";
+    if (q) {
+      html = grid(`Results for “${$("#search").value.trim()}”`, "search", matches(q), `<b>No games found</b>Try another name.`);
+    } else if (r.view === "home") {
+      html = promos() + tabs("all")
+        + row("Recently played", "clock", recent.map(id => byId[id]))
+        + CATS.filter(c => c.id !== "all" && GAMES.filter(g => g.category === c.id).length >= 3).map(c => row(c.label, ICON[c.id]||"grid", GAMES.filter(g => g.category === c.id), "#/c/"+c.id)).join("")
+        + grid("All games", "grid", GAMES);
+    } else if (r.view === "cat") {
+      html = tabs(r.cat) + grid(catLabel(r.cat), ICON[r.cat]||"grid", r.cat === "all" ? GAMES : GAMES.filter(g => g.category === r.cat), `<b>Nothing here yet</b>`);
+    } else if (r.view === "favorites") {
+      html = tabs("") + grid("Favorites", "star", favs.map(id => byId[id]), `<b>No favorites yet</b>Tap the heart on any game to keep it here.`);
+    } else if (r.view === "recent") {
+      html = tabs("") + grid("Recently played", "clock", recent.map(id => byId[id]), `<b>Nothing played yet</b>Games you open show up here.`);
+    }
+    $("#lobby").innerHTML = html;
+    updateArrows();
+  }
+
+  let currentId = null;
+  function renderGame(id) {
+    const g = byId[id];
+    document.title = g.title + " · Game Lobby";
+    $("#gameTitle").textContent = g.title;
+    $("#gFav").hidden = !!g.sidebarOnly;
+    $("#loaderName").textContent = g.title;
+    $("#gNew").href = g.url;
+    setFavBtn();
+    if (currentId !== id) {
+      currentId = id;
+      if (!g.sidebarOnly) { recent = [id, ...recent.filter(x => x !== id)].slice(0, 12); save("lobby.recent", recent); }
+      Wallet.detach();
+      $("#frameWrap").querySelector("iframe")?.remove();
+      $("#loader").classList.remove("done");
+      $("#wChip").className = "wchip"; $("#wChip").textContent = "";
+      $("#offline")?.remove();
+      const f = document.createElement("iframe");
+      f.title = g.title;
+      f.allow = "fullscreen; autoplay; clipboard-write; gamepad; geolocation";
+      f.addEventListener("load", () => { $("#loader").classList.add("done"); setTimeout(() => { if (currentId === id && !Wallet.attached() && !g.sidebarOnly) setChip(false); }, 1500); });
+      $("#frameWrap").append(f);
+      loadFrame(g, f);
+      window.scrollTo(0, 0);
+    }
+    $("#details").innerHTML = `
+      <div class="card"><h2>${esc(g.title)}</h2><p>${esc(g.description||g.tagline)}</p></div>
+      <div class="card stats">
+        <div class="stat"><small>${g.rtp ? "RTP" : "Type"}</small><b>${esc(g.rtp || g.meta || "–")}</b></div>
+        <div class="stat"><small>Category</small><b>${esc(catLabel(g.category))}</b></div>
+        <div class="stat"><small>Wallet</small><b>Play money</b></div>
+        <div class="stat"><small>Played</small><b>${recent.includes(id) ? "Yes" : "New"}</b></div>
+      </div>`;
+    const more = GAMES.filter(x => x.id !== id && x.category === g.category).concat(GAMES.filter(x => x.id !== id && x.category !== g.category));
+    $("#moreRow").innerHTML = row("More games", "grid", more);
+    updateArrows();
+  }
+
+  function renderNav(r) {
+    const key = r.view === "cat" ? "c/"+r.cat : r.view === "play" ? "" : r.view;
+    const item = (hash, ico, label, count, k) =>
+      `<a class="nav-item" href="#/${hash}" aria-current="${k===key}" title="${esc(label)}">${icon(ico)}<span>${esc(label)}</span>${count!=null?`<em class="count">${count}</em>`:""}</a>`;
+    $("#sideNav").innerHTML =
+      `<div class="nav-group">${item("", "home", "Lobby", null, "home")}${item("favorites","star","Favorites",favs.length,"favorites")}${item("recent","clock","Recently played",recent.length,"recent")}</div>
+       <div class="nav-group"><div class="nav-label">Categories</div>${CATS.filter(c=>c.id!=="all").map(c => item("c/"+c.id, ICON[c.id]||"grid", c.label, GAMES.filter(g=>g.category===c.id).length, "c/"+c.id)).join("")}</div>
+       <div class="nav-group"><div class="nav-label">Games</div>${GAMES.map(g => `<a class="nav-item" href="#/play/${esc(g.id)}" aria-current="${r.view==="play"&&r.id===g.id}" title="${esc(g.title)}">${icon(ICON[g.category]||"grid")}<span>${esc(g.title)}</span></a>`).join("")}</div>
+       ${SIDE.length ? `<div class="nav-group"><div class="nav-label">Tools</div>${SIDE.map(g => `<a class="nav-item" href="#/play/${esc(g.id)}" aria-current="${r.view==="play"&&r.id===g.id}" title="${esc(g.title)}">${icon("chart")}<span>${esc(g.title)}</span></a>`).join("")}</div>` : ""}`;
+    const b = (hash, ico, label, k) => `<button data-go="#/${hash}" aria-current="${k===key}">${icon(ico)}${label}</button>`;
+    $("#bottomNav").innerHTML = b("", "home", "Lobby", "home") + b("favorites", "star", "Favorites", "favorites") + b("recent", "clock", "Recent", "recent") + `<button id="bnMenu">${icon("menu")}Menu</button>`;
+  }
+
+  function render() {
+    const r = route();
+    document.body.classList.toggle("playing", r.view === "play");
+    document.body.classList.remove("menu-open");
+    if (r.view === "play") renderGame(r.id);
+    else {
+      document.title = "Game Lobby";
+      if (currentId) { Wallet.detach(); $("#frameWrap").querySelector("iframe")?.remove(); currentId = null; }
+      closeMenu(); exitFS();
+      renderLobby(r);
+    }
+    renderNav(r);
+  }
+
+  // An app on another address (a local server such as RefBet) shows a browser error page when it isn't
+  // running. Check first, and if nothing answers, say how to start it and offer to try again.
+  const isServerApp = g => /^https?:\/\//.test(g.url) && new URL(g.url).origin !== location.origin;
+  async function loadFrame(g, f) {
+    if (!isServerApp(g)) { f.src = g.url; return; }
+    const up = await fetch(g.url, {mode: "no-cors", cache: "no-store"}).then(() => true, () => false);
+    if (currentId !== g.id || !f.isConnected) return;
+    if (up) { f.src = g.url; return; }
+    $("#loader").classList.add("done");
+    const box = document.createElement("div");
+    box.id = "offline"; box.className = "offline";
+    box.innerHTML = `<div><b>${esc(g.title)} isn't running</b><p>${esc(g.startHint || "Start its server, then try again.")}</p>
+      <button class="btn-go" id="retryApp">${icon("reload")}Try again</button></div>`;
+    $("#frameWrap").append(box);
+    $("#retryApp").onclick = () => { box.remove(); $("#loader").classList.remove("done"); loadFrame(g, f); };
+  }
+
+  // ---- favorites / dialog ----
+  function toggleFav(id) {
+    favs = favs.includes(id) ? favs.filter(x => x !== id) : [...favs, id];
+    save("lobby.favs", favs);
+    document.querySelectorAll(`[data-fav="${CSS.escape(id)}"]`).forEach(b => {
+      const on = favs.includes(id);
+      b.setAttribute("aria-pressed", on); b.setAttribute("aria-label", (on?"Remove from":"Add to")+" favorites");
+      b.innerHTML = icon(on ? "heart" : "heart-o");
+    });
+    if (route().view === "favorites") renderLobby(route());
+    setFavBtn(); renderNav(route());
+  }
+  function setFavBtn() {
+    if (!currentId && route().view !== "play") return;
+    const on = favs.includes(route().id);
+    $("#gFav").setAttribute("aria-pressed", on);
+    $("#gFav").setAttribute("aria-label", (on?"Remove from":"Add to")+" favorites");
+    $("#gFav").innerHTML = icon(on ? "heart" : "heart-o") + `<span>${on ? "Favorite" : "Add to favorites"}</span>`;
+  }
+  function showInfo(id) {
+    const g = byId[id], d = $("#infoDlg");
+    d.innerHTML = `<button class="icon-btn dlg-close" data-close aria-label="Close">${icon("x")}</button>
+      <div class="dlg-art"><img src="${esc(g.wide || g.thumb)}" alt=""></div>
+      <div class="dlg-body"><h2 id="dlgTitle">${esc(g.title)}</h2><p>${esc(g.description||g.tagline)}</p>
+        <div class="stats"><div class="stat"><small>${g.rtp ? "RTP" : "Type"}</small><b>${esc(g.rtp || g.meta || "–")}</b></div><div class="stat"><small>Category</small><b>${esc(catLabel(g.category))}</b></div></div>
+        <a class="btn-go" href="#/play/${esc(g.id)}" data-close>${icon("play")}Play now</a></div>`;
+    d.showModal();
+  }
+
+  // ---- carousels ----
+  function updateArrows() {
+    document.querySelectorAll(".row").forEach(r => {
+      const t = r.querySelector(".track"); if (!t) return;
+      const [l, rt] = r.querySelectorAll(".arrow");
+      l.disabled = t.scrollLeft < 4;
+      rt.disabled = t.scrollLeft + t.clientWidth >= t.scrollWidth - 4;
+      const arrows = r.querySelector(".arrows");
+      if (arrows) arrows.style.visibility = t.scrollWidth > t.clientWidth + 4 ? "visible" : "hidden";
+    });
+  }
+  document.addEventListener("scroll", e => { if (e.target.classList?.contains("track")) updateArrows(); }, true);
+  addEventListener("resize", updateArrows);
+
+  // ---- events ----
+  document.addEventListener("click", e => {
+    const t = e.target.closest("[data-fav],[data-info],[data-scroll],[data-close],[data-go],#bnMenu");
+    if (!t) return;
+    if (t.dataset.fav) { e.preventDefault(); toggleFav(t.dataset.fav); }
+    else if (t.dataset.info) { e.preventDefault(); showInfo(t.dataset.info); }
+    else if (t.dataset.scroll) { const tr = t.closest(".row").querySelector(".track"); tr.scrollBy({left: tr.clientWidth * .9 * +t.dataset.scroll}); }
+    else if (t.dataset.go) go(t.dataset.go);
+    else if (t.id === "bnMenu") document.body.classList.add("menu-open");
+    if (t.hasAttribute("data-close")) $("#infoDlg").close();
+  });
+  $("#infoDlg").addEventListener("click", e => { if (e.target === e.currentTarget) e.currentTarget.close(); });
+  $("#collapse").onclick = () => {
+    if (matchMedia("(max-width:760px)").matches) { document.body.classList.remove("menu-open"); return; }
+    save("lobby.collapsed", document.body.classList.toggle("collapsed")); updateArrows();
+  };
+  $("#menuBtn").onclick = () => document.body.classList.add("menu-open");
+  $("#scrim").onclick = () => document.body.classList.remove("menu-open");
+  $("#searchBtn").onclick = () => { document.body.classList.add("searching"); $("#search").focus(); };
+  $("#search").addEventListener("blur", () => { if (!$("#search").value) document.body.classList.remove("searching"); });
+  $("#search").addEventListener("input", () => { if (route().view === "play") go("#/"); else renderLobby(route()); });
+  $("#search").addEventListener("keydown", e => { if (e.key === "Escape") { e.target.value = ""; e.target.blur(); renderLobby(route()); } });
+  $("#backBtn").onclick = () => go("#/");
+  $("#gFav").onclick = () => toggleFav(route().id);
+  $("#gReload").onclick = () => { const f = $("#frameWrap iframe"); if (f) { Wallet.detach(); $("#loader").classList.remove("done"); f.src = f.src; } };
+  $("#refillBtn").onclick = () => {
+    // a game that is open keeps its own copy of the balance: read it one last time, refill, then restart the game
+    const f = $("#frameWrap iframe"), live = f && Wallet.attached();
+    if (live) Wallet.detach();
+    Wallet.refill();
+    if (live) { $("#loader").classList.remove("done"); f.src = f.src; }
+    toast("Wallet refilled to " + fmtCredits(START_CENTS) + " play credits");
+  };
+  // ---- full screen ----
+  // The game always fills the window. Where the browser allows it (desktop, Android) opening a game also
+  // switches the browser itself to full screen; iPhone Safari can't, so there the game fills the page
+  // (and opens with no browser bars at all when the lobby is added to the home screen).
+  const root = document.documentElement;
+  const fsSupported = !!(root.requestFullscreen || root.webkitRequestFullscreen);
+  const isFS = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
+  function enterFS() {
+    if (!fsSupported || isFS()) return;
+    try { const r = (root.requestFullscreen || root.webkitRequestFullscreen).call(root, {navigationUI:"hide"}); r?.catch?.(() => {}); } catch {}
+  }
+  function exitFS() {
+    if (!isFS()) return;
+    try { const r = (document.exitFullscreen || document.webkitExitFullscreen).call(document); r?.catch?.(() => {}); } catch {}
+  }
+  const fsLabel = () => { $("#gFull").querySelector("span").textContent = isFS() ? "Exit full screen" : "Full screen"; };
+  if (!fsSupported) $("#gFull").hidden = true;
+  document.addEventListener("fullscreenchange", fsLabel); document.addEventListener("webkitfullscreenchange", fsLabel);
+  $("#gFull").onclick = () => { isFS() ? exitFS() : enterFS(); closeMenu(); };
+  // opening a game from any Play link is a user tap, so the browser lets us go full screen right then
+  document.addEventListener("click", e => { if (e.target.closest('a[href^="#/play/"]')) enterFS(); }, true);
+
+  // ---- game menu (edge tab) ----
+  function openMenu() { $("#gMenu").hidden = false; $("#gTab").setAttribute("aria-expanded", "true"); fsLabel(); }
+  function closeMenu() { $("#gMenu").hidden = true; $("#gTab").setAttribute("aria-expanded", "false"); }
+  $("#gTab").onclick = () => $("#gMenu").hidden ? openMenu() : closeMenu();
+  $("#gReload").addEventListener("click", closeMenu);
+  $("#gNew").addEventListener("click", closeMenu);
+  // tapping into the game moves focus into its frame, which blurs this window: close the menu then
+  addEventListener("blur", () => setTimeout(() => { if (document.activeElement?.tagName === "IFRAME") closeMenu(); }, 0));
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("#gMenu").hidden) closeMenu(); });
+  document.addEventListener("keydown", e => {
+    if (e.key === "/" && document.activeElement.tagName !== "INPUT") { e.preventDefault(); document.body.classList.add("searching"); $("#search").focus(); }
+  });
+  addEventListener("hashchange", render);
+  render();
+
+  // ---- cover art: covers/<id>.png (portrait, 600x800) and covers/<id>-wide.png (16:9) replace the screenshots when they exist ----
+  const exists = url => fetch(url, {method:"HEAD", cache:"no-store"}).then(r => r.ok, () => false);
+  async function findCovers() {
+    let changed = false;
+    await Promise.all(GAMES.map(async g => {
+      const [c, w] = await Promise.all([exists(`covers/${g.id}.png`), exists(`covers/${g.id}-wide.png`)]);
+      const cover = c ? `covers/${g.id}.png` : null, wide = w ? `covers/${g.id}-wide.png` : null;
+      if (cover !== (g.cover || null) || wide !== (g.wide || null)) { g.cover = cover; g.wide = wide; changed = true; }
+    }));
+    if (changed && route().view !== "play") renderLobby(route());
+  }
+  findCovers();
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) findCovers(); });
+})();
+</script>
+</body>
+</html>

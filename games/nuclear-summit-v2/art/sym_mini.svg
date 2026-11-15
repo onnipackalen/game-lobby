@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 250" width="200" height="250">
+<style>.ol{stroke:#3b2a22;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}.il{fill:none;stroke:#3b2a22;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}</style>
+<!-- Mini Nuke (free spins only, v2): a slim hazard-orange warhead standing on its fins. Same Nuke-family
+     colours as the Nuke, but tall and narrow where the Nuke is round, so the two read apart; and no
+     briefcase shape, so it can't be confused with the nuclear briefcase pay symbol.
+     (The earlier Suitcase Nuke art is in art/old/sym_mini_v2_suitcase.svg.) -->
+<defs>
+  <clipPath id="mnBody"><path d="M66 214 L66 112 Q66 48 100 18 Q134 48 134 112 L134 214 Z"/></clipPath>
+  <pattern id="mnHaz" width="18" height="18" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+    <rect width="18" height="18" fill="#FF6A13"/><rect width="9" height="18" fill="#1B1B1F"/>
+  </pattern>
+</defs>
+<!-- fins -->
+<path class="ol" d="M66 170 L34 214 L34 236 L66 214 Z" fill="#1B1B1F"/>
+<path class="ol" d="M134 170 L166 214 L166 236 L134 214 Z" fill="#1B1B1F"/>
+<!-- body -->
+<path d="M66 214 L66 112 Q66 48 100 18 Q134 48 134 112 L134 214 Z" fill="#FF6A13"/>
+<g clip-path="url(#mnBody)">
+  <path d="M112 30 Q134 60 134 112 L134 214 L116 214 L116 104 Q116 62 104 34 Z" fill="#D9480F"/>
+  <rect x="60" y="188" width="80" height="26" fill="url(#mnHaz)"/>
+  <rect x="60" y="185" width="80" height="4" fill="#1B1B1F"/>
+  <rect x="60" y="66" width="80" height="9" fill="#1B1B1F"/>
+</g>
+<path class="ol" d="M66 214 L66 112 Q66 48 100 18 Q134 48 134 112 L134 214 Z" fill="none"/>
+<rect class="ol" x="60" y="212" width="80" height="14" rx="4" fill="#1B1B1F"/>
+<!-- trefoil badge -->
+<circle class="ol" cx="100" cy="132" r="25" fill="#FFF1E2"/>
+<g transform="translate(100 132) scale(0.66) translate(-100 -112)">
+  <path d="M104.5 104.2 L116 84.3 A32 32 0 0 1 132 112 L109 112 A9 9 0 0 0 104.5 104.2 Z M91 112 L68 112 A32 32 0 0 1 84 84.3 L95.5 104.2 A9 9 0 0 0 91 112 Z M104.5 119.8 L116 139.7 A32 32 0 0 1 84 139.7 L95.5 119.8 A9 9 0 0 0 104.5 119.8 Z" fill="#1B1B1F"/>
+  <circle cx="100" cy="112" r="6" fill="#1B1B1F"/>
+</g>
+<!-- highlight -->
+<ellipse cx="80" cy="96" rx="5" ry="18" fill="#FFB27A" transform="rotate(10 80 96)"/>
+</svg>

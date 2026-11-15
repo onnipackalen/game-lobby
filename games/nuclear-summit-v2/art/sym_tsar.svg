@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 250" width="200" height="250">
+<style>.ol{stroke:#3b2a22;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}.il{fill:none;stroke:#3b2a22;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}</style>
+<!-- Tsar Bomba (free spins only, v2): the fattest bomb, crimson with gold bands and a gold star.
+     Wider than the Nuke and red, not orange, so the two never read alike. -->
+<defs><clipPath id="tkBody"><ellipse cx="100" cy="148" rx="88" ry="96"/></clipPath></defs>
+<!-- tail fins -->
+<path class="ol" d="M58 66 L142 66 L166 6 L34 6 Z" fill="#3B3B4F"/>
+<path d="M72 58 L128 58 L146 14 L54 14 Z" fill="#26263A"/>
+<path d="M100 14 L100 58" stroke="#55556A" stroke-width="3" stroke-linecap="round"/>
+<!-- body -->
+<ellipse cx="100" cy="148" rx="88" ry="96" fill="#C81E36"/>
+<g clip-path="url(#tkBody)">
+  <path d="M188 116 Q184 204 120 250 L200 250 L200 50 Z" fill="#9E1528"/>
+  <rect x="0" y="62" width="200" height="14" fill="#F2B705"/>
+  <rect x="0" y="190" width="200" height="12" fill="#F2B705"/>
+</g>
+<ellipse class="ol" cx="100" cy="148" rx="88" ry="96" fill="none"/>
+<!-- trefoil badge -->
+<circle class="ol" cx="100" cy="132" r="44" fill="#FFF4D6"/>
+<g transform="translate(100 132) scale(1.15) translate(-100 -112)">
+  <path d="M104.5 104.2 L116 84.3 A32 32 0 0 1 132 112 L109 112 A9 9 0 0 0 104.5 104.2 Z M91 112 L68 112 A32 32 0 0 1 84 84.3 L95.5 104.2 A9 9 0 0 0 91 112 Z M104.5 119.8 L116 139.7 A32 32 0 0 1 84 139.7 L95.5 119.8 A9 9 0 0 0 104.5 119.8 Z" fill="#1B1B1F"/>
+  <circle cx="100" cy="112" r="6" fill="#1B1B1F"/>
+</g>
+<!-- gold star -->
+<g transform="translate(100 222) scale(1.25) translate(-100 -189)">
+  <path class="ol" d="M100 176 L103.5 185 L113 185.3 L105.5 191 L108.2 200 L100 194.6 L91.8 200 L94.5 191 L87 185.3 L96.5 185 Z" fill="#F2B705" style="stroke-width:2"/>
+</g>
+<!-- highlight -->
+<ellipse cx="38" cy="112" rx="8" ry="22" fill="#F0607A" transform="rotate(12 38 112)"/>
+</svg>

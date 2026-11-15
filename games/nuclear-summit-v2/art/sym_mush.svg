@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 250" width="200" height="250">
+<style>.ol{stroke:#3b2a22;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}.il{fill:none;stroke:#3b2a22;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}</style>
+<!-- Mushroom cloud (explosion effect, v2): a fiery cap with a hot core over a dust base, so blasts read
+     as fire rather than pastel candy floss. -->
+<!-- dust base -->
+<circle class="ol" cx="58" cy="214" r="20" fill="#B49A80"/><circle class="ol" cx="142" cy="214" r="20" fill="#B49A80"/>
+<circle class="ol" cx="84" cy="222" r="22" fill="#B49A80"/><circle class="ol" cx="116" cy="222" r="22" fill="#B49A80"/>
+<ellipse cx="100" cy="226" rx="50" ry="13" fill="#B49A80"/>
+<path d="M60 236 Q100 246 140 236 Q100 240 60 236 Z" fill="#8F7660"/>
+<!-- stem -->
+<path class="ol" d="M82 214 Q88 160 90 116 L110 116 Q112 160 118 214 Z" fill="#F4A259"/>
+<path d="M104 118 Q106 160 112 212 L117 213 Q112 160 110 116 Z" fill="#D9792F"/>
+<ellipse class="ol" cx="100" cy="164" rx="34" ry="9" fill="#E8553A"/>
+<!-- cap -->
+<circle class="ol" cx="52" cy="88" r="26" fill="#FF6B1A"/><circle class="ol" cx="148" cy="92" r="24" fill="#FF6B1A"/>
+<circle class="ol" cx="76" cy="58" r="28" fill="#FF6B1A"/><circle class="ol" cx="124" cy="58" r="28" fill="#FF6B1A"/>
+<circle class="ol" cx="100" cy="44" r="32" fill="#FF6B1A"/>
+<ellipse cx="100" cy="88" rx="62" ry="34" fill="#FF6B1A"/>
+<path class="ol" d="M40 104 Q100 142 160 104 Q166 118 150 124 Q100 144 50 124 Q34 118 40 104 Z" fill="#C8381A"/>
+<!-- hot core -->
+<ellipse cx="100" cy="74" rx="36" ry="20" fill="#FFB347"/>
+<ellipse cx="100" cy="70" rx="20" ry="10" fill="#FFF1C8"/>
+<circle cx="64" cy="66" r="6" fill="#FFB347"/><circle cx="138" cy="74" r="5" fill="#FFB347"/><circle cx="92" cy="30" r="5" fill="#FFD08A"/>
+</svg>

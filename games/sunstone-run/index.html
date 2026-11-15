@@ -1,0 +1,2184 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sunstone Run</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Limelight&family=Josefin+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+<style>
+/* Layout: an explorer's map of Africa (ocean, terrain bands, rivers, 30 cities joined by caravan roads) beside a stake ledger; on phones the map follows the camel and the action buttons dock to the bottom edge. Single dark look by choice. */
+:root {
+  color-scheme: dark;
+  --bg: #130e27;
+  --panel: #1e1739;
+  --raise: #2b2150;
+  --sand: #f3c979;
+  --clay: #ff8a44;
+  --teal: #3ad6b6;
+  --crimson: #ff4b6e;
+  --ice: #9be7ff;
+  --jungle: #6fd07a;
+  --ink: #fbf4e6;
+  --muted: #b3a8d4;
+  --line: rgba(243, 201, 121, 0.16);
+  --f-display: "Bungee", "Impact", "Arial Black", system-ui, sans-serif;
+  --f-body: "Rubik", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+[hidden] { display: none !important; }
+html, body { background: var(--bg); }
+body {
+  margin: 0; color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.5;
+  background:
+    radial-gradient(1100px 520px at 15% -10%, rgba(255,138,68,.13), transparent 60%),
+    radial-gradient(900px 600px at 105% 105%, rgba(58,214,182,.07), transparent 60%),
+    var(--bg);
+  min-height: 100%;
+}
+.app {
+  max-width: 1320px; margin: 0 auto; padding-block: 18px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 16px;
+}
+
+/* Header */
+.top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 20px; }
+.brand { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.brand svg { flex: none; width: 52px; height: 52px; filter: drop-shadow(0 0 14px rgba(255,138,68,.55)); }
+.brand h1 {
+  margin: 0; font-family: var(--f-display); font-weight: 400;
+  font-size: clamp(28px, 5vw, 46px); line-height: .95; letter-spacing: .01em;
+  background: linear-gradient(180deg, #ffe7a8 0%, var(--sand) 45%, var(--clay) 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 3px 0 #5a2a14);
+}
+.brand p { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+.wallet { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.purse {
+  display: flex; align-items: center; gap: 10px; padding: 6px 16px 6px 8px; border-radius: 999px;
+  background: linear-gradient(180deg, var(--raise), var(--panel)); border: 1px solid var(--line);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+}
+.coin {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff2c2, var(--sand) 45%, #b9792f);
+  box-shadow: inset 0 -2px 0 rgba(0,0,0,.25), 0 0 12px rgba(243,201,121,.4);
+  display: grid; place-items: center; color: #6e431b; font: 400 13px var(--f-display);
+}
+.session { display: flex; align-items: baseline; gap: 8px; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.session b { font-family: var(--f-display); font-weight: 400; font-size: 15px; color: var(--ink); }
+.session b.pos { color: var(--teal); }
+.session b.neg { color: var(--crimson); }
+.purse b { font-family: var(--f-display); font-weight: 400; font-size: 22px; font-variant-numeric: tabular-nums; }
+.purse.bump b { animation: bump .5s; }
+.iconbtn, .linkbtn {
+  background: var(--panel); border: 1px solid var(--line); color: var(--muted);
+  border-radius: 999px; cursor: pointer; font: 500 13px var(--f-body);
+  min-height: 40px; padding: 0 14px; display: inline-flex; align-items: center; gap: 6px;
+}
+.iconbtn:hover, .linkbtn:hover { color: var(--ink); border-color: var(--sand); }
+
+.grid { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 960px) { .grid { grid-template-columns: minmax(0, 1fr) 350px; align-items: start; } }
+
+/* Map */
+.map-wrap {
+  position: relative; min-width: 0; border-radius: 24px; overflow: hidden;
+  border: 1px solid rgba(243,201,121,.22);
+  box-shadow: 0 30px 60px -30px rgba(0,0,0,.7), inset 0 0 0 1px rgba(255,255,255,.03);
+  background: #0d1a3a;
+}
+.map-wrap.shake { animation: shake .45s; }
+#map { display: block; width: 100%; touch-action: manipulation; }
+#fx { position: absolute; left: 0; top: 0; pointer-events: none; }
+.flash { position: absolute; inset: 0; pointer-events: none; opacity: 0; background: radial-gradient(circle at 50% 50%, transparent 30%, rgba(255,40,80,.55) 100%); }
+.flash.gold { background: radial-gradient(circle at 50% 50%, rgba(255,210,120,.35), rgba(255,138,68,.15) 60%, transparent 100%); }
+.flash.on { animation: flash .7s ease-out; }
+.viewbtn {
+  position: absolute; left: 12px; bottom: 58px; z-index: 4;
+  background: rgba(19,14,39,.85); color: var(--ink); border: 1px solid var(--line);
+  border-radius: 999px; padding: 0 14px; min-height: 38px; font: 600 13px var(--f-body); cursor: pointer;
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+}
+
+.banner {
+  position: absolute; left: 50%; top: 14px; transform: translateX(-50%); z-index: 5;
+  width: max-content; max-width: calc(100% - 28px);
+  padding: 12px 22px; border-radius: 18px; text-align: center;
+  background: rgba(19,14,39,.9); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  border: 2px solid var(--sand); box-shadow: 0 16px 40px rgba(0,0,0,.45);
+  animation: drop .45s cubic-bezier(.2,.9,.3,1.35);
+  cursor: pointer; transition: opacity .5s, transform .5s;
+}
+.banner.fade { opacity: 0; transform: translate(-50%, -12px) scale(.96); pointer-events: none; }
+.banner .t { font-family: var(--f-display); font-size: clamp(15px, 2.6vw, 21px); line-height: 1.15; }
+.banner .amt { display: block; font-family: var(--f-display); font-size: clamp(26px, 5vw, 40px); line-height: 1.1; font-variant-numeric: tabular-nums; }
+.banner small { display: block; font-size: 13px; font-weight: 500; color: var(--muted); }
+.banner.lose { border-color: var(--crimson); }
+.banner.lose .amt { color: var(--crimson); }
+.banner.win { border-color: var(--teal); }
+.banner.win .amt { color: var(--teal); }
+.banner.sun { border-color: var(--clay); box-shadow: 0 0 50px rgba(255,138,68,.5), 0 16px 40px rgba(0,0,0,.45); }
+.banner.sun .amt { background: linear-gradient(180deg,#fff2c2,var(--sand),var(--clay)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+.legend {
+  display: flex; flex-wrap: wrap; gap: 6px 16px; padding: 11px 16px 13px;
+  background: rgba(19,14,39,.9); border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px;
+}
+.legend span { display: inline-flex; align-items: center; gap: 7px; }
+.legend i { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+
+/* Panel */
+.panel {
+  display: grid; gap: 16px; padding: 18px; border-radius: 24px;
+  background: linear-gradient(180deg, var(--raise) 0%, var(--panel) 40%);
+  border: 1px solid var(--line); box-shadow: 0 30px 60px -30px rgba(0,0,0,.7);
+}
+.field { display: grid; gap: 8px; }
+.lbl { font-size: 11.5px; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); font-weight: 500; }
+.betrow { display: grid; grid-template-columns: minmax(0,1fr) auto auto auto; gap: 6px; }
+.betbox { position: relative; min-width: 0; }
+.betbox .coin { position: absolute; left: 9px; top: 50%; transform: translateY(-50%); width: 24px; height: 24px; font-size: 10px; pointer-events: none; }
+.betbox input {
+  width: 100%; box-sizing: border-box; min-width: 0; background: var(--bg); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 14px; padding: 10px 10px 10px 42px; min-height: 46px;
+  font: 400 19px var(--f-display); font-variant-numeric: tabular-nums;
+}
+.betbox input:focus-visible, select:focus-visible { outline: 2px solid var(--sand); outline-offset: 1px; }
+.chip {
+  background: var(--raise); color: var(--ink); border: 1px solid var(--line);
+  border-radius: 14px; padding: 0 12px; min-height: 46px; min-width: 46px; font: 700 14px var(--f-body); cursor: pointer;
+}
+.chip:hover:not(:disabled) { border-color: var(--sand); color: var(--sand); }
+.chip:disabled, select:disabled, .betbox input:disabled { opacity: .5; cursor: not-allowed; }
+
+.terrain { display: grid; gap: 6px; }
+.terrain div {
+  display: grid; grid-template-columns: 26px minmax(0,1fr) auto; gap: 10px; align-items: center;
+  padding: 8px 10px; border-radius: 14px; background: var(--bg); border: 1px solid var(--line);
+}
+.terrain svg { width: 34px; height: 34px; }
+.terrain div { grid-template-columns: 34px minmax(0,1fr) !important; }
+.terrain .mines-rock path:first-child { fill: #8c6a3a; }
+.terrain b { font-family: var(--f-display); font-weight: 400; font-size: 12.5px; letter-spacing: .02em; }
+.terrain small { display: block; color: var(--muted); font-size: 12px; line-height: 1.3; }
+
+.note { margin: 0; font-size: 12.5px; color: var(--muted); }
+.note b { color: var(--ice); font-weight: 600; }
+
+.autorow { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.autorow label { font-size: 13.5px; color: var(--ink); }
+.autorow label small { display: block; color: var(--muted); font-size: 12px; }
+select {
+  background: var(--bg); color: var(--ink); border: 1px solid var(--line);
+  border-radius: 12px; padding: 0 12px; min-height: 42px; font: 500 14px var(--f-body); cursor: pointer;
+}
+
+.readout { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 8px; }
+.readout #water { color: #7fd0ff; }
+.readout #water.low { color: var(--crimson); }
+.readout > div { background: var(--bg); border-radius: 16px; padding: 10px 12px; border: 1px solid var(--line); display: grid; gap: 1px; min-width: 0; }
+.readout span { font-size: 10.5px; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); }
+.readout b { font-family: var(--f-display); font-weight: 400; font-size: 23px; font-variant-numeric: tabular-nums; line-height: 1.25; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.readout #runVal { color: var(--teal); }
+.readout #starPays { color: var(--ice); text-shadow: 0 0 12px rgba(155,231,255,.45); }
+.readout #starPays.grow { animation: bump .6s; }
+.readout #gems svg { width: 20px; height: 20px; flex: none; }
+.preview { margin: 0; padding: 10px 12px; border-radius: 14px; border: 1px dashed var(--line); font-size: 13.5px; color: var(--muted); min-height: 1.5em; }
+.preview b { color: var(--ink); font-weight: 600; }
+.preview .r { color: var(--crimson); font-weight: 600; }
+.preview .m { color: var(--sand); font-family: var(--f-display); font-weight: 400; }
+
+.actions { display: grid; gap: 10px; }
+.btn {
+  width: 100%; border: 0; border-radius: 18px; cursor: pointer;
+  padding: 15px 14px; min-height: 58px; font-family: var(--f-display); font-size: 18px; letter-spacing: .02em;
+  transition: transform .08s, filter .15s, opacity .15s, box-shadow .15s;
+}
+.btn:hover:not(:disabled) { filter: brightness(1.07); }
+.btn:active:not(:disabled) { transform: translateY(3px); }
+.btn:disabled { opacity: .35; cursor: not-allowed; }
+.btn.go { background: linear-gradient(180deg, #ffe09c, var(--sand)); color: #3a2208; box-shadow: 0 5px 0 #a8692a, 0 10px 24px -10px rgba(243,201,121,.6); }
+.btn.go:active:not(:disabled) { box-shadow: 0 2px 0 #a8692a; }
+.btn.go.riding { background: linear-gradient(180deg, #d9cff7, #a99be0); box-shadow: 0 5px 0 #5f4f9c; color: #1e1739; }
+.btn.cash { background: linear-gradient(180deg, #7ff0d6, var(--teal)); color: #052a22; box-shadow: 0 5px 0 #1f8c74, 0 10px 24px -10px rgba(58,214,182,.6); }
+.btn.cash:active:not(:disabled) { box-shadow: 0 2px 0 #1f8c74; }
+.btn.cash.hot:not(:disabled) { animation: glow 1.1s ease-in-out infinite; }
+.btn .sub { display: block; font-family: var(--f-body); font-weight: 500; font-size: 12px; letter-spacing: .02em; opacity: .75; }
+.btn:focus-visible, .chip:focus-visible, .iconbtn:focus-visible, .linkbtn:focus-visible, .viewbtn:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+.status { margin: 0; min-height: 1.5em; font-size: 14px; color: var(--ink); }
+.hint { margin: -4px 0 0; font-size: 12px; color: var(--muted); text-align: center; }
+.hint kbd { font: 500 11px var(--f-body); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 6px; padding: 1px 6px; color: var(--ink); }
+.broke { margin: 0; padding: 10px 12px; border-radius: 14px; border: 1px dashed var(--sand); font-size: 13.5px; display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+
+@media (max-width: 959px) {
+  body { padding-bottom: 104px; }
+  .actions {
+    position: fixed; z-index: 20; left: 0; right: 0; bottom: 0;
+    grid-template-columns: 1fr 1fr; gap: 8px;
+    padding: 10px max(12px, env(safe-area-inset-right, 0px)) calc(10px + env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px));
+    background: rgba(19,14,39,.92); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    border-top: 1px solid var(--line);
+  }
+  .btn { min-height: 64px; font-size: 15px; padding: 10px 8px; }
+  .hint { display: none; }
+}
+
+/* Lower section */
+.lower { display: grid; gap: 16px; grid-template-columns: minmax(0,1fr); }
+@media (min-width: 960px) { .lower { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); } }
+.card { padding: 18px 20px; border-radius: 24px; border: 1px solid var(--line); background: rgba(30,23,57,.6); min-width: 0; }
+.card h2 { margin: 0 0 12px; font-family: var(--f-display); font-weight: 400; font-size: 17px; color: var(--sand); letter-spacing: .02em; }
+.tokens { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 14px; }
+.tok-card { display: grid; grid-template-columns: 44px minmax(0,1fr); gap: 10px; align-items: center; padding: 10px; border-radius: 16px; background: var(--bg); border: 1px solid var(--line); }
+.tok-card svg { width: 44px; height: 44px; }
+.tok-card b { display: block; font-family: var(--f-display); font-weight: 400; font-size: 13px; }
+.tok-card span { display: block; font-size: 12.5px; color: var(--muted); line-height: 1.35; }
+.rules { margin: 0; padding-left: 20px; display: grid; gap: 6px; max-width: 66ch; }
+.rules li::marker { color: var(--sand); font-family: var(--f-display); }
+.fine { margin: 12px 0 0; font-size: 13px; color: var(--muted); }
+.hist { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.hist li {
+  display: grid; grid-template-columns: auto minmax(0,1fr) auto; gap: 10px; align-items: center;
+  padding: 8px 10px; border-radius: 14px; background: var(--bg); border: 1px solid var(--line);
+  font-size: 13.5px; font-variant-numeric: tabular-nums;
+}
+.hist li:first-child { animation: slidein .4s ease-out; }
+.hist .tag { font-family: var(--f-display); font-size: 12px; padding: 3px 9px; border-radius: 9px; }
+.hist .tag.lose { background: rgba(255,75,110,.16); color: var(--crimson); }
+.hist .tag.win { background: rgba(58,214,182,.16); color: var(--teal); }
+.hist .tag.sun { background: rgba(255,138,68,.2); color: var(--clay); }
+.hist .what { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hist .amt { font-weight: 700; }
+.hist .amt.pos { color: var(--teal); }
+.hist .amt.neg { color: var(--crimson); }
+.empty { color: var(--muted); font-size: 14px; margin: 0; }
+
+/* SVG map */
+.grat { stroke: #8fb4ff; stroke-opacity: .08; stroke-width: 1; fill: none; }
+.lat-line { stroke: var(--sand); stroke-opacity: .28; stroke-width: 1.2; stroke-dasharray: 6 6; fill: none; }
+.lat-label { fill: var(--sand); fill-opacity: .8; font: 600 8.5px var(--f-body); letter-spacing: .18em; paint-order: stroke; stroke: #0d1a3a; stroke-width: 3; stroke-linejoin: round; }
+.sea-label { fill: #9cc1ff; fill-opacity: .45; font: italic 500 12px var(--f-body); letter-spacing: .3em; text-anchor: middle; }
+.shelf { fill: none; stroke: #6fe3ff; stroke-opacity: .13; stroke-width: 14; stroke-linejoin: round; }
+.otherland { fill: #34395a; fill-opacity: .7; stroke: #565c86; stroke-width: 1; stroke-linejoin: round; }
+.land-label { fill: #9aa0c8; fill-opacity: .6; font: 600 10px var(--f-body); letter-spacing: .35em; text-anchor: middle; }
+.land { fill: url(#gLand); stroke: #5a3a1a; stroke-width: 2; stroke-linejoin: round; }
+.river { fill: none; stroke: #5fb7ff; stroke-width: 2; stroke-opacity: .75; stroke-linecap: round; stroke-linejoin: round; }
+.lake { fill: #5fb7ff; fill-opacity: .8; }
+.dune { fill: none; stroke: #b98a45; stroke-opacity: .45; stroke-width: 1.3; stroke-linecap: round; }
+.tree { fill: #2f6b3a; opacity: .55; }
+.road { fill: none; stroke: #3a2208; stroke-opacity: .55; stroke-width: 2.2; stroke-dasharray: 1 5; stroke-linecap: round; }
+.road.open { stroke: #fff2c2; stroke-opacity: .95; stroke-width: 3; stroke-dasharray: 2 6; animation: march .6s linear infinite; }
+.trail { fill: none; stroke: var(--sand); stroke-width: 4.5; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 5px rgba(243,201,121,.8)); }
+.footprint { fill: #3a2208; opacity: .55; }
+.compass text { fill: var(--sand); font: 400 11px var(--f-display); text-anchor: middle; }
+
+.node { cursor: default; }
+.node .city {
+  fill: #fff8ea; font: 600 10.5px var(--f-body); paint-order: stroke; stroke: #1b1030; stroke-width: 3; stroke-linejoin: round;
+  pointer-events: none;
+}
+.tok-back { stroke-width: 2.2; }
+.t-s .tok-back { fill: url(#gS); stroke: #6e431b; }
+.t-j .tok-back { fill: url(#gJ); stroke: #1d5a2a; }
+.t-r .tok-back { fill: url(#gR); stroke: #6a1a12; }
+.tok-inner { fill: none; stroke: #000; stroke-opacity: .25; stroke-width: 1.4; stroke-dasharray: 2 3; }
+.node .front { display: none; }
+.node.shown .front { display: inline; }
+.node.shown .back { display: none; }
+.tok-front { stroke-width: 2.6; }
+.node .ico { fill: none; stroke: currentColor; stroke-width: 3.4; stroke-linecap: round; stroke-linejoin: round; }
+.node.safe .tok-front { fill: #0f3a3b; stroke: var(--teal); }
+.node.safe .ico { color: var(--teal); }
+.node.gem .tok-front { fill: #0d2d48; stroke: var(--ice); }
+.node.gem .ico { color: var(--ice); }
+.node.gem .ico .solid { fill: #dff7ff; stroke: #2a8fc0; stroke-width: 1.6; }
+.node.bandit .tok-front { fill: #4a0c22; stroke: var(--crimson); }
+.node.bandit .ico { color: var(--crimson); }
+.node.sun .tok-front { fill: url(#gSun); stroke: #fff2c2; }
+.node.sun .ico .solid { fill: #fffaf0; stroke: #b9531c; stroke-width: 1.5; }
+.node.start .tok-front { fill: #2b2150; stroke: var(--sand); }
+.node.start .ico { color: var(--sand); }
+.node .rays { display: none; transform-box: fill-box; transform-origin: center; }
+.node.sun:not(.ghost) .rays { display: inline; animation: spin 9s linear infinite; }
+.node .rays path { fill: var(--clay); opacity: .65; }
+.node .halo { fill: none; stroke: var(--sand); stroke-width: 3; opacity: 0; transform-box: fill-box; transform-origin: center; }
+.t-j .halo { stroke: var(--jungle); }
+.t-r .halo { stroke: var(--crimson); }
+.node.choice { cursor: pointer; }
+.node.choice .halo { animation: pulse 1.2s ease-out infinite; }
+.node.choice .tok-back { stroke: #fff; stroke-width: 2.6; }
+.node .face { transform-box: fill-box; transform-origin: center; transition: transform .15s; }
+.node.choice .face { animation: wobble 1.6s ease-in-out infinite; }
+.node.choice:hover .face, .node.choice:focus .face, .node.choice.hover .face { animation: none; transform: scale(1.22); }
+.node:focus { outline: none; }
+.node.flipping .face { animation: flip .36s ease-in-out; }
+.node.ghost .face { opacity: .45; }
+.node .pill, .node .badge { display: none; pointer-events: none; }
+.node.choice .pill, .node.visited .pill, .node.choice .badge { display: inline; }
+.pin { transform-box: fill-box; transform-origin: center; }
+.pill rect { fill: rgba(19,14,39,.9); stroke: rgba(243,201,121,.5); stroke-width: 1.2; }
+.pill text { fill: var(--ink); font: 400 11.5px var(--f-display); text-anchor: middle; dominant-baseline: central; }
+.node.choice .pill rect { fill: var(--sand); stroke: #fff2c2; }
+.node.choice .pill text { fill: #3a2208; }
+.node.choice.t-j .pill rect { fill: var(--jungle); stroke: #d8ffd0; }
+.node.choice.t-j .pill text { fill: #0b2a10; }
+.node.choice.t-r .pill rect { fill: #ff7a64; stroke: #ffd6cc; }
+.node.choice.t-r .pill text { fill: #3a0a06; }
+.node.visited .pill rect { fill: rgba(15,58,59,.95); stroke: var(--teal); }
+.node.visited .pill text { fill: var(--teal); }
+.node.visited.gem .pill rect { fill: rgba(13,45,72,.95); stroke: var(--ice); }
+.node.visited.gem .pill text { fill: var(--ice); }
+.node.here .pill rect { fill: var(--teal); stroke: #b8fff0; }
+.node.here .pill text { fill: #052a22; }
+.node.visited.bandit .pill, .node.here .pill { display: none; }
+.pill .risk { fill: #7a0f22; }
+.node.visited .pill .risk, .node.back .pill .risk { display: none; }
+.node.picked .face { animation: none; transform: scale(1.3); }
+.node.picked .halo { animation: none; opacity: 1; stroke-width: 4; }
+.badge circle { fill: #130e27; stroke: #fff2c2; stroke-width: 1.4; }
+.badge text { fill: #fff2c2; font: 400 10px var(--f-display); text-anchor: middle; dominant-baseline: central; }
+.goal-ring { fill: none; stroke: var(--teal); stroke-width: 2; stroke-dasharray: 4 5; transform-box: fill-box; transform-origin: center; animation: spin 14s linear infinite; }
+.goal-tag { fill: var(--teal); font: 400 9px var(--f-display); text-anchor: middle; letter-spacing: .12em; paint-order: stroke; stroke: #0d1a3a; stroke-width: 3; }
+.node.missed .face { opacity: 1 !important; }
+.node.missed .halo { stroke: var(--clay); animation: pulse 1s ease-out infinite; }
+#camel .bob { animation: bob 1.4s ease-in-out infinite; }
+#camel.hit .bob { animation: hit .5s; }
+#camel.hit .hide { fill: #ff8fa3; }
+#camel.down { opacity: .6; transition: opacity .4s; }
+
+/* juice */
+.heat { --heat: 0; position: absolute; inset: 0; pointer-events: none; opacity: var(--heat); transition: opacity .7s;
+  background: radial-gradient(ellipse at 50% 45%, transparent 42%, rgba(255,130,50,.28) 78%, rgba(255,60,80,.55) 100%); }
+.heat.danger { animation: heatpulse 1.1s ease-in-out infinite; }
+.popfx { position: absolute; left: 0; top: 0; z-index: 6; pointer-events: none; white-space: nowrap;
+  font-family: var(--f-display); text-shadow: 0 3px 0 rgba(0,0,0,.5), 0 0 18px currentColor;
+  transform: translate(-50%, -50%); animation: floatup 1.15s ease-out forwards; }
+.popfx.safe { color: #8dfbe2; font-size: clamp(16px, 2.4vw, 24px); }
+.popfx.gem { color: var(--ice); font-size: clamp(20px, 3.2vw, 32px); animation-duration: 1.6s; }
+.popfx.callout { color: var(--sand); font-size: clamp(14px, 2.2vw, 20px); animation-duration: 1.9s; }
+.popfx.dodge { color: var(--teal); }
+.popfx.miss { color: #ffc27a; }
+.popfx.bigstamp { color: var(--crimson); font-size: 56px; letter-spacing: .02em; line-height: 1; padding: 0; background: none; border: 0; -webkit-text-stroke: 0; animation: stamp 1.4s cubic-bezier(.2,.9,.3,1.4) forwards; }
+.popfx.bigstamp.gold { color: #ffd77a; }
+.popfx.bigstamp.teal { color: #8dfbe2; }
+.node.suspense .face { animation: rattle .09s linear infinite; }
+.node.suspense .halo { animation: none; opacity: 1; stroke: #fff2c2; stroke-width: 4; }
+.node.justnow .pin { animation: pillpop .55s cubic-bezier(.2,.9,.3,1.7); }
+.fly-coin { position: fixed; left: 0; top: 0; z-index: 60; pointer-events: none; width: 22px; height: 22px; margin: -11px 0 0 -11px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff2c2, var(--sand) 45%, #b9792f); box-shadow: inset 0 -2px 0 rgba(0,0,0,.25), 0 0 12px rgba(243,201,121,.8); }
+#confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 55; }
+
+/* the Star of Africa */
+.node.star .tok-front { fill: url(#gStar); stroke: #ffffff; stroke-width: 3; }
+.node.star .ico { color: #ffffff; }
+.node.star .ico .solid { fill: #ffffff; stroke: #5fb7ff; stroke-width: 1.4; }
+.node.star:not(.ghost) .rays { display: inline; animation: spin 6s linear infinite; }
+.node.star .rays path { fill: #bfefff; opacity: .8; }
+.node.star.ghost .face, .node.star.missed .face { opacity: 1; }
+.node.scouted.choice.star .pill rect { fill: #dff7ff; stroke: #fff; }
+.node.scouted.choice.star .pill text { fill: #0d2d48; }
+.popfx.bigstamp.ice { color: #dff7ff; text-shadow: 0 3px 0 rgba(0,0,0,.5), 0 0 30px #9be7ff, 0 0 60px #5fb7ff; }
+.popfx.starhint { color: #dff7ff; font-size: clamp(15px, 2.4vw, 22px); animation-duration: 2.4s; }
+.banner.star { border-color: #dff7ff; box-shadow: 0 0 60px rgba(155,231,255,.6), 0 16px 40px rgba(0,0,0,.45); }
+.banner.star .amt { background: linear-gradient(180deg, #ffffff, #9be7ff, #5fb7ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.hist .tag.star { background: rgba(155,231,255,.18); color: var(--ice); }
+/* going back */
+.node.choice.back .halo { stroke: #ffffff; }
+.node.choice.back .pill rect { fill: rgba(255,255,255,.88); stroke: #ffffff; }
+.node.choice.back .pill text { fill: #1e1739; }
+.node.choice.back .face { animation: none; }
+/* landmarks */
+.lm-badge circle { fill: url(#gLm); stroke: #6e431b; stroke-width: 1.6; }
+.lm-badge use { color: #4a2a0c; }
+.lm-ico { fill: none; stroke: currentColor; stroke-width: 2.3; stroke-linecap: round; stroke-linejoin: round; }
+.lm-ico .solid { fill: currentColor; }
+.lm-in { transform-box: fill-box; transform-origin: center; }
+.node.choice .lm-in { animation: lmglow 1.1s ease-in-out infinite; }
+.node.visited .lm-badge circle { fill: #fff2c2; stroke: #ffd77a; filter: drop-shadow(0 0 5px #ffd77a); }
+.node .city.lm { fill: #ffe7a8; font-weight: 700; }
+.node.scouted .face { opacity: .92; }
+.node.cleared .tok-back { stroke: var(--teal); stroke-width: 2.6; stroke-dasharray: 3 2; }
+.node.scouted .tok-front { stroke-dasharray: 4 3; }
+.node.scouted.choice.bandit .pill rect { fill: var(--crimson); stroke: #ffd0d8; }
+.node.scouted.choice.bandit .pill text { fill: #fff; }
+.node.scouted.choice.sun .pill rect { fill: var(--clay); stroke: #fff2c2; }
+.popfx.landmark { color: #ffd77a; font-size: clamp(16px, 2.6vw, 26px); animation-duration: 2.1s; }
+.perks { display: flex; flex-wrap: wrap; gap: 6px; }
+.perks:empty { display: none; }
+.perk { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 999px; font-size: 12.5px; font-weight: 600; border: 1px solid var(--line); background: var(--bg); }
+.perk svg { width: 16px; height: 16px; }
+.perk.guide { color: var(--teal); border-color: rgba(58,214,182,.45); }
+.perk.bank { color: var(--sand); border-color: rgba(243,201,121,.45); }
+.perk.intel { color: var(--clay); border-color: rgba(255,138,68,.45); }
+.card.wide { grid-column: 1 / -1; }
+.passcount { font-family: var(--f-body); font-size: 13px; color: var(--muted); margin-left: 8px; letter-spacing: 0; }
+.passport { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+.stamp { display: grid; grid-template-columns: 44px minmax(0,1fr); gap: 10px; align-items: center; padding: 8px 10px; border-radius: 14px; background: var(--bg); border: 1px dashed var(--line); }
+.stamp svg { width: 44px; height: 44px; opacity: .35; filter: grayscale(1); }
+.stamp.got { border-style: solid; border-color: rgba(243,201,121,.45); }
+.stamp.got svg { opacity: 1; filter: none; transform: rotate(-9deg); }
+.stamp b { display: block; font-family: var(--f-display); font-weight: 400; font-size: 12.5px; }
+.stamp span { display: block; font-size: 12px; color: var(--muted); line-height: 1.3; }
+.stamp em { display: block; font-style: normal; font-size: 11px; color: var(--sand); margin-top: 2px; }
+.stamp:not(.got) em { color: var(--muted); opacity: .7; }
+@keyframes lmglow { 0%,100% { transform: scale(1); } 50% { transform: scale(1.3); } }
+/* Settings and Info sheets */
+.iconbtn svg { width: 16px; height: 16px; }
+.legend-more { margin-left: auto; background: none; border: 0; padding: 0; color: var(--sand); font: 600 12.5px var(--f-body); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.scrim { position: fixed; inset: 0; z-index: 70; background: rgba(8, 5, 20, .6); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
+.sheet {
+  position: fixed; z-index: 71; top: 0; right: 0; bottom: 0; width: min(460px, 100%);
+  display: flex; flex-direction: column;
+  background: linear-gradient(180deg, var(--raise), var(--panel) 30%);
+  border-left: 1px solid var(--line); box-shadow: -30px 0 60px -20px rgba(0,0,0,.7);
+  padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); padding-right: env(safe-area-inset-right, 0px);
+  animation: sheetin .28s cubic-bezier(.2,.8,.3,1);
+}
+.sheet-head, .tabs { flex: none; }
+.sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 20px 10px; }
+.sheet-head h2 { margin: 0; font-family: var(--f-display); font-weight: 400; font-size: 20px; color: var(--sand); }
+.x { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: var(--bg); color: var(--ink); font-size: 22px; line-height: 1; cursor: pointer; }
+.x:hover { border-color: var(--sand); }
+.x:focus-visible, .tabs button:focus-visible, .toggle:focus-visible, .legend-more:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+.tabs { display: flex; gap: 6px; padding: 4px 20px 12px; overflow-x: auto; border-bottom: 1px solid var(--line); }
+.tabs button { flex: none; background: var(--bg); color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 8px 14px; font: 600 13px var(--f-body); cursor: pointer; }
+.tabs button[aria-selected="true"] { background: var(--sand); color: #3a2208; border-color: var(--sand); }
+.sheet { overflow-x: hidden; }
+.sheet-body > *, .tabpanel > * { min-width: 0; }
+.sheet-body { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 16px 20px 28px; display: grid; gap: 14px; align-content: start; }
+.sheet-body h3 { margin: 6px 0 0; font-family: var(--f-display); font-weight: 400; font-size: 14px; color: var(--sand); letter-spacing: .02em; }
+.tabpanel { display: grid; gap: 12px; align-content: start; }
+.sheet .rules { padding-left: 22px; }
+.keys { margin: 0; font-size: 13px; color: var(--muted); line-height: 2; }
+.keys kbd { font: 600 11.5px var(--f-body); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 6px; padding: 1px 7px; color: var(--ink); background: var(--bg); }
+.facts { margin: 0; display: grid; gap: 6px; }
+.facts div { display: grid; grid-template-columns: 130px minmax(0,1fr); gap: 10px; padding: 8px 10px; border-radius: 12px; background: var(--bg); border: 1px solid var(--line); font-size: 13px; }
+.facts dt { color: var(--muted); }
+.facts dd { margin: 0; color: var(--ink); }
+.sheet .tokens { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); margin: 0; }
+.sheet .passport { grid-template-columns: 1fr; }
+.setting { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 14px; border-radius: 16px; background: var(--bg); border: 1px solid var(--line); }
+.setting b { display: block; font-size: 14.5px; color: var(--ink); }
+.setting small { display: block; color: var(--muted); font-size: 12.5px; line-height: 1.35; margin-top: 2px; max-width: 36ch; }
+.setting label { cursor: pointer; }
+.toggle { min-width: 104px; min-height: 40px; border-radius: 999px; border: 1px solid var(--teal); background: rgba(58,214,182,.14); color: var(--teal); font: 700 13px var(--f-body); cursor: pointer; }
+.toggle[aria-checked="false"] { border-color: var(--line); background: var(--panel); color: var(--muted); }
+.linkbtn.armed { border-color: var(--crimson); color: var(--crimson); }
+@keyframes sheetin { from { transform: translateX(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (max-width: 640px) {
+  .sheet { top: auto; left: 0; width: 100%; max-height: 88vh; border-left: 0; border-top: 1px solid var(--line); border-radius: 22px 22px 0 0; padding-left: env(safe-area-inset-left, 0px); animation-name: sheetup; }
+  .facts div { grid-template-columns: 1fr; gap: 2px; }
+  .wallet .iconbtn { padding: 0 12px; }
+  .legend-more { margin-left: 0; }
+}
+@keyframes sheetup { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes pulse { 0% { transform: scale(.85); opacity: .95; } 100% { transform: scale(1.35); opacity: 0; } }
+@keyframes wobble { 0%,100% { transform: rotate(0); } 25% { transform: rotate(-5deg); } 75% { transform: rotate(5deg); } }
+@keyframes flip { 0% { transform: scaleX(1); } 50% { transform: scaleX(0); } 100% { transform: scaleX(1); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes march { to { stroke-dashoffset: -8; } }
+@keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+@keyframes hit { 0%,100% { transform: translateX(0) rotate(0); } 20% { transform: translateX(-5px) rotate(-8deg); } 40% { transform: translateX(5px) rotate(6deg); } 60% { transform: translateX(-3px) rotate(-4deg); } 80% { transform: translateX(2px); } }
+@keyframes shake { 0%,100% { transform: translate(0,0); } 20% { transform: translate(-6px,3px); } 40% { transform: translate(6px,-3px); } 60% { transform: translate(-4px,2px); } 80% { transform: translate(3px,-1px); } }
+@keyframes drop { from { transform: translate(-50%, -20px) scale(.9); opacity: 0; } to { transform: translate(-50%, 0) scale(1); opacity: 1; } }
+@keyframes flash { 0% { opacity: 0; } 15% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes glow { 0%,100% { box-shadow: 0 5px 0 #1f8c74, 0 0 0 0 rgba(58,214,182,0); } 50% { box-shadow: 0 5px 0 #1f8c74, 0 0 26px 4px rgba(58,214,182,.55); } }
+@keyframes bump { 0% { transform: scale(1); } 40% { transform: scale(1.18); color: var(--teal); } 100% { transform: scale(1); } }
+@keyframes slidein { from { transform: translateY(-6px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes heatpulse { 0%,100% { filter: none; } 50% { filter: brightness(1.5) saturate(1.3); } }
+@keyframes floatup { 0% { opacity: 0; transform: translate(-50%, -30%) scale(.5); } 14% { opacity: 1; transform: translate(-50%, -75%) scale(1.2); } 28% { transform: translate(-50%, -85%) scale(1); } 75% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -210%) scale(1); } }
+@keyframes stamp {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(1.25) rotate(-5deg); }
+  14% { opacity: 1; transform: translate(-50%, -50%) scale(.97) rotate(-4deg); }
+  22% { transform: translate(-50%, -50%) scale(1) rotate(-4deg); }
+  80% { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(-4deg); }
+  100% { opacity: 0; transform: translate(-50%, -58%) scale(1) rotate(-4deg); }
+}
+@keyframes rattle { 0% { transform: rotate(-8deg) scale(1.15); } 50% { transform: rotate(8deg) scale(1.15); } 100% { transform: rotate(-8deg) scale(1.15); } }
+@keyframes pillpop { 0% { transform: scale(.6); } 60% { transform: scale(1.3); } 100% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+/* ===== Poster skin: an Art Deco travel-poster atlas (after 80 Days' flat poster look and its silhouette landmarks,
+   Ticket to Ride's route colours, Chicken Road's light-up multiplier bubbles). Cream paper, navy ink, flat colour,
+   offset "printed" shadows. Single light look by choice. ===== */
+:root {
+  color-scheme: light;
+  --bg: #efe3c8; --panel: #f8f0de; --raise: #ead9b4;
+  --sand: #c4841f; --gold: #e0a33c; --clay: #c8553d; --teal: #1f6f6b; --crimson: #b8372c;
+  --ice: #2d5d8f; --jungle: #3f7d4e; --ink: #1d2433; --cream: #f8f0de; --paper: #fffaf0;
+  --muted: #6b6152; --line: rgba(29, 36, 51, .25);
+  --f-display: "Limelight", "Didot", "Bodoni 72", Georgia, serif;
+  --f-body: "Josefin Sans", "Futura", "Century Gothic", system-ui, sans-serif;
+  --print: 4px 4px 0 var(--ink);
+}
+html, body { background: var(--bg); }
+body {
+  color: var(--ink); font-size: 15.5px;
+  background:
+    radial-gradient(1200px 600px at 10% -10%, rgba(255,255,255,.55), transparent 60%),
+    repeating-linear-gradient(0deg, rgba(29,36,51,.022) 0 1px, transparent 1px 5px),
+    var(--bg);
+}
+.brand svg { filter: none; }
+.brand h1 {
+  background: none; -webkit-background-clip: border-box; background-clip: border-box;
+  color: var(--ink); filter: none; font-weight: 400; letter-spacing: .03em;
+  text-shadow: 3px 3px 0 var(--gold);
+}
+.brand p { color: var(--muted); text-transform: uppercase; letter-spacing: .16em; font-size: 12px; font-weight: 600; }
+.purse, .session, .iconbtn, .linkbtn {
+  background: var(--paper); border: 2px solid var(--ink); border-radius: 6px; box-shadow: 3px 3px 0 var(--ink); color: var(--ink);
+}
+.purse b, .session b { font-family: var(--f-display); }
+.session { color: var(--muted); }
+.iconbtn, .linkbtn { font-weight: 700; letter-spacing: .04em; }
+.iconbtn:hover, .linkbtn:hover { color: var(--clay); border-color: var(--ink); transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--ink); }
+.coin { background: var(--gold); box-shadow: inset 0 0 0 2px var(--ink); color: var(--ink); font-family: var(--f-display); }
+
+.map-wrap { border: 3px solid var(--ink); border-radius: 6px; box-shadow: 7px 7px 0 var(--ink); background: #2a6d6a; }
+.legend { background: var(--paper); border-top: 3px solid var(--ink); color: var(--ink); font-weight: 600; }
+.legend i { box-shadow: inset 0 0 0 1.5px var(--ink); }
+.legend-more { color: var(--clay); }
+.viewbtn { background: var(--paper); color: var(--ink); border: 2px solid var(--ink); box-shadow: 3px 3px 0 var(--ink); border-radius: 6px; }
+
+.panel { background: var(--panel); border: 3px solid var(--ink); border-radius: 6px; box-shadow: 7px 7px 0 var(--ink); }
+.lbl { color: var(--ink); letter-spacing: .2em; font-weight: 700; }
+.betbox input { background: var(--paper); border: 2px solid var(--ink); border-radius: 4px; color: var(--ink); font-family: var(--f-display); }
+.chip { background: var(--paper); border: 2px solid var(--ink); border-radius: 4px; color: var(--ink); box-shadow: 2px 2px 0 var(--ink); }
+.chip:hover:not(:disabled) { color: var(--clay); border-color: var(--ink); }
+.readout > div { background: var(--paper); border: 2px solid var(--ink); border-radius: 4px; }
+.readout span { color: var(--muted); font-weight: 700; }
+.readout b { font-family: var(--f-display); }
+.readout #runVal { color: var(--teal); }
+.readout #water { color: var(--ice); }
+.readout #starPays { color: var(--ice); text-shadow: 2px 2px 0 rgba(224,163,60,.55); }
+.preview { border: 2px dashed rgba(29,36,51,.35); color: var(--muted); background: rgba(255,250,240,.6); border-radius: 4px; }
+.preview b { color: var(--ink); }
+.preview .r { color: var(--crimson); }
+.preview .m { color: #8a5a10; font-family: var(--f-display); }
+.btn { border: 3px solid var(--ink); border-radius: 6px; font-family: var(--f-display); letter-spacing: .04em; }
+.btn.go { background: var(--clay); color: var(--cream); box-shadow: 0 5px 0 var(--ink); }
+.btn.go:active:not(:disabled) { box-shadow: 0 2px 0 var(--ink); }
+.btn.go.riding { background: var(--ice); color: var(--cream); box-shadow: 0 5px 0 var(--ink); }
+.btn.cash { background: var(--teal); color: var(--cream); box-shadow: 0 5px 0 var(--ink); }
+.btn.cash:active:not(:disabled) { box-shadow: 0 2px 0 var(--ink); }
+.btn.cash.hot:not(:disabled) { animation: hotcash 1.1s ease-in-out infinite; }
+.btn .sub { font-family: var(--f-body); font-weight: 700; opacity: .9; }
+.btn:focus-visible, .chip:focus-visible, .iconbtn:focus-visible, .linkbtn:focus-visible, .viewbtn:focus-visible { outline: 3px solid var(--clay); outline-offset: 3px; }
+.status { color: var(--ink); }
+.perk { background: var(--paper); border: 2px solid var(--ink); }
+.broke { border: 2px dashed var(--ink); }
+@media (max-width: 959px) {
+  .actions { background: rgba(248,240,222,.97); border-top: 3px solid var(--ink); }
+}
+
+.status.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; margin: 0; }
+/* gems and thieves */
+.node.gem .tok-front { fill: var(--paper); stroke: var(--gemedge, var(--ice)); stroke-width: 3; }
+.node.gem .ico .solid { fill: var(--gemfill, #cfe3ff); stroke: var(--gemedge, var(--ice)); }
+.node.gem .ico { color: var(--gemedge, var(--ice)); }
+.node.thief .tok-front { fill: var(--ink); stroke: var(--crimson); stroke-width: 3; }
+.node.thief .ico { color: #ff6a55; }
+.node.thief .ico .solid { fill: #ff6a55; }
+.node.thief .ico .eye { fill: var(--ink); stroke: none; }
+.node.node.visited.gem .pill rect { fill: var(--gemfill, #cfe3ff); }
+.node.node.visited.gem .pill text { fill: var(--ink); }
+.node.node.visited.thief .pill rect { fill: #f3c6bd; }
+.node .back .tok-back { stroke-linejoin: round; }
+.node .back .tok-inner { fill: none; stroke: #1d2433; stroke-opacity: .45; stroke-width: 1.3; stroke-dasharray: none; stroke-linecap: round; }
+.popfx.theft { color: #ff8a75; font-size: clamp(22px, 3.4vw, 34px); }
+.popfx.gem-quartz { color: #f4f6f7; } .popfx.gem-topaz { color: #f2b54a; } .popfx.gem-emerald { color: #6fd39a; }
+.popfx.gem-ruby { color: #ff6b77; } .popfx.gem-sapphire { color: #7fa6ff; }
+.satchel { display: flex; flex-wrap: wrap; gap: 4px; min-height: 30px; align-items: center; }
+.satchel .sg { width: 28px; height: 28px; display: grid; place-items: center; border: 2px solid var(--ink); border-radius: 4px; background: var(--paper); animation: slidein .35s ease-out; }
+.satchel .sg svg { width: 22px; height: 22px; color: var(--gemedge); fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linejoin: round; }
+.satchel .sg .solid { fill: var(--gemfill); stroke: var(--gemedge); }
+.satchel .sg path:not(.solid) { stroke: var(--gemedge); }
+.satchel .sg.thief { background: var(--ink); }
+.satchel .sg.thief svg { color: #ff6a55; fill: none; stroke: currentColor; stroke-width: 3; }
+.satchel .sg.thief .solid { fill: #ff6a55; stroke: none; }
+.satchel .sg-empty { font-size: 12.5px; color: var(--muted); font-style: italic; }
+.tok-card svg { width: 44px; height: 44px; }
+.tok-card .thief-ico { fill: none; stroke: #ff6a55; stroke-width: 2.6; stroke-linecap: round; transform: scale(.95); }
+.tok-card .thief-ico .solid { fill: #ff6a55; stroke: none; }
+.tok-card .thief-ico .eye { fill: #1d2433; stroke: none; }
+.lg-gems i { margin-right: -3px; }
+.lg-gems i:last-of-type { margin-right: 4px; }
+/* travel journal (after 80 Days' diary) */
+.node.safemiss .halo { opacity: 1; stroke: var(--teal); stroke-width: 4; stroke-dasharray: 5 4; animation: spin 8s linear infinite; }
+.node.safemiss .face { opacity: 1 !important; }
+.clearroad-halo { fill: none; stroke: #fffaf0; stroke-width: 12; stroke-opacity: .95; stroke-linecap: round; }
+.clearroad { fill: none; stroke: var(--teal); stroke-width: 6; stroke-dasharray: 10 7; stroke-linecap: round; animation: march 1.2s linear infinite; }
+.popfx.road { color: #9fe3cf; }
+.ambush circle { fill: var(--ink); stroke: var(--crimson); stroke-width: 3; }
+.ambush .ambush-ring { fill: none; stroke: var(--crimson); stroke-width: 2.5; stroke-dasharray: 4 4; transform-box: fill-box; transform-origin: center; animation: spin 6s linear infinite; }
+.ambush use { color: #ff6a55; }
+.ambush .ico, .ambush use { fill: none; stroke: currentColor; stroke-width: 3.4; stroke-linecap: round; }
+.ambush text { fill: var(--crimson); font: 700 11px var(--f-body); text-anchor: middle; letter-spacing: .12em; text-transform: uppercase; paint-order: stroke; stroke: #f3e6cc; stroke-width: 3.4; stroke-linejoin: round; }
+.journal { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.journal:empty { display: none; }
+.journal li { display: grid; grid-template-columns: 52px minmax(0,1fr); gap: 8px; font-size: 13px; line-height: 1.35; color: var(--ink); }
+.journal li span { font-family: var(--f-display); color: var(--clay); font-size: 12px; }
+.journal li:not(:first-child) { opacity: .62; }
+.journal li:first-child { animation: slidein .35s ease-out; }
+
+.banner { background: var(--paper); border: 3px solid var(--ink); border-radius: 6px; box-shadow: 6px 6px 0 var(--ink); backdrop-filter: none; -webkit-backdrop-filter: none; }
+.banner small { color: var(--muted); font-weight: 600; }
+.banner.lose, .banner.win, .banner.sun, .banner.star { border-color: var(--ink); }
+.banner.lose .amt { color: var(--crimson); }
+.banner.win .amt { color: var(--teal); }
+.banner.sun .amt, .banner.star .amt { background: none; -webkit-background-clip: border-box; background-clip: border-box; color: var(--ice); }
+.banner.star, .banner.sun { box-shadow: 6px 6px 0 var(--gold), 0 0 0 3px var(--ink); }
+
+.popfx { text-shadow: 2px 2px 0 var(--ink), -1.5px -1.5px 0 var(--ink), 1.5px -1.5px 0 var(--ink), -1.5px 1.5px 0 var(--ink); -webkit-text-stroke: 0; }
+.popfx.safe { color: var(--cream); }
+.popfx.gem { color: #cfe3ff; }
+.popfx.callout, .popfx.landmark, .popfx.starhint { color: var(--gold); }
+.popfx.dodge { color: #9fe3cf; }
+.popfx.bigstamp { color: var(--clay); }
+.popfx.bigstamp.gold { color: var(--gold); }
+.popfx.bigstamp.teal { color: #9fe3cf; }
+.popfx.bigstamp.ice { color: #cfe3ff; text-shadow: 2px 2px 0 var(--ink), -1.5px -1.5px 0 var(--ink), 1.5px -1.5px 0 var(--ink), -1.5px 1.5px 0 var(--ink); }
+
+.scrim { background: rgba(29,36,51,.45); }
+.sheet { background: var(--panel); border-left: 3px solid var(--ink); box-shadow: -8px 0 0 rgba(29,36,51,.25); }
+.sheet-head h2, .sheet-body h3 { color: var(--ink); }
+.sheet-body h3 { color: var(--clay); }
+.x { background: var(--paper); border: 2px solid var(--ink); color: var(--ink); }
+.tabs { border-bottom: 2px solid var(--ink); }
+.tabs button { background: var(--paper); border: 2px solid var(--ink); color: var(--ink); border-radius: 4px; }
+.tabs button[aria-selected="true"] { background: var(--clay); color: var(--cream); border-color: var(--ink); }
+.setting, .facts div, .tok-card, .stamp, .hist li, .terrain div { background: var(--paper); border: 2px solid var(--ink); border-radius: 4px; }
+.stamp:not(.got) { border-style: dashed; }
+.toggle { border: 2px solid var(--ink); background: var(--teal); color: var(--cream); border-radius: 4px; }
+.toggle[aria-checked="false"] { background: var(--paper); color: var(--muted); border-color: var(--ink); }
+.keys kbd { background: var(--paper); border-color: var(--ink); }
+
+.note b { color: var(--ice); }
+@media (max-width: 640px) { .sheet { border-left: 0; border-top: 3px solid var(--ink); } }
+@media (max-width: 640px) {
+  .wallet { gap: 8px; width: 100%; }
+  .wallet .iconbtn { font-size: 0; gap: 0; padding: 0 11px; min-height: 42px; }
+  .wallet .iconbtn svg { width: 19px; height: 19px; }
+  .session { padding: 6px 10px; gap: 6px; font-size: 11.5px; }
+  .session { order: 9; }
+  .purse { padding: 4px 12px 4px 6px; }
+  .purse b { font-size: 19px; }
+  .purse .coin { width: 26px; height: 26px; }
+}
+
+/* ---- the map in poster colours ---- */
+.grat { stroke: #f8f0de; stroke-opacity: .09; }
+.lat-line { stroke: #f8f0de; stroke-opacity: .5; stroke-width: 1.2; }
+.lat-label { fill: #f8f0de; fill-opacity: 1; stroke: #2a6d6a; stroke-width: 3.5; font-family: var(--f-body); font-weight: 700; }
+.sea-label { fill: #f8f0de; fill-opacity: .75; font: 700 12px var(--f-body); letter-spacing: .42em; }
+.shelf { stroke: #f8f0de; stroke-opacity: .28; stroke-width: 10; }
+.land { fill: #efcf92; stroke: var(--ink); stroke-width: 2.4; }
+.savanna { fill: #cdb96c; stroke: #a18a3f; stroke-width: 1.2; stroke-dasharray: 2 4; }
+.jungle { fill: #78a058; stroke: #4c7a3a; stroke-width: 1.4; }
+.land-edge { fill: none; stroke: var(--ink); stroke-width: 2.4; stroke-linejoin: round; }
+.otherland { fill: #e6d8bc; fill-opacity: .9; stroke: var(--ink); stroke-opacity: .55; stroke-width: 1.4; }
+.land-label { fill: var(--ink); fill-opacity: .45; font: 700 10px var(--f-body); letter-spacing: .4em; }
+.river { stroke: #2a6d6a; stroke-opacity: .95; stroke-width: 2.4; }
+.lake { fill: #2a6d6a; fill-opacity: 1; stroke: var(--ink); stroke-width: 1.2; }
+.dune { stroke: #9b6a28; stroke-opacity: .5; }
+.tree { fill: #2c5a33; opacity: .55; }
+.road { stroke: var(--ink); stroke-opacity: .5; stroke-width: 2; stroke-dasharray: 1.5 5; }
+.road.open { stroke: var(--clay); stroke-opacity: 1; stroke-width: 3.2; stroke-dasharray: 6 5; }
+.trail { stroke: var(--clay); stroke-width: 4.5; filter: none; }
+.footprint { fill: var(--ink); opacity: .5; }
+.compass text { fill: var(--cream); font-family: var(--f-display); }
+.compass circle { stroke: #f8f0de; stroke-opacity: .6; }
+.compass path { fill: var(--gold); fill-opacity: .9; }
+.sil { fill: var(--ink); fill-opacity: .82; }
+.sil .snow { fill: #f8f0de; fill-opacity: 1; }
+.node .city { fill: var(--ink); stroke: #f3e6cc; stroke-width: 3.4; font-family: var(--f-body); font-weight: 700; font-size: 11px; }
+.node .city.lm { fill: #7a3b12; }
+.t-s .tok-back { fill: var(--gold); stroke: var(--ink); }
+.t-j .tok-back { fill: #5f8f4a; stroke: var(--ink); }
+.t-r .tok-back { fill: var(--clay); stroke: var(--ink); }
+.tok-inner { stroke: #f8f0de; stroke-opacity: .75; stroke-width: 1.3; }
+.node.choice .tok-back { stroke: var(--ink); stroke-width: 3; }
+.node .halo, .t-j .halo, .t-r .halo { stroke: var(--ink); }
+.node.safe .tok-front { fill: var(--paper); stroke: var(--teal); }
+.node.safe .ico { color: var(--teal); }
+.node.gem .tok-front { fill: var(--paper); stroke: var(--ice); }
+.node.gem .ico { color: var(--ice); }
+.node.gem .ico .solid { fill: #cfe3ff; stroke: var(--ice); }
+.node.bandit .tok-front { fill: var(--ink); stroke: var(--crimson); }
+.node.bandit .ico { color: #ff6a55; }
+.node.star .tok-front { fill: var(--ice); stroke: var(--ink); stroke-width: 3; }
+.node.star .ico .solid { fill: #f8f0de; stroke: var(--gold); }
+.node.star .rays path { fill: var(--gold); opacity: .95; }
+.node.start .tok-front { fill: var(--ink); stroke: var(--gold); }
+.node.start .ico { color: var(--gold); }
+.pill rect { fill: var(--paper); stroke: var(--ink); stroke-width: 1.5; }
+.pill text { fill: var(--ink); font-family: var(--f-display); font-size: 11.5px; }
+.node.choice .pill rect, .node.choice.t-j .pill rect, .node.choice.t-r .pill rect { fill: var(--paper); stroke: var(--ink); stroke-width: 2; }
+.node.choice .pill text, .node.choice.t-j .pill text, .node.choice.t-r .pill text { fill: var(--ink); }
+.pill .risk { fill: var(--crimson); }
+.node.choice.nopill:not(.back) .pill { display: none; }
+.node.visited .pill rect { fill: var(--gold); stroke: var(--ink); }          /* the bubble lights up once you've been there */
+.node.visited .pill text { fill: var(--ink); }
+.node.visited.gem .pill rect { fill: #cfe3ff; stroke: var(--ink); }
+.node.visited.gem .pill text { fill: var(--ink); }
+.node.here .pill rect { fill: var(--teal); }
+.node.here .pill text { fill: var(--cream); }
+.node.choice.back .pill rect { fill: #ffffff; stroke: var(--ink); }
+.node.choice.back .pill text { fill: var(--ink); }
+.node.choice.back .halo { stroke: var(--ink); }
+.badge circle { fill: var(--ink); stroke: var(--gold); }
+.badge text { fill: var(--gold); font-family: var(--f-display); }
+.lm-badge circle { fill: var(--gold); stroke: var(--ink); stroke-width: 1.8; }
+.lm-badge use { color: var(--ink); }
+.node.visited .lm-badge circle { fill: #fff6d8; stroke: var(--ink); filter: none; }
+.goal-ring { stroke: var(--clay); stroke-width: 2.5; }
+.goal-tag { fill: var(--clay); stroke: #f3e6cc; stroke-width: 3.4; font-family: var(--f-display); }
+@keyframes hotcash { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); box-shadow: 0 7px 0 var(--ink); } }
+</style>
+
+<canvas id="confetti" aria-hidden="true"></canvas>
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <svg viewBox="-30 -30 60 60" aria-hidden="true">
+        <g fill="#1d2433" id="logoRays"></g>
+        <circle r="17" fill="#e0a33c" stroke="#1d2433" stroke-width="3"/>
+        <path d="M-10 6 L-3 -6 L0 -1 L3 -5 L10 6 Z" fill="#1d2433"/>
+      </svg>
+      <div>
+        <h1>Sunstone Run</h1>
+        <p>Cairo to the Cape. Pick your roads, find the Stars of Africa.</p>
+      </div>
+    </div>
+    <div class="wallet">
+      <div class="session" id="session" title="Since you opened the game">
+        <span>Session</span><b id="sessNet">±0.00</b><span id="sessTime">0 min</span>
+      </div>
+      <div class="purse" id="purse"><span class="coin">$</span><b id="balance">1,000.00</b></div>
+      <button class="iconbtn" id="openInfo" type="button" aria-haspopup="dialog" aria-controls="infoSheet" aria-label="Info">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10 9v5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="10" cy="6" r="1.2" fill="currentColor"/></svg>Info</button>
+      <button class="iconbtn" id="openSettings" type="button" aria-haspopup="dialog" aria-controls="settingsSheet" aria-label="Settings">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 6h9M15 6h2M3 14h2M8 14h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="13.5" cy="6" r="2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="6.5" cy="14" r="2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>Settings</button>
+    </div>
+  </header>
+
+  <main class="grid">
+    <section class="map-wrap" id="mapWrap" aria-label="Map of Africa">
+      <svg id="map" role="img" aria-label="Map of Africa with 30 cities joined by caravan roads"></svg>
+      <canvas id="fx"></canvas>
+      <div class="heat" id="heat"></div>
+      <div class="flash" id="flash"></div>
+      <button class="viewbtn" id="viewBtn" type="button" hidden>Whole map</button>
+      <div class="banner" id="banner" hidden></div>
+      <div class="legend">
+        <span><i style="background:var(--sand)"></i>Trade road</span>
+        <span><i style="background:var(--jungle)"></i>Jungle</span>
+        <span><i style="background:#ff7a64"></i>Wild lands</span>
+        <span><i style="background:radial-gradient(circle at 35% 30%,#fff2c2,#f3c979 55%,#c58a45);box-shadow:inset 0 0 0 1.5px #6e431b"></i>Landmark</span>
+        <span class="lg-gems"><i style="background:#f4f6f7"></i><i style="background:#f2b54a"></i><i style="background:#3fa36a"></i><i style="background:#d23d4a"></i><i style="background:#2f62c4"></i>Gems</span>
+        <button class="legend-more" type="button" data-info-tab="cities">What's under the tokens?</button>
+      </div>
+    </section>
+
+    <aside class="panel" aria-label="Your stake">
+      <div class="field">
+        <label class="lbl" for="bet">Stake</label>
+        <div class="betrow">
+          <div class="betbox"><span class="coin">$</span><input id="bet" type="number" min="1" step="1" value="10" inputmode="decimal"></div>
+          <button class="chip" id="half" type="button" aria-label="Halve stake">½</button>
+          <button class="chip" id="double" type="button" aria-label="Double stake">2×</button>
+          <button class="chip" id="max" type="button" aria-label="Stake all credits">Max</button>
+        </div>
+      </div>
+
+      <div class="readout">
+        <div><span>Cash-out value</span><b id="runVal">—</b></div>
+        <div><span>Water, days</span><b id="water"></b></div>
+        <div><span>Star pays</span><b id="starPays"></b></div>
+      </div>
+      <div class="satchel" id="satchel" aria-label="Gems found this run"></div>
+      <div class="perks" id="perks"></div>
+      <p class="preview" id="preview">Set out from Cairo, then tap a glowing city.</p>
+      <ol class="journal" id="journal" aria-label="Travel journal"></ol>
+
+      <div class="actions">
+        <button class="btn go" id="primary" type="button">Set out</button>
+        <button class="btn cash" id="cashout" type="button" disabled>Cash out</button>
+      </div>
+      <p class="status" id="status" aria-live="polite"></p>
+      <p class="broke" id="broke" hidden>The purse is empty. <button class="chip" id="refill" type="button">Refill 1,000</button></p>
+    </aside>
+  </main>
+</div>
+
+<div class="scrim" id="scrim" hidden></div>
+
+<section class="sheet" id="infoSheet" role="dialog" aria-modal="true" aria-labelledby="infoTitle" hidden>
+  <div class="sheet-head">
+    <h2 id="infoTitle">Info</h2>
+    <button class="x" type="button" data-close aria-label="Close Info">×</button>
+  </div>
+  <div class="tabs" role="tablist" aria-label="Info sections">
+    <button role="tab" id="tab-rules" aria-controls="panel-rules" aria-selected="true" data-tab="rules">How to play</button>
+    <button role="tab" id="tab-cities" aria-controls="panel-cities" aria-selected="false" data-tab="cities" tabindex="-1">Cities &amp; terrain</button>
+    <button role="tab" id="tab-pass" aria-controls="panel-pass" aria-selected="false" data-tab="pass" tabindex="-1">Landmarks</button>
+    <button role="tab" id="tab-hist" aria-controls="panel-hist" aria-selected="false" data-tab="hist" tabindex="-1">Recent runs</button>
+  </div>
+  <div class="sheet-body">
+    <div class="tabpanel" role="tabpanel" id="panel-rules" aria-labelledby="tab-rules">
+      <ol class="rules">
+        <li>Choose a stake and set out from Cairo for Cape Town.</li>
+        <li>Every city has a rock. Pick a road, and the rock is turned when you arrive.</li>
+        <li>Under it is a gem that multiplies your run (Quartz ×1.1, Topaz ×1.25, Emerald ×1.5, Ruby ×2, Sapphire ×3) or a thief. Robbers take everything and end the run; pickpockets steal half.</li>
+        <li>From every city there is always at least one road toward Cape Town with no robbers on it, only the odd pickpocket. You won't know which road it is, so there's always a way through. If you're robbed, the safe road you missed is shown.</li>
+        <li>The terrain tells you what to expect: trade roads hold smaller gems, while jungle, wild lands and the Diamond Mines hold bigger gems and more thieves.</li>
+        <li>Three Stars of Africa hide on every board. Find one and you win on the spot: your run ×2, plus 0.25 for every city you explored first.</li>
+        <li>You have 10 days of water, and every move uses a day. The caravan always keeps enough to reach Cape Town, so roads that would strand you aren't offered.</li>
+        <li>Five gold-ringed cities are landmarks: the Oracle counts the Stars north and south, the Guide protects you from the next thief, the Springs add water, the Spice Market banks money and the Diamond Mines hold the richest rocks.</li>
+        <li>Cash out any time. Reach Cape Town, or run out of water, and the run cashes out by itself.</li>
+      </ol>
+      <h3>Keys</h3>
+      <p class="keys"><kbd>1</kbd>–<kbd>5</kbd> pick a road · <kbd>Space</kbd> set out, or take the safest road · <kbd>C</kbd> cash out · <kbd>Esc</kbd> close this panel</p>
+      <h3>The numbers</h3>
+      <dl class="facts">
+        <div><dt>Return to player</dt><dd>About 95–97% of stakes over many runs, however you play</dd></div>
+        <div><dt>Fair rocks</dt><dd>Each rock's odds are set so that on average it is worth exactly what your run is worth, on the safe road and off it. Finding the safe road never changes the price.</dd></div>
+        <div><dt>Biggest win</dt><dd>250× your stake</dd></div>
+        <div><dt>Pace</dt><dd>At least 2.5 seconds between runs</dd></div>
+        <div><dt>Money</dt><dd>Play credits only. Nothing here uses real money.</dd></div>
+      </dl>
+    </div>
+    <div class="tabpanel" role="tabpanel" id="panel-cities" aria-labelledby="tab-cities" hidden>
+      <h3>Terrain</h3>
+      <div class="terrain" id="terrain"></div>
+      <p class="note">You never know what's under a rock until you turn it. From every city at least one road toward Cape Town has no robbers on it.</p>
+      <h3>What hides in the cities</h3>
+      <div class="tokens" id="tokenCards"></div>
+    </div>
+    <div class="tabpanel" role="tabpanel" id="panel-pass" aria-labelledby="tab-pass" hidden>
+      <h3>Explorer's passport <span class="passcount" id="passcount"></span></h3>
+      <div class="passport" id="passport"></div>
+    </div>
+    <div class="tabpanel" role="tabpanel" id="panel-hist" aria-labelledby="tab-hist" hidden>
+      <ul class="hist" id="hist"></ul>
+      <p class="empty" id="histEmpty">No runs yet. Your last 12 show up here.</p>
+    </div>
+  </div>
+</section>
+
+<section class="sheet" id="settingsSheet" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" hidden>
+  <div class="sheet-head">
+    <h2 id="settingsTitle">Settings</h2>
+    <button class="x" type="button" data-close aria-label="Close Settings">×</button>
+  </div>
+  <div class="sheet-body">
+    <div class="setting">
+      <div><b>Sound</b><small>Effects for flips, wins and bandits</small></div>
+      <button class="toggle" id="mute" type="button" role="switch" aria-checked="true">Sound on</button>
+    </div>
+    <div class="setting">
+      <label for="auto"><b>Auto-ride</b><small>Takes the safest road each time and cashes out after this many cities. Each run still needs its own press.</small></label>
+      <select id="auto">
+        <option value="0">Off</option>
+        <option value="2">2 cities</option>
+        <option value="3">3 cities</option>
+        <option value="4">4 cities</option>
+        <option value="5">5 cities</option>
+        <option value="6">6 cities</option>
+        <option value="8">8 cities</option>
+      </select>
+    </div>
+    <div class="setting">
+      <div><b>Credits</b><small>Start again with 1,000 play credits</small></div>
+      <button class="linkbtn" id="reset" type="button">Reset credits</button>
+    </div>
+  </div>
+</section>
+
+<script>
+(() => {
+  "use strict";
+  const NS = "http://www.w3.org/2000/svg";
+  const RTP = 0.95, START_CREDITS = 1000;
+  // every road is priced fair at the moment you choose it (see fairG), so the return is RTP however you play
+  const WATER = 10;          // days of water per run; every move uses one, going back included
+  const STARS = 3;           // Stars of Africa hidden on every board
+  const CAP = 250;           // largest single run, in stakes
+  // Star of Africa: pays starMult(n) x the run value (never less than that many stakes),
+  // where n = cities explored before you find it. It grows as you go deeper.
+  const STAR_BASE = 2, STAR_STEP = 0.25;
+  const starMult = (n) => STAR_BASE + STAR_STEP * n;
+  // Under every rock: a gem (multiplies the run) or a thief (steals half). The multiplier stays hidden until the rock turns.
+  const GEMS = [
+    { k: "quartz",   name: "Quartz",   x: 1.1,  fill: "#f4f6f7", edge: "#7d8e9c" },
+    { k: "topaz",    name: "Topaz",    x: 1.25, fill: "#f2b54a", edge: "#8a5a10" },
+    { k: "emerald",  name: "Emerald",  x: 1.5,  fill: "#3fa36a", edge: "#1d5a35" },
+    { k: "ruby",     name: "Ruby",     x: 2,    fill: "#d23d4a", edge: "#7a1220" },
+    { k: "sapphire", name: "Sapphire", x: 3,    fill: "#2f62c4", edge: "#13306b" },
+  ];
+  const GEM_W = { s: [.55, .30, .12, .03, 0], j: [.30, .32, .23, .12, .03], r: [.15, .25, .28, .22, .10], mines: [.05, .15, .30, .30, .20] };
+  const THIEF = 0.5;   // when a thief only takes half
+  const TAKE_ALL = 0.7; // most thieves (70%) take everything and the run ends
+  const GUARD = 0.75;  // with the Tuareg Guide, the next thief only gets a quarter
+  const SPICE = 0.3;   // the Spice Market banks 30% of the run so far
+  const T_MAX = 0.95;
+  const JOBURG = 27;   // the Diamond Mines: the caravan always keeps enough water to get there
+  const TIERS = {
+    s: { name: "Trade road", p: 0.15, q: 0, G: 0, d: 0.12, D: 1.5, gems: "mostly Quartz and Topaz" },
+    j: { name: "Jungle",     p: 0.27, q: 0, G: 0, d: 0.12, D: 1.5, gems: "Topaz, Emeralds, some Rubies" },
+    r: { name: "Wild lands", p: 0.40, q: 0, G: 0, d: 0.12, D: 1.5, gems: "Emeralds, Rubies and Sapphires" },
+  };
+  // each step is EV-neutral: qG + g(1 - p - q + d(D-1)) = 1
+  for (const t of Object.values(TIERS)) t.g = (1 - t.q * t.G) / (1 - t.p - t.q + t.d * (t.D - 1));
+
+  // [name, lon, lat, tier, label side]
+  const CITIES = [
+    ["Cairo", 31.2, 30.0, "start", "r"], ["Siwa", 25.5, 29.2, "s", "l"], ["Tripoli", 13.2, 32.9, "s", "b"],
+    ["Khartoum", 32.5, 15.6, "s", "b"], ["Tamanrasset", 5.5, 22.8, "r", "b"], ["Agadez", 8.0, 17.0, "r", "r"],
+    ["Timbuktu", -3.0, 16.8, "j", "b"], ["Dakar", -17.4, 14.7, "s", "b"], ["Kano", 8.5, 12.0, "s", "b"],
+    ["N'Djamena", 15.0, 12.1, "r", "b"], ["Addis Ababa", 38.7, 9.0, "j", "b"], ["Juba", 31.6, 4.9, "r", "b"],
+    ["Mogadishu", 45.3, 2.0, "r", "b"], ["Abidjan", -4.0, 5.3, "s", "b"], ["Lagos", 3.4, 6.5, "j", "b"],
+    ["Bangui", 18.6, 4.4, "r", "b"], ["Kisangani", 25.2, 0.5, "j", "b"], ["Nairobi", 36.8, -1.3, "s", "r"],
+    ["Libreville", 9.4, 0.4, "j", "b"], ["Lubumbashi", 27.5, -11.7, "j", "b"], ["Kinshasa", 15.3, -4.3, "j", "r"],
+    ["Zanzibar", 39.2, -6.2, "s", "r"], ["Luanda", 13.2, -8.8, "r", "b"], ["Victoria Falls", 25.8, -17.9, "j", "l"],
+    ["Beira", 34.9, -19.8, "j", "r"], ["Antananarivo", 47.5, -18.9, "r", "b"], ["Windhoek", 17.1, -22.6, "r", "l"],
+    ["Johannesburg", 28.0, -26.2, "s", "l"], ["Durban", 31.0, -29.9, "s", "r"], ["Cape Town", 18.4, -33.9, "goal", "b"],
+  ].map(([name, lon, lat, tier, side], id) => ({ id, name, lon, lat, tier, side, x: (lon + 20) * 10, y: (38 - lat) * 10 }));
+  const START = 0, GOAL = 29;
+  const EDGES = [[0,1],[0,3],[1,2],[1,9],[2,4],[4,6],[4,5],[6,7],[6,8],[7,13],[5,8],[5,9],[8,14],[8,9],[13,14],[3,9],[3,10],[3,11],
+    [10,12],[10,11],[10,17],[12,17],[11,17],[11,16],[9,15],[15,16],[15,18],[14,18],[18,20],[16,20],[16,17],[17,21],[21,24],[21,19],
+    [16,19],[20,22],[20,19],[22,26],[19,23],[23,26],[23,27],[24,27],[24,25],[25,28],[27,28],[26,29],[27,29],[28,29],[23,24]];
+  const ADJ = CITIES.map(() => []);
+  for (const [a, b] of EDGES) { ADJ[a].push(b); ADJ[b].push(a); }
+  const tierOf = (id) => TIERS[CITIES[id].tier] || TIERS.s;
+  const tierKey = (id) => (TIERS[CITIES[id].tier] ? CITIES[id].tier : "s");
+
+  // landmarks: reach one safely to claim its reward
+  const LANDMARKS = {
+    1:  { key: "oracle",  title: "Oracle of Siwa",       reward: "Tells you how many Stars lie north and south of the Equator" },
+    5:  { key: "guide",   title: "Tuareg Guide",         reward: "The next thief only gets a quarter of your run" },
+    17: { key: "springs", title: "Kilimanjaro Springs",  reward: "Refills 3 days of water" },
+    21: { key: "spice",   title: "Spice Market",         reward: "Banks 30% of your run, kept whatever happens" },
+    27: { key: "mines",   title: "Diamond Mines",        reward: "The richest rocks in Africa: Rubies and Sapphires, and plenty of thieves" },
+  };
+  const FLAVORS = [
+    { id: "tent", text: "a quiet market" }, { id: "palm", text: "a palm grove" }, { id: "dunes", text: "empty roads" },
+    { id: "jar", text: "a potter's yard" }, { id: "well", text: "a dry well" },
+  ];
+
+  const $ = (s) => document.querySelector(s);
+  const floor2 = (x) => Math.round(x * 100 + 1e-9) / 100; // nearest cent (name kept from older builds)
+  const round2 = (x) => Math.round(x * 100) / 100;
+  const money = (x) => x.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const fmtX = (m) => (m >= 100 ? floor2(m).toFixed(1) : floor2(m).toFixed(2)) + "×";
+  const payout = (bet, m) => floor2(bet * floor2(m));
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const wait = (ms) => new Promise((res) => setTimeout(res, ms)); // pacing is the same with reduced motion (Ontario 2.18/2.19)
+  function rand() { const a = new Uint32Array(1); crypto.getRandomValues(a); return a[0] / 4294967296; }
+  function rollTile(t) {
+    const x = rand();
+    if (x < t.p) return { k: "bandit" };
+    if (x < t.p + t.q) return { k: "sun" };
+    if (x < t.p + t.q + t.d) return { k: "gem" };
+    return { k: "safe", f: Math.floor(rand() * FLAVORS.length) };
+  }
+
+  // ---------- state ----------
+  const KEY = "sunstone-run-africa-v1";
+  let S = { balance: START_CREDITS, history: [], bet: 10, run: null, muted: false, auto: 0, stamps: {} };
+  try {
+    const d = JSON.parse(localStorage.getItem(KEY) || "null");
+    if (d && typeof d.balance === "number") S = Object.assign(S, d);
+    else {
+      const old = JSON.parse(localStorage.getItem("sunstone-run-v1") || "null");
+      if (old && typeof old.balance === "number") { S.balance = old.balance; S.muted = !!old.muted; S.bet = old.bet || 10; }
+    }
+  } catch (e) {}
+  if (S.run && !Array.isArray(S.run.path)) S.run = null;
+  if (S.run && !S.run.safeRoads) S.run = null; // a run from before the safe-road update
+  if (!S.stamps || typeof S.stamps !== "object") S.stamps = {};
+  if (S.run && !S.run.over) S.run.auto = 0;
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+  // Game Lobby: inside the lobby this game plays from the lobby's shared wallet (nothing changes when the game is opened on its own)
+  const LOBBY = (() => { try { return window.parent !== window && window.parent.LobbyWallet || null; } catch (e) { return null; } })();
+  if (LOBBY) S.balance = LOBBY.attach(() => S.balance);
+  let busy = false, autoTimer = 0;
+  const cur = () => S.run.path[S.run.path.length - 1];
+  // shortest number of moves from every city to Johannesburg
+  const DJ = (() => { const d = { [GOAL]: 0 }, q = [GOAL]; while (q.length) { const u = q.shift(); for (const v of ADJ[u]) if (d[v] == null) { d[v] = d[u] + 1; q.push(v); } } return d; })();
+  // a road is offered only if, after taking it, there is still water to reach the Mines (until you've been there)
+  function waterOk(n) {
+    const run = S.run; if (!run || run.over || n === GOAL) return true;
+    return DJ[n] <= (run.water ?? WATER) - 1; // after this move there is still water to reach Cape Town
+  }
+  const reach = () => (S.run && !S.run.over ? ADJ[cur()].filter(waterOk) : []);
+  const steps = () => (S.run ? new Set(S.run.path).size - 1 : 0); // distinct cities explored
+  function choices() {
+    const r = S.run && !S.run.over ? reach() : ADJ[START];
+    return r.slice().sort((a, b) => CITIES[a].x - CITIES[b].x);
+  }
+  function safest() {
+    const r = reach().filter((n) => !S.run.path.includes(n)); if (!r.length) return null;
+    const risk = (id) => thiefP(id);
+    return r.slice().sort((a, b) => risk(a) - risk(b) || CITIES[a].lat - CITIES[b].lat)[0];
+  }
+
+  // ---------- sound ----------
+  let actx = null;
+  function ac() {
+    if (S.muted) return null;
+    try { if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === "suspended") actx.resume(); return actx; }
+    catch (e) { return null; }
+  }
+  function tone(freq, dur, type = "sine", vol = 0.12, when = 0, slideTo = 0) {
+    const a = ac(); if (!a) return;
+    const t = a.currentTime + when, o = a.createOscillator(), g = a.createGain();
+    o.type = type; o.frequency.setValueAtTime(freq, t);
+    if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, t + dur);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g).connect(a.destination); o.start(t); o.stop(t + dur + 0.03);
+  }
+  function noise(dur, vol, freq, when = 0) {
+    const a = ac(); if (!a) return;
+    const t = a.currentTime + when, buf = a.createBuffer(1, Math.floor(a.sampleRate * dur), a.sampleRate), ch = buf.getChannelData(0);
+    for (let i = 0; i < ch.length; i++) ch[i] = (Math.random() * 2 - 1) * (1 - i / ch.length);
+    const src = a.createBufferSource(); src.buffer = buf;
+    const f = a.createBiquadFilter(); f.type = "bandpass"; f.frequency.value = freq; f.Q.value = 0.8;
+    const g = a.createGain(); g.gain.value = vol;
+    src.connect(f).connect(g).connect(a.destination); src.start(t);
+  }
+  const PENT = [0, 2, 4, 7, 9];
+  const SFX = {
+    step() { noise(0.09, 0.22, 900); tone(120, 0.1, "triangle", 0.1, 0, 80); },
+    flip() { noise(0.04, 0.25, 3200); },
+    pick() { tone(660, 0.05, "triangle", 0.05); },
+    safe(n) { const s = PENT[n % 5] + 12 * Math.floor(n / 5), f = 392 * Math.pow(2, s / 12); tone(f, 0.22, "triangle", 0.11); tone(f * 2, 0.18, "sine", 0.04, 0.03); },
+    gem(level = 2) { const notes = [0, 7, 12, 16, 19, 24].slice(0, 2 + level); notes.forEach((s, i) => tone(784 * Math.pow(2, (s + level * 2) / 12), 0.25, "triangle", 0.06, i * 0.05)); if (level >= 3) noise(0.5, 0.06, 7000, 0.05); },
+    thief() { tone(520, 0.35, "square", 0.05, 0, 180); noise(0.25, 0.18, 1500, 0.05); tone(150, 0.25, "triangle", 0.08, 0.18, 90); },
+    bust() { tone(220, 0.55, "sawtooth", 0.12, 0, 45); noise(0.45, 0.35, 500); tone(90, 0.5, "square", 0.05, 0.05, 40); },
+    cash() { [0, 4, 7, 12, 16].forEach((s, i) => tone(659 * Math.pow(2, s / 12), 0.2, "square", 0.04, i * 0.055)); },
+    roll(ms) { const n = Math.max(2, Math.round(ms / 55)); for (let i = 0; i < n; i++) noise(0.03, 0.05 + (i / n) * 0.18, 1400 + i * 120, i * 0.055); tone(55, 0.14, "sine", 0.22, 0); tone(52, 0.14, "sine", 0.18, 0.16); },
+    ting(k) { tone(1568 + (k % 6) * 110, 0.09, "square", 0.025); tone(3136, 0.05, "sine", 0.015, 0.01); },
+    stamp() { noise(0.18, 0.5, 220); tone(70, 0.3, "square", 0.08, 0, 40); },
+    fanfare() { [[0, 0], [4, 0.12], [7, 0.24], [12, 0.36]].forEach(([s, t]) => tone(392 * Math.pow(2, s / 12), 0.3, "square", 0.05, t)); [0, 4, 7, 12].forEach((s) => tone(392 * Math.pow(2, (s + 12) / 12), 0.9, "triangle", 0.06, 0.5)); },
+    landmark() { [0, 7, 12, 16].forEach((s, i) => tone(523 * Math.pow(2, s / 12), 0.28, "triangle", 0.07, i * 0.09)); tone(1046, 0.6, "sine", 0.05, 0.36); },
+    sun() { [0, 4, 7, 11, 14, 19, 23, 26].forEach((s, i) => tone(523 * Math.pow(2, s / 12), 0.4, "triangle", 0.08, i * 0.07)); noise(0.6, 0.08, 6000, 0.1); },
+  };
+
+  // ---------- elements ----------
+  const svg = $("#map"), mapWrap = $("#mapWrap"), banner = $("#banner"), fx = $("#fx"), flashEl = $("#flash");
+  const betIn = $("#bet"), primary = $("#primary"), cashBtn = $("#cashout"), statusEl = $("#status"), autoSel = $("#auto"), previewEl = $("#preview");
+  betIn.value = S.bet; autoSel.value = String(S.auto || 0);
+
+  function star(R, r, n = 8) {
+    let s = "";
+    for (let i = 0; i < n * 2; i++) { const a = (Math.PI / n) * i - Math.PI / 2, rad = i % 2 ? r : R; s += (i ? " L" : "M") + (Math.cos(a) * rad).toFixed(2) + " " + (Math.sin(a) * rad).toFixed(2); }
+    return s + " Z";
+  }
+  function rays(r0, r1, n) {
+    let s = "";
+    for (let i = 0; i < n; i++) {
+      const a = (2 * Math.PI / n) * i, w = Math.PI / n / 2.2, p = (ang, rad) => (Math.cos(ang) * rad).toFixed(1) + " " + (Math.sin(ang) * rad).toFixed(1);
+      s += `<path d="M${p(a - w, r0)} L${p(a, r1)} L${p(a + w, r0)} Z"/>`;
+    }
+    return s;
+  }
+  $("#logoRays").innerHTML = rays(16, 29, 12);
+  // gem outline, facets and a glint; colours come from --gemfill / --gemedge set on the <use> or a parent
+  const gemSym = (outline, facets, glint) =>
+    `<path d="${outline}" style="fill:var(--gemfill,#cfe3ff);stroke:var(--gemedge,#2d5d8f);stroke-width:2;stroke-linejoin:round"/>` +
+    `<path d="${facets}" style="fill:none;stroke:var(--gemedge,#2d5d8f);stroke-width:1.1;stroke-opacity:.75;stroke-linejoin:round"/>` +
+    `<path d="${glint}" style="fill:none;stroke:#ffffff;stroke-width:2;stroke-linecap:round;stroke-opacity:.9"/>`;
+  const GEM_PATH = `<path class="solid" d="M-14 -5 L-8 -13 L8 -13 L14 -5 L0 15 Z"/><path d="M-14 -5 L14 -5 M-8 -13 L-4 -5 L0 15 L4 -5 L8 -13 M-4 -5 L0 -13 L4 -5" stroke-width="1.6"/>`;
+  const ICONS = {
+    bandit: `<path d="M-13 -13 L12 12 M13 -13 L-12 12 M4 10 L10 4 M-10 4 L-4 10"/>`,
+    thief: `<circle cx="0" cy="-1" r="12"/><path class="solid" d="M-14 -6 Q0 -9 14 -6 L13 2 Q0 0 -13 2 Z"/><circle cx="-5" cy="-2.5" r="2.2" class="eye"/><circle cx="5" cy="-2.5" r="2.2" class="eye"/><path d="M-5 7 Q0 9 5 7"/>`,
+    sun: `<path class="solid" d="${star(17, 7.5)}"/>`,
+    star: `<path class="solid" d="${star(19, 7.5, 5)}"/><path d="M0 -19 L0 -7.5 M-18 -6 L-7 -2.4 M18 -6 L7 -2.4" stroke-width="1.2" stroke="#5fb7ff" fill="none"/>`,
+    gem: GEM_PATH,
+    quartz:   gemSym("M-6 -17 L6 -17 L11 -8 L11 9 L0 17 L-11 9 L-11 -8 Z", "M-6 -17 L0 -10 L6 -17 M-11 -8 L0 -10 L11 -8 M0 -10 L0 17 M-11 9 L0 4 L11 9", "M-7 -6 L-7 6"),
+    topaz:    gemSym("M-15 0 A15 12 0 1 0 15 0 A15 12 0 1 0 -15 0 Z", "M-7 -5 H7 V5 H-7 Z M-7 -5 L-12 -8 M7 -5 L12 -8 M7 5 L12 8 M-7 5 L-12 8", "M-10 -4 Q-8 -8 -3 -9"),
+    emerald:  gemSym("M-9 -15 L9 -15 L15 -9 L15 9 L9 15 L-9 15 L-15 9 L-15 -9 Z", "M-5 -10 H5 L10 -5 V5 L5 10 H-5 L-10 5 V-5 Z M-9 -15 L-5 -10 M9 -15 L5 -10 M9 15 L5 10 M-9 15 L-5 10", "M-12 -7 L-8 -11"),
+    ruby:     gemSym("M0 -16 L11 -11 L16 0 L11 11 L0 16 L-11 11 L-16 0 L-11 -11 Z", "M-16 0 L-6 0 L0 -16 L6 0 L16 0 M-6 0 L0 16 L6 0 M-11 -11 L-6 0 M11 -11 L6 0 M-11 11 L-6 0 M11 11 L6 0", "M-9 -6 L-5 -10"),
+    sapphire: gemSym("M0 -17 C7 -8 14 -1 14 6 A14 11 0 0 1 -14 6 C-14 -1 -7 -8 0 -17 Z", "M0 -17 L-5 5 L0 14 L5 5 Z M-14 6 L-5 5 M14 6 L5 5", "M-8 -2 Q-7 -6 -4 -9"),
+    tent: `<path d="M-15 11 L0 -13 L15 11 Z M-5 11 L0 2 L5 11"/>`,
+    palm: `<path d="M1 14 Q4 2 0 -5 M0 -5 Q-9 -11 -16 -4 M0 -5 Q9 -11 16 -4 M0 -5 Q-3 -14 -11 -16 M0 -5 Q3 -14 11 -16"/>`,
+    dunes: `<path d="M-16 7 Q-8 -5 0 5 Q8 -7 16 3 M-12 12 L12 12"/>`,
+    jar: `<path d="M-6 -13 L6 -13 M-4 -13 L-4 -9 Q-13 -3 -9 9 Q-7 13 0 13 Q7 13 9 9 Q13 -3 4 -9 L4 -13"/>`,
+    well: `<path d="M-12 -2 L12 -2 L12 12 L-12 12 Z M-12 5 L12 5 M-9 -2 L-9 -13 M9 -2 L9 -13 M-13 -13 L13 -13"/>`,
+    flag: `<path d="M-8 14 L-8 -14 M-8 -14 L12 -8 L-8 -2"/>`,
+  };
+  const grad = (id, a, b, c) => `<radialGradient id="${id}" cx=".38" cy=".32" r=".75"><stop offset="0" stop-color="${a}"/><stop offset=".6" stop-color="${b}"/><stop offset="1" stop-color="${c}"/></radialGradient>`;
+  const DEFS = `<defs>
+    ${Object.entries(ICONS).map(([k, d]) => `<symbol id="i-${k}" viewBox="-20 -20 40 40">${d}</symbol>`).join("")}
+    <symbol id="l-oracle" viewBox="-14 -14 28 28" class="lm-ico"><path d="M-11 0 Q0 -10 11 0 Q0 10 -11 0 Z"/><circle r="3.4" class="solid"/></symbol>
+    <symbol id="l-guide" viewBox="-14 -14 28 28" class="lm-ico"><circle r="10"/><path class="solid" d="M0 -8 L3 0 L0 8 L-3 0 Z"/></symbol>
+    <symbol id="l-springs" viewBox="-14 -14 28 28" class="lm-ico"><path d="M0 -11 Q9 -1 9 4 A9 9 0 0 1 -9 4 Q-9 -1 0 -11 Z"/><path d="M-4 4 A4 4 0 0 0 0 8"/></symbol>
+    <symbol id="l-lookout" viewBox="-14 -14 28 28" class="lm-ico"><path d="M-12 9 L-3 -8 L2 -1 L5 -5 L12 9 Z"/><path d="M-6 -2 L-3 -8 L0 -3"/></symbol>
+    <symbol id="l-spice" viewBox="-14 -14 28 28" class="lm-ico"><path d="M-8 -5 L8 -5 L11 10 L-11 10 Z M-4 -5 L-6 -10 L6 -10 L4 -5"/><path d="M-3 3 L3 3"/></symbol>
+    <symbol id="l-pirate" viewBox="-14 -14 28 28" class="lm-ico"><path d="M-11 -1 L11 -1 L11 10 L-11 10 Z M-11 -1 Q0 -12 11 -1"/><path class="solid" d="M-2 2 L2 2 L2 6 L-2 6 Z"/></symbol>
+    <symbol id="l-falls" viewBox="-14 -14 28 28" class="lm-ico"><path d="M-12 8 A12 12 0 0 1 12 8 M-8 8 A8 8 0 0 1 8 8 M-4 8 A4 4 0 0 1 4 8"/></symbol>
+    <symbol id="l-mines" viewBox="-14 -14 28 28" class="lm-ico"><path d="M-10 10 L6 -6"/><path d="M-2 -11 Q8 -10 11 0"/></symbol>
+    <symbol id="l-cape" viewBox="-14 -14 28 28" class="lm-ico"><path d="M-4 11 L-2 -5 L2 -5 L4 11 Z M-3 -5 L-3 -9 L3 -9 L3 -5"/><path d="M-7 -8 L-12 -10 M7 -8 L12 -10"/></symbol>
+    ${grad("gLm", "#fff6d8", "#f3c979", "#c58a45")}
+    ${grad("gStar", "#ffffff", "#9be7ff", "#2f7fc4")}
+    ${grad("gS", "#ffeec4", "#f0c27a", "#c58a45")}${grad("gJ", "#d8ffcf", "#7fd47e", "#2f8a45")}${grad("gR", "#ffd2c2", "#ff8a6a", "#c0392b")}${grad("gSun", "#fff2c2", "#ffb35c", "#d4512a")}
+    <linearGradient id="gSea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2f7a76"/><stop offset="1" stop-color="#24625f"/></linearGradient>
+    <linearGradient id="gLand" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="740">
+      <stop offset="0" stop-color="#efcf92"/><stop offset=".3" stop-color="#efcf92"/><stop offset=".3" stop-color="#e2b873"/><stop offset=".38" stop-color="#e2b873"/>
+      <stop offset=".38" stop-color="#9fb168"/><stop offset=".43" stop-color="#9fb168"/><stop offset=".43" stop-color="#6f9a57"/><stop offset=".6" stop-color="#6f9a57"/>
+      <stop offset=".6" stop-color="#b9b26a"/><stop offset=".7" stop-color="#b9b26a"/><stop offset=".7" stop-color="#ddb879"/><stop offset="1" stop-color="#ddb879"/>
+    </linearGradient>
+    <radialGradient id="gVignette" cx=".5" cy=".5" r=".75"><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".45"/></radialGradient>
+  </defs>`;
+  const CAMEL = `<g id="camel"><g class="dir"><g class="bob">
+      <ellipse cx="0" cy="-15" rx="13" ry="3" fill="#000" opacity=".3"/>
+      <g transform="translate(0 -31) scale(.66)" stroke="#2b1606" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round">
+        <path d="M-14 4 L-16 22 M-6 4 L-6 22 M8 4 L8 22 M15 4 L17 22" fill="none" stroke-width="4.5"/>
+        <path d="M-27 10 L-22 0" fill="none"/>
+        <path class="hide" fill="#e8b46a" d="M-23 4 Q-25 -8 -15 -10 Q-9 -25 -1 -12 Q5 -21 12 -10 Q21 -8 20 2 Q8 9 -23 4 Z"/>
+        <path class="hide" fill="#e8b46a" d="M15 -3 Q24 -9 23 -22 L32 -25 Q38 -23 35 -18 L29 -17 Q29 -5 20 3 Z"/>
+        <path fill="#ff4b6e" d="M-11 -8 Q-3 -13 7 -9 L8 -1 L-12 -1 Z"/>
+        <path fill="none" stroke="#3ad6b6" stroke-width="2" d="M-10 -3 L7 -3"/>
+        <circle cx="30" cy="-21" r="1.6" fill="#2b1606" stroke="none"/>
+      </g></g></g></g>`;
+
+  // ---------- geography ----------
+  const P = (lon, lat) => [(lon + 20) * 10, (38 - lat) * 10];
+  const COAST = [[-5.9,35.8],[-2,35.1],[3,36.8],[10.2,37.3],[11.1,36.9],[10.8,34.7],[10.2,33.9],[11.5,33.1],[15.2,32.3],[19.0,30.3],[20.1,32.1],[23.0,32.6],[25.2,31.6],[29.9,31.2],[32.3,31.3],[32.5,29.9],[33.6,27.2],[35.5,23.9],[37.2,19.6],[38.6,18.0],[39.7,15.6],[41.7,13.4],[43.3,12.4],[44.5,10.4],[48.0,11.2],[51.3,11.8],[51.0,10.4],[49.0,6.0],[47.5,4.0],[45.3,2.0],[42.5,-0.5],[40.9,-2.3],[39.7,-4.1],[39.3,-6.8],[40.0,-10.0],[40.6,-14.5],[39.5,-16.5],[36.9,-17.9],[34.9,-20.5],[35.5,-23.9],[33.0,-25.9],[32.6,-28.5],[31.0,-29.9],[28.0,-32.9],[25.6,-34.0],[20.0,-34.8],[18.4,-34.3],[18.1,-32.0],[16.5,-28.6],[15.2,-26.6],[14.5,-22.9],[13.2,-20.0],[11.8,-17.2],[12.0,-15.0],[13.4,-12.6],[13.2,-8.8],[12.2,-6.0],[11.9,-4.8],[9.3,-0.7],[9.5,2.0],[9.7,4.0],[8.5,4.5],[6.0,4.3],[4.5,6.1],[3.4,6.4],[1.2,6.1],[-2.0,4.8],[-4.0,5.3],[-7.5,4.4],[-10.8,6.3],[-13.2,8.5],[-15.6,11.9],[-16.8,13.4],[-17.5,14.7],[-16.5,16.5],[-16.0,18.1],[-17.0,20.9],[-15.9,23.7],[-12.9,27.9],[-9.6,30.4],[-9.2,32.3],[-7.6,33.6],[-6.8,34.0]];
+  const OTHER_LAND = [
+    // Sinai, Levant, Anatolia and Arabia
+    [[32.4,31.2],[34.2,31.3],[34.9,32.8],[35.9,35.2],[36.1,36.7],[33,36.2],[30.6,36.8],[28.2,36.7],[27.3,37.1],[26.3,38.4],[26.5,40.4],[29,41.3],[36,42],[42,41.8],[48,41],[49.5,37],[50,32],[48.4,29.6],[50.2,26.5],[51.5,24.4],[56,26.2],[57.5,23.5],[59.8,22.4],[57.6,18.9],[52.2,16],[45,12.8],[43.4,12.7],[42.7,15.3],[40.4,19.8],[38.8,22.2],[37.2,25.1],[35.2,28],[34.5,28.4],[33.4,28.6],[32.6,30]],
+    // Greece and the Balkans
+    [[19.4,41.6],[20.2,39.6],[21.1,38.3],[22.2,36.5],[23.2,37],[24,38.2],[23,39.4],[24.4,40.9],[26.1,41],[26.4,43],[19.5,43]],
+    // Italy
+    [[12.3,44.5],[13.6,43.5],[16,41.9],[18.5,40.3],[17,39.5],[16.6,38.4],[15.6,37.9],[15.8,39.5],[14.5,40.6],[13,41.3],[11.2,42.4],[10.2,43.9]],
+    // Sicily and Sardinia
+    [[12.4,38.1],[15.6,38.3],[15.1,36.7],[14.3,37],[12.6,37.6]],
+    [[8.4,41.2],[9.8,41],[9.6,39.2],[8.4,38.9]],
+    // Iberia
+    [[-9.5,43],[-8.9,38.7],[-8.9,37],[-6.3,36.8],[-5.6,36],[-4.4,36.7],[-2,36.8],[-0.5,38.2],[0.2,38.8],[-0.3,39.5],[0.8,41],[3.2,41.9],[3.2,43.4],[-1.8,43.4],[-8,43.7]],
+  ];
+  const MADAGASCAR = [[49.3,-12.0],[50.3,-15.2],[49.8,-17.0],[48.6,-20.5],[47.6,-23.5],[47.1,-24.9],[45.2,-25.6],[44.0,-24.6],[43.4,-22.5],[43.9,-19.5],[44.3,-16.8],[46.3,-15.7],[47.9,-13.6]];
+  const RIVERS = [
+    [[33,-1],[32.5,4],[31.6,9.5],[32.5,15.6],[33.5,17.5],[32,19],[30.5,21],[32.8,24],[31.2,30]],
+    [[-10,10.5],[-4,14.5],[-3,16.8],[0,16],[3.5,12],[6,8],[6.5,5]],
+    [[25.2,0.5],[21,1.5],[17.5,0],[16,-2.5],[15.3,-4.3],[12.3,-6]],
+    [[23,-13],[25.8,-17.9],[29,-16],[33,-16],[36,-18.8]],
+  ];
+  function smooth(pts, closed) {
+    const n = pts.length, g = (i) => pts[closed ? (i + n) % n : Math.max(0, Math.min(n - 1, i))];
+    let d = `M${pts[0][0].toFixed(1)} ${pts[0][1].toFixed(1)}`;
+    for (let i = 0; i < (closed ? n : n - 1); i++) {
+      const p0 = g(i - 1), p1 = g(i), p2 = g(i + 1), p3 = g(i + 2);
+      const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6], c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+      d += ` C${c1[0].toFixed(1)} ${c1[1].toFixed(1)} ${c2[0].toFixed(1)} ${c2[1].toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`;
+    }
+    return d + (closed ? " Z" : "");
+  }
+  function edgeD(a, b) {
+    const A = CITIES[a], B = CITIES[b], mx = (A.x + B.x) / 2, my = (A.y + B.y) / 2, dx = B.x - A.x, dy = B.y - A.y;
+    const s = (a < b ? 1 : -1) * 0.12; // same bulge either direction
+    return `M${A.x} ${A.y} Q${(mx - dy * s).toFixed(1)} ${(my + dx * s).toFixed(1)} ${B.x} ${B.y}`;
+  }
+  function seeded(seed) { let s = seed; return () => (s = (s * 16807) % 2147483647) / 2147483647; }
+
+  const FULL = { x: -10, y: -45, w: 760, h: 800 };
+  function buildMap() {
+    const rnd = seeded(11);
+    const BIG = { x: -900, y: -700, w: 2560, h: 2200 };
+    let g = `<rect x="${BIG.x}" y="${BIG.y}" width="${BIG.w}" height="${BIG.h}" fill="url(#gSea)"/>`;
+    for (let lon = -110; lon <= 140; lon += 10) g += `<path class="grat" d="M${(lon + 20) * 10} ${BIG.y} V${BIG.y + BIG.h}"/>`;
+    for (let lat = 100; lat >= -110; lat -= 10) g += `<path class="grat" d="M${BIG.x} ${(38 - lat) * 10} H${BIG.x + BIG.w}"/>`;
+    // neighbouring land, faint, so Africa sits in the world rather than floating alone
+    for (const poly of OTHER_LAND) g += `<path class="otherland" d="${smooth(poly.map(([a, b]) => P(a, b)), true)}"/>`;
+    g += `<text class="land-label" x="${P(45, 23)[0]}" y="${P(45, 23)[1]}">ARABIA</text><text class="land-label" x="${P(-3, 40.6)[0]}" y="${P(-3, 40.6)[1]}">IBERIA</text>`;
+    g += `<text class="sea-label" x="420" y="-18">MEDITERRANEAN SEA</text><text class="sea-label" x="90" y="470" transform="rotate(-70 90 470)">ATLANTIC OCEAN</text><text class="sea-label" x="650" y="470" transform="rotate(70 650 470)">INDIAN OCEAN</text><text class="sea-label" x="${P(38.2, 20.6)[0]}" y="${P(38.2, 20.6)[1]}" transform="rotate(62 ${P(38.2, 20.6)[0]} ${P(38.2, 20.6)[1]})" style="font-size:8px;letter-spacing:.2em">RED SEA</text>`;
+    const coast = smooth(COAST.map(([a, b]) => P(a, b)), true), mada = smooth(MADAGASCAR.map(([a, b]) => P(a, b)), true);
+    g += `<path class="shelf" d="${coast}"/><path class="shelf" d="${mada}"/><path class="land" d="${coast}"/><path class="land" d="${mada}"/>`;
+    // terrain as regions, not stripes: a savanna belt and the Congo rainforest, clipped to the coast
+    const SAVANNA = [[-17.5,15],[-5,16.5],[5,16.8],[15,15.8],[25,14.2],[34,13.5],[40,11],[46,6],[42,-1],[38,-9],[35,-16],[33,-21],[28,-24],[21,-21],[15,-16],[12,-11],[13,-5],[9,1],[3,4.5],[-6,5],[-14,9]];
+    const JUNGLE = [[-12,8.5],[-6,7.4],[1,8.2],[8,7.6],[15,6.4],[22,5.6],[28,4.4],[30.5,0.5],[29.5,-5],[26.5,-8.5],[21,-9.4],[16,-7.4],[12.5,-4.6],[9.6,-0.5],[7,3.4],[2,5.2],[-4,4.6],[-9,5.6]];
+    g += `<defs><clipPath id="africaClip"><path d="${coast}"/></clipPath></defs><g clip-path="url(#africaClip)">
+      <path class="savanna" d="${smooth(SAVANNA.map(([a, b]) => P(a, b)), true)}"/>
+      <path class="jungle" d="${smooth(JUNGLE.map(([a, b]) => P(a, b)), true)}"/></g>
+      <path class="land-edge" d="${coast}"/>`;
+    // terrain marks: dunes in the Sahara and Kalahari, trees in the Congo basin
+    const inside = (x, y) => svg.isPointInFill ? true : true;
+    for (let i = 0; i < 70; i++) {
+      const sahara = i < 55, x = sahara ? 120 + rnd() * 420 : 340 + rnd() * 110, y = sahara ? 90 + rnd() * 170 : 590 + rnd() * 50;
+      g += `<path class="dune" d="M${x.toFixed(0)} ${y.toFixed(0)} q6 -5 12 0 q6 -4 11 1"/>`;
+    }
+    for (let i = 0; i < 60; i++) {
+      const x = 300 + rnd() * 230, y = 330 + rnd() * 110;
+      g += `<circle class="tree" cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="${(2.5 + rnd() * 3).toFixed(1)}"/>`;
+    }
+    RIVERS.forEach((r) => (g += `<path class="river" d="${smooth(r.map(([a, b]) => P(a, b)), false)}"/>`));
+    g += `<ellipse class="lake" cx="${P(33, -1)[0]}" cy="${P(33, -1)[1]}" rx="14" ry="16"/><ellipse class="lake" cx="${P(29.5, -6.5)[0]}" cy="${P(29.5, -6.5)[1]}" rx="3.5" ry="22"/><ellipse class="lake" cx="${P(34.5, -11.5)[0]}" cy="${P(34.5, -11.5)[1]}" rx="3.5" ry="18"/>`;
+    const lat = (l, name) => { const y = (38 - l) * 10; return `<path class="lat-line" d="M${BIG.x} ${y} H${BIG.x + BIG.w}"/><text class="lat-label" x="0" y="${y - 5}">${name}</text>`; };
+    g += lat(23.4, "TROPIC OF CANCER") + lat(0, "EQUATOR") + lat(-23.4, "TROPIC OF CAPRICORN");
+    g += `<g class="compass" transform="translate(70 640)"><circle r="30" fill="none" stroke="#f3c979" stroke-opacity=".35"/><path d="${star(28, 5, 4)}" fill="#f3c979" fill-opacity=".55"/><text y="-36">N</text></g>`;
+    // landmark silhouettes standing on the map
+    const SIL = {
+      pyramids: `<path d="M-24 0 L-9 -22 L6 0 Z M-2 0 L11 -15 L24 0 Z"/>`,
+      temple: `<path d="M-17 0 h34 v-3 h-34 Z M-14 -3 v-13 h4 v13 Z M-5 -3 v-13 h4 v13 Z M4 -3 v-13 h4 v13 Z M11 -3 v-13 h3 v13 Z M-18 -16 h36 l-18 -9 Z"/>`,
+      minaret: `<path d="M-7 0 L-3.5 -32 L3.5 -32 L7 0 Z M-9 -9 h18 v2 h-18 Z M-7 -19 h14 v2 h-14 Z M-5 -28 h10 v2 h-10 Z"/>`,
+      kili: `<path d="M-30 0 L-10 -20 L-4 -17 L4 -24 L30 0 Z"/><path class="snow" d="M-10 -20 L-4 -17 L4 -24 L9 -19.5 L3 -18 L-2 -15 L-6 -17.5 Z"/>`,
+      dhow: `<path d="M-18 -5 Q0 4 18 -6 L13 0 L-13 0 Z M-1 -6 L-1 -32 L1 -32 L1 -6 Z M1 -31 L17 -9 L1 -9 Z"/>`,
+      headframe: `<path d="M-13 0 L-4 -28 L4 -28 L13 0 L9 0 L2 -21 L-2 -21 L-9 0 Z M-7 -28 h14 v-4 h-14 Z"/><circle cx="0" cy="-34" r="4"/>`,
+      table: `<path d="M-34 0 L-24 -15 L4 -16 L14 0 Z M20 0 L22 -22 L27 -22 L29 0 Z M20.5 -22 h7 v-4 h-7 Z"/>`,
+      mosque: `<path d="M-18 0 v-11 h7 v-7 h5 v7 h20 v11 Z M-17 -11 v-2 M-8.5 -18 v-3 M5 -11 v-2"/><path d="M-18 -11 h1.5 v-2 h-1.5 Z M-9 -18 h1.5 v-3 h-1.5 Z M3 -11 h1.5 v-2 h-1.5 Z M10 -11 h1.5 v-2 h-1.5 Z"/>`,
+    };
+    // [city, silhouette, dx, dy, scale]
+    for (const [cid, kind, dx, dy, sc] of [[0, "pyramids", 28, -12, 1], [1, "temple", -40, -18, .9], [5, "minaret", -26, 12, .9], [17, "kili", -38, 30, .9],
+                                          [21, "dhow", 36, 34, .9], [27, "headframe", 30, -20, .85], [29, "table", -44, 8, .9], [6, "mosque", -40, 0, .85]]) {
+      const c = CITIES[cid];
+      g += `<g class="sil" transform="translate(${c.x + dx} ${c.y + dy}) scale(${sc})" aria-hidden="true">${SIL[kind]}</g>`;
+    }
+    // roads
+    g += `<g id="roads">${EDGES.map(([a, b]) => `<path class="road" id="e${a}-${b}" d="${edgeD(a, b)}"/>`).join("")}</g>`;
+    g += `<path class="trail" id="trail" d=""/><g id="steps"></g>`;
+    // cities
+    let nodes = "";
+    for (const c of CITIES) {
+      const lx = c.side === "r" ? 21 : c.side === "l" ? -21 : 0, ly = c.side === "b" ? 29 : 4, anchor = c.side === "r" ? "start" : c.side === "l" ? "end" : "middle";
+      const goal = c.id === GOAL ? `<circle class="goal-ring" r="25"/><text class="goal-tag" y="-36">FINISH</text>` : "";
+      const face = c.id === START
+        ? `<g class="front"><circle class="tok-front" r="16"/><use class="ico" href="#i-flag" x="-11" y="-11" width="22" height="22"/></g>`
+        : `<g class="back"><path class="tok-back" d="M-16 5 L-13 -8 L-4 -15 L8 -14 L16 -4 L14 9 L4 15 L-9 14 Z"/><path class="tok-inner" d="M-6 -9 L-1 -3 L-4 4 M6 -6 L3 1 L8 6"/></g>
+           <g class="front"><g class="rays">${rays(15, 27, 12)}</g><circle class="tok-front" r="16"/><use class="ico" href="" x="-11" y="-11" width="22" height="22"/></g>`;
+      nodes += `<g class="node t-${tierKey(c.id)}${c.id === START ? " start shown" : ""}" id="n${c.id}" data-id="${c.id}" transform="translate(${c.x} ${c.y})" aria-label="${c.name}">
+        ${goal}<circle class="halo" r="20"/>
+        <g class="face">${face}</g>
+        <text class="city${LANDMARKS[c.id] ? " lm" : ""}" x="${lx}" y="${ly}" text-anchor="${anchor}">${c.name}</text>
+        ${LANDMARKS[c.id] ? `<g class="lm-badge" transform="translate(14 -12)"><g class="lm-in"><circle r="8.5"/><use href="#l-${LANDMARKS[c.id].key}" x="-6.5" y="-6.5" width="13" height="13"/></g></g>` : ""}
+        <g class="pill" transform="translate(0 -29)"><g class="pin"><rect x="-25" y="-9.5" width="50" height="19" rx="9.5"/><text></text></g></g>
+        <g class="badge" transform="translate(-17 -14)"><circle r="7.5"/><text></text></g>
+      </g>`;
+    }
+    svg.innerHTML = DEFS + g + nodes + CAMEL;
+    layout();
+    paint();
+  }
+
+  // ---------- camera ----------
+  let narrow = false, follow = true, camelAt = [CITIES[START].x, CITIES[START].y], camelDir = 1, lastW = 0;
+  function layout() {
+    const w = mapWrap.clientWidth || 800;
+    narrow = w < 640;
+    const fit = Math.max(520, innerHeight - (mapWrap.getBoundingClientRect().top + scrollY) - 64); // room for the legend
+    const h = narrow ? Math.max(360, Math.min(Math.round(innerHeight * 0.6), 620)) : Math.min(Math.round(w * FULL.h / FULL.w), fit);
+    svg.style.height = h + "px";
+    $("#viewBtn").hidden = !narrow;
+    $("#viewBtn").textContent = follow ? "Whole map" : "Follow camel";
+    applyView(); sizeFx();
+  }
+  function applyView() {
+    let v = FULL;
+    if (narrow && follow) {
+      const r = svg.getBoundingClientRect(), hu = 420, wu = hu * (r.width / (r.height || 1));
+      let x = camelAt[0] - wu / 2, y = camelAt[1] - hu / 2 + 30;
+      x = Math.max(FULL.x, Math.min(FULL.x + FULL.w - wu, x)); y = Math.max(FULL.y, Math.min(FULL.y + FULL.h - hu, y));
+      v = { x, y, w: wu, h: hu };
+    }
+    svg.setAttribute("viewBox", `${v.x.toFixed(1)} ${v.y.toFixed(1)} ${v.w.toFixed(1)} ${v.h.toFixed(1)}`);
+  }
+  new ResizeObserver(() => { const w = mapWrap.clientWidth; if (Math.abs(w - lastW) > 2) { lastW = w; layout(); } }).observe(mapWrap);
+  addEventListener("resize", () => layout());
+  $("#viewBtn").addEventListener("click", () => { follow = !follow; layout(); });
+
+  function setCamel(x, y, dir) {
+    camelAt = [x, y];
+    const c = $("#camel"); if (!c) return;
+    c.setAttribute("transform", `translate(${x.toFixed(1)} ${y.toFixed(1)})`);
+    if (dir) camelDir = dir;
+    c.querySelector(".dir").setAttribute("transform", `scale(${camelDir} 1)`);
+    if (narrow && follow) applyView();
+  }
+  function moveCamel(from, to, frac = 1) {
+    const dur = Math.round(560 * Math.max(0.4, frac)); // same pace for everyone; reduced motion only skips the in-between frames
+    const p = document.createElementNS(NS, "path");
+    p.setAttribute("d", edgeD(from, to)); p.setAttribute("visibility", "hidden"); svg.appendChild(p);
+    const L = p.getTotalLength(), dx = CITIES[to].x - CITIES[from].x, dir = dx > 0 ? 1 : dx < 0 ? -1 : camelDir;
+    return new Promise((res) => {
+      const t0 = performance.now(); let done = false;
+      const end = () => {
+        if (done) return; done = true;
+        if (frac >= 1) setCamel(CITIES[to].x, CITIES[to].y, dir);
+        else { const q = p.getPointAtLength(L * frac); setCamel(q.x, q.y, dir); }
+        p.remove(); res();
+      };
+      setTimeout(end, dur + 120);
+      if (reduced) return; // the timer above moves the camel at the end
+      const frame = (now) => {
+        if (done) return;
+        const t = dur ? Math.min(1, (now - t0) / dur) : 1, e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+        const pt = p.getPointAtLength(L * e * frac);
+        setCamel(pt.x, pt.y - Math.abs(Math.sin(Math.PI * e * 3)) * 6, dir);
+        if (t < 1) requestAnimationFrame(frame); else end();
+      };
+      requestAnimationFrame(frame);
+    });
+  }
+  function roadPoint(a, b, frac) {
+    const p = document.createElementNS(NS, "path");
+    p.setAttribute("d", edgeD(a, b)); p.setAttribute("visibility", "hidden"); svg.appendChild(p);
+    const q = p.getPointAtLength(p.getTotalLength() * frac); p.remove();
+    return { x: q.x, y: q.y };
+  }
+  // scroll the page so a map point is comfortably on screen (stacked layouts, or after scrolling down)
+  function ensureVisible(mx, my, retry = true) {
+    const s = screenPt(mx, my), bar = innerWidth < 960 ? 120 : 0, pad = 90;
+    if (s.y >= pad && s.y <= innerHeight - bar - pad) return;
+    const target = scrollY + s.y - (innerHeight - bar) / 2;
+    if (reduced || document.hidden) { scrollTo(0, target); return; }
+    scrollTo({ top: target, behavior: "smooth" });
+    // smooth scrolling can stall (background tab, another scroll in progress): make sure we get there
+    if (retry) setTimeout(() => { const q = screenPt(mx, my); if (q.y < pad || q.y > innerHeight - bar - pad) scrollTo(0, scrollY + q.y - (innerHeight - bar) / 2); }, 650);
+  }
+  function screenPt(x, y) { const m = svg.getScreenCTM(); return m ? { x: m.a * x + m.c * y + m.e, y: m.b * x + m.d * y + m.f } : { x: 0, y: 0 }; }
+  function localPt(x, y) { const s = screenPt(x, y), r = mapWrap.getBoundingClientRect(); return { x: s.x - r.left, y: s.y - r.top }; }
+
+  // ---------- painting ----------
+  function applyFace(g, tile, ghost) {
+    if (!tile) return;
+    g.classList.add("shown", tile.k);
+    if (ghost) g.classList.add("ghost");
+    if (tile.k === "gem") { const gm = GEMS[tile.g]; g.style.setProperty("--gemfill", gm.fill); g.style.setProperty("--gemedge", gm.edge); }
+    g.querySelector("use.ico").setAttribute("href", "#i-" + (tile.k === "safe" ? FLAVORS[tile.f].id : tile.k === "gem" ? GEMS[tile.g].k : tile.k));
+  }
+  function trailD(path) { let d = ""; for (let i = 1; i < path.length; i++) d += " " + edgeD(path[i - 1], path[i]); return d.trim(); }
+  function setPill(g, text, risk) {
+    const t = g.querySelector(".pill text"), r = g.querySelector(".pill rect");
+    t.textContent = text;
+    let len = text.length;
+    if (risk != null) {
+      const sp = document.createElementNS(NS, "tspan");
+      sp.setAttribute("class", "risk"); sp.textContent = ` · ${risk}% thief`;
+      t.appendChild(sp); len += sp.textContent.length;
+    }
+    const w = Math.max(50, 14 + len * 6.4);
+    r.setAttribute("x", (-w / 2).toFixed(1)); r.setAttribute("width", w.toFixed(1));
+  }
+  // chance this road ends the run in bandits: roaming bandits on the road, then the city's own (the Guide stops those)
+  function riskOf(id) {
+    const run = S.run, pr = price(id), ps = starP(id);
+    const tileB = run && !run.over && run.shield ? 0 : (1 - ps) * tierOf(id).p;
+    return pr.x + (1 - pr.x) * tileB;
+  }
+
+  // after a robbery: show the road with no robbers that you could have taken from your last city
+  function drawSafeRoad(from, to) {
+    svg.querySelectorAll(".clearroad, .clearroad-halo").forEach((n) => n.remove());
+    for (const cls of ["clearroad-halo", "clearroad"]) {
+      const el = document.createElementNS(NS, "path");
+      el.setAttribute("class", cls); el.setAttribute("d", edgeD(from, to));
+      el.innerHTML = `<title>The safe road from ${CITIES[from].name}: no robbers</title>`;
+      svg.insertBefore(el, $("#steps"));
+    }
+    $("#n" + to).classList.add("safemiss");
+    popAt(to, "The safe road", "callout road", -40);
+  }
+  function drawAmbush(pt) {
+    svg.querySelectorAll(".ambush").forEach((n) => n.remove());
+    const g = document.createElementNS(NS, "g");
+    g.setAttribute("class", "ambush"); g.setAttribute("transform", `translate(${pt.x.toFixed(1)} ${pt.y.toFixed(1)})`);
+    g.innerHTML = `<circle class="ambush-ring" r="22"/><circle r="15"/><use href="#i-bandit" x="-11" y="-11" width="22" height="22"/><title>Roaming bandits struck here</title>`;
+    svg.insertBefore(g, $("#camel"));
+  }
+  function paint() {
+    const run = S.run, active = !!(run && !run.over);
+    const path = run ? run.path : [START];
+    const mult = run ? run.mult : RTP;
+    const opts = active || !run ? choices() : [];
+    for (const c of CITIES) {
+      const g = $("#n" + c.id); if (!g) continue;
+      g.setAttribute("class", `node t-${tierKey(c.id)}${c.id === START ? " start shown" : ""}`);
+      g.style.removeProperty("--gemfill"); g.style.removeProperty("--gemedge");
+      g.removeAttribute("tabindex"); g.removeAttribute("role");
+      if (c.id === START) { /* flag face stays */ } else if (run && path.includes(c.id)) {
+        applyFace(g, run.tiles[c.id], false); g.classList.add("visited");
+        setPill(g, fmtX(run.mults[c.id] || mult));
+      } else if (run && run.over) applyFace(g, run.tiles[c.id], true);
+      else if (run && run.scouted && run.scouted[c.id]) { applyFace(g, run.tiles[c.id], false); g.classList.add("scouted"); }
+      else if (run && run.cleared && run.cleared[c.id]) g.classList.add("cleared");
+      const k = opts.indexOf(c.id);
+      if (k >= 0) {
+        g.classList.add("choice");
+        g.setAttribute("tabindex", "0"); g.setAttribute("role", "button");
+        if (path.includes(c.id)) { g.classList.add("back"); setPill(g, "BACK"); }
+        else {
+          g.classList.add("nopill");
+        }
+        g.querySelector(".badge text").textContent = k + 1;
+      }
+    }
+    if (active && path.length > 1) $("#n" + cur()).classList.add("here");
+    document.querySelectorAll(".road").forEach((e) => e.classList.remove("open"));
+    const here = run ? cur() : START;
+    opts.forEach((o) => { const e = $(`#e${Math.min(here, o)}-${Math.max(here, o)}`); e && e.classList.add("open"); });
+    $("#trail").setAttribute("d", trailD(path));
+    const st = $("#steps"); st.innerHTML = ""; for (let i = 1; i < path.length; i++) drawSteps(path[i - 1], path[i]);
+    svg.querySelectorAll(".ambush, .clearroad, .clearroad-halo").forEach((n) => n.remove());
+    if (run && run.over && run.result && run.result.kind === "bust" && run.robbedFrom != null && run.safeLog && run.safeLog[run.robbedFrom] != null) {
+      for (const cls of ["clearroad-halo", "clearroad"]) { const el = document.createElementNS(NS, "path"); el.setAttribute("class", cls); el.setAttribute("d", edgeD(run.robbedFrom, run.safeLog[run.robbedFrom])); svg.insertBefore(el, $("#steps")); }
+      $("#n" + run.safeLog[run.robbedFrom]).classList.add("safemiss");
+    }
+    if (run && run.over && run.result && run.result.kind === "roam" && run.roamPt) { drawAmbush(run.roamPt); setCamel(run.roamPt.x, run.roamPt.y); }
+    else setCamel(CITIES[here].x, CITIES[here].y);
+    const c = $("#camel"), bust = !!(run && run.over && run.result && (run.result.kind === "bust" || run.result.kind === "roam"));
+    c.classList.toggle("hit", bust); c.classList.toggle("down", bust);
+    setHeat(steps(), !active);
+    showBanner(false);
+  }
+
+  // ---------- effects ----------
+  const ctx = fx.getContext("2d");
+  let parts = [], fxRunning = false, dpr = 1;
+  function sizeFx() {
+    const r = svg.getBoundingClientRect(); dpr = Math.min(2, devicePixelRatio || 1);
+    fx.style.width = r.width + "px"; fx.style.height = r.height + "px";
+    fx.width = Math.round(r.width * dpr); fx.height = Math.round(r.height * dpr);
+  }
+  const FXCFG = {
+    dust: { n: 10, sp: 1.8, col: ["#f3c979", "#e8b46a", "#c58a45"], g: 0.03, life: 30, size: 2.6 },
+    safe: { n: 20, sp: 3.2, col: ["#3ad6b6", "#b8fff0", "#f3c979"], g: 0.06, life: 40, size: 2.6, star: true },
+    gem: { n: 46, sp: 5, col: ["#9be7ff", "#ffffff", "#dff7ff", "#5fb7ff"], g: 0.05, life: 60, size: 3.2, star: true },
+    bust: { n: 46, sp: 6, col: ["#ff4b6e", "#ff8fa3", "#4a0c22", "#2b1606"], g: 0.18, life: 50, size: 4 },
+    gold: { n: 120, sp: 9, col: ["#fff2c2", "#f3c979", "#ff8a44", "#ffffff"], g: 0.14, life: 80, size: 4, star: true },
+    cash: { n: 60, sp: 7, col: ["#3ad6b6", "#f3c979", "#fff2c2"], g: 0.16, life: 64, size: 3.6, star: true },
+  };
+  function burst(id, kind) { burstAt(CITIES[id].x, CITIES[id].y, kind); }
+  function burstAt(mx, my, kind) {
+    if (reduced) return;
+    const { x: cx, y: cy } = localPt(mx, my), cfg = FXCFG[kind];
+    for (let i = 0; i < cfg.n; i++) {
+      const a = Math.random() * Math.PI * 2, s = cfg.sp * (0.35 + Math.random() * 0.75);
+      parts.push({ x: cx, y: cy, vx: Math.cos(a) * s, vy: Math.sin(a) * s - (kind === "dust" ? 0.5 : 2), g: cfg.g, life: cfg.life * (0.6 + Math.random() * 0.6), age: 0,
+        c: cfg.col[i % cfg.col.length], s: cfg.size * (0.6 + Math.random() * 0.8), star: cfg.star && i % 3 === 0, rot: Math.random() * 6 });
+    }
+    if (!fxRunning) { fxRunning = true; requestAnimationFrame(tick); }
+  }
+  function tick() {
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, fx.width, fx.height);
+    parts = parts.filter((p) => p.age < p.life);
+    for (const p of parts) {
+      p.age++; p.x += p.vx; p.y += p.vy; p.vy += p.g; p.vx *= 0.985; p.rot += 0.15;
+      ctx.globalAlpha = Math.max(0, 1 - p.age / p.life); ctx.fillStyle = p.c;
+      if (p.star) { ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.beginPath(); for (let k = 0; k < 8; k++) { const r = k % 2 ? p.s * 0.45 : p.s * 1.6, a = (Math.PI / 4) * k; ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r); } ctx.closePath(); ctx.fill(); ctx.restore(); }
+      else { ctx.beginPath(); ctx.arc(p.x, p.y, p.s, 0, Math.PI * 2); ctx.fill(); }
+    }
+    ctx.globalAlpha = 1;
+    if (parts.length) requestAnimationFrame(tick); else { fxRunning = false; ctx.clearRect(0, 0, fx.width, fx.height); }
+  }
+  function flash(kind) { flashEl.className = "flash" + (kind === "gold" ? " gold" : ""); void flashEl.offsetWidth; flashEl.classList.add("on"); }
+  function countUp(el, to, fmt, dur = 700) {
+    const id = (el._cu = (el._cu || 0) + 1);
+    if (reduced) { el.textContent = fmt(to); return; }
+    const from = el._v || 0, t0 = performance.now();
+    const f = (now) => { if (el._cu !== id) return; const t = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - t, 3); el.textContent = fmt(from + (to - from) * e); if (t < 1) requestAnimationFrame(f); };
+    requestAnimationFrame(f);
+    setTimeout(() => { if (el._cu === id) el.textContent = fmt(to); }, dur + 60);
+    el._v = to;
+  }
+  const heatEl = $("#heat");
+  function setHeat(n, over) { heatEl.style.setProperty("--heat", over ? 0 : Math.min(1, n / 7).toFixed(2)); heatEl.classList.toggle("danger", !over && n >= 6); }
+  function buzz(pattern) { try { if (!navigator.vibrate || (navigator.userActivation && !navigator.userActivation.hasBeenActive)) return; navigator.vibrate(pattern); } catch (e) {} }
+  function drawSteps(a, b) {
+    const grp = $("#steps"), p = document.createElementNS(NS, "path");
+    p.setAttribute("d", edgeD(a, b)); p.setAttribute("visibility", "hidden"); grp.appendChild(p);
+    const L = p.getTotalLength(); let out = "";
+    for (let d = 24, k = 0; d < L - 24; d += 9, k++) {
+      const A = p.getPointAtLength(d), B = p.getPointAtLength(d + 1), ang = Math.atan2(B.y - A.y, B.x - A.x), off = k % 2 ? 3 : -3;
+      const x = (A.x - Math.sin(ang) * off).toFixed(1), y = (A.y + Math.cos(ang) * off).toFixed(1);
+      out += `<ellipse class="footprint" cx="${x}" cy="${y}" rx="1.7" ry="1.1" transform="rotate(${(ang * 180 / Math.PI).toFixed(0)} ${x} ${y})"/>`;
+    }
+    p.remove(); grp.insertAdjacentHTML("beforeend", out);
+  }
+  function popAt(id, text, cls, dy = -34) {
+    if (reduced) return;
+    const pt = localPt(CITIES[id].x, CITIES[id].y + dy), el = document.createElement("div");
+    el.className = "popfx " + cls; el.textContent = text; el.style.left = pt.x + "px"; el.style.top = pt.y + "px";
+    mapWrap.appendChild(el); setTimeout(() => el.remove(), 2200);
+  }
+  function stamp(text, cls = "", at = null) {
+    if (reduced) return;
+    const el = document.createElement("div");
+    el.className = "popfx bigstamp " + cls; el.textContent = text;
+    // size the word to the map: measure it, then shrink until it fits with a margin
+    const w = mapWrap.clientWidth, h = svg.clientHeight;
+    let fs = Math.min(72, w / 7);
+    el.style.fontSize = fs + "px"; el.style.visibility = "hidden"; el.style.animation = "none";
+    mapWrap.appendChild(el);
+    const tw = el.offsetWidth, room = w * 0.84;
+    if (tw > room) { fs = Math.max(20, fs * room / tw); el.style.fontSize = fs.toFixed(1) + "px"; }
+    const half = el.offsetWidth / 2 + 10;
+    let x = w / 2, y = h * 0.45;
+    if (at) { const q = localPt(at.x, at.y); x = q.x; y = q.y - fs * 1.1; } // just above where it happened
+    el.style.left = Math.max(half, Math.min(w - half, x)) + "px";
+    el.style.top = Math.max(fs * 0.8, Math.min(h - fs * 0.8, y)) + "px";
+    el.style.visibility = ""; el.style.animation = "";
+    setTimeout(() => el.remove(), 1600);
+  }
+  let purseShown = S.balance, purseAnim = false;
+  function tweenPurse(to, dur) {
+    const from = purseShown, el = $("#balance"), t0 = performance.now(); purseAnim = true;
+    const step = () => {
+      const t = Math.min(1, (performance.now() - t0) / dur);
+      purseShown = round2(from + (to - from) * (1 - Math.pow(1 - t, 2))); el.textContent = money(purseShown);
+      if (t < 1) setTimeout(step, 30); else { purseAnim = false; purseShown = S.balance; el.textContent = money(S.balance); }
+    };
+    step();
+  }
+  function coinsToPurse(id, win, bet) {
+    const count = Math.max(6, Math.min(32, Math.round(5 + (win / bet) * 2.5)));
+    if (reduced) { purseAnim = false; render(); return; }
+    const s = screenPt(CITIES[id].x, CITIES[id].y), pr = $("#purse .coin").getBoundingClientRect();
+    const tx = pr.left + pr.width / 2, ty = pr.top + pr.height / 2, flight = 760, spread = 55;
+    for (let k = 0; k < count; k++) setTimeout(() => {
+      const c = document.createElement("div"); c.className = "fly-coin"; document.body.appendChild(c);
+      const mx = s.x + (Math.random() - 0.5) * 160, my = s.y - 50 - Math.random() * 110;
+      try { c.animate([{ transform: `translate(${s.x}px, ${s.y}px) scale(.4)` }, { transform: `translate(${mx}px, ${my}px) scale(1.15)`, offset: 0.35 }, { transform: `translate(${tx}px, ${ty}px) scale(.55)` }], { duration: flight, easing: "cubic-bezier(.45,0,.35,1)", fill: "forwards" }); } catch (e) {}
+      setTimeout(() => { c.remove(); SFX.ting(k); if (k % 3 === 0) bumpPurse(); }, flight);
+    }, k * spread);
+    setTimeout(() => tweenPurse(S.balance, count * spread + 200), flight * 0.6);
+  }
+  const cf = $("#confetti"), cfx = cf.getContext("2d");
+  let bits = [], cfOn = false;
+  function confetti() {
+    if (reduced) return;
+    const w = innerWidth, h = innerHeight, d = Math.min(2, devicePixelRatio || 1);
+    cf.width = w * d; cf.height = h * d;
+    const cols = ["#e0a33c", "#c8553d", "#1f6f6b", "#f8f0de", "#2d5d8f", "#1d2433"];
+    for (let i = 0; i < 170; i++) bits.push({ x: Math.random() * w, y: -20 - Math.random() * h * 0.6, vx: (Math.random() - 0.5) * 2, vy: 2 + Math.random() * 3.5, r: Math.random() * 6, vr: (Math.random() - 0.5) * 0.3, w: 6 + Math.random() * 7, h: 4 + Math.random() * 5, c: cols[i % cols.length], coin: i % 5 === 0, sway: Math.random() * 6 });
+    if (!cfOn) { cfOn = true; requestAnimationFrame(cfTick); }
+  }
+  function cfTick(t) {
+    const d = cf.width / innerWidth; cfx.setTransform(d, 0, 0, d, 0, 0); cfx.clearRect(0, 0, innerWidth, innerHeight);
+    bits = bits.filter((b) => b.y < innerHeight + 30);
+    for (const b of bits) {
+      b.x += b.vx + Math.sin(t / 300 + b.sway) * 0.8; b.y += b.vy; b.r += b.vr;
+      cfx.save(); cfx.translate(b.x, b.y); cfx.rotate(b.r); cfx.fillStyle = b.c;
+      if (b.coin) { cfx.scale(Math.abs(Math.cos(b.r * 2)) + 0.15, 1); cfx.beginPath(); cfx.arc(0, 0, 7, 0, Math.PI * 2); cfx.fill(); } else cfx.fillRect(-b.w / 2, -b.h / 2, b.w, b.h);
+      cfx.restore();
+    }
+    if (bits.length) requestAnimationFrame(cfTick); else { cfOn = false; cfx.clearRect(0, 0, innerWidth, innerHeight); }
+  }
+  function bumpPurse() { const p = $("#purse"); p.classList.remove("bump"); void p.offsetWidth; p.classList.add("bump"); }
+  const STREAK = { 3: "On a roll!", 5: "Deep in the continent!", 7: "Legend of the caravan!" };
+
+  let bannerTimer = 0;
+  function showBanner(animate) {
+    const run = S.run;
+    if (!run || !run.over || !run.result) { banner.hidden = true; return; }
+    const { kind, m, win } = run.result, city = CITIES[cur()].name;
+    const gems = run.gems ? ` · ${run.gems} diamond${run.gems > 1 ? "s" : ""}` : "";
+    const cfg = {
+      bust: ["lose", `Robbed in ${city}`, "A thief took everything"],
+      roam: ["lose", `Roaming bandits near ${CITIES[run.roamAt ?? cur()].name}`, "Caught on the road; the stake is lost"],
+      cash: ["win", `Cashed out in ${city} · ${fmtX(m)}`, `${steps()} cities${gems}`],
+      stuck: ["win", `Every city explored · ${fmtX(m)}`, `Cashed out automatically${gems}`],
+      water: ["win", `Out of water in ${city} · ${fmtX(m)}`, `Cashed out automatically${gems}`],
+      cap: ["sun", `Maximum win · ${fmtX(m)}`, `The run hit the ${CAP}× cap`],
+      sun: ["sun", `The Sunstone! ${fmtX(m)}`, `Found in ${city}`],
+      star: ["star", `The Star of Africa! ${fmtX(m)}`, `Found in ${city} · guaranteed win`],
+      goal: ["sun", `Made it to Cape Town · ${fmtX(m)}`, `Cairo to the Cape in ${steps()} cities${gems}`],
+    }[kind];
+    // the big number is the run's NET result: what came back minus the stake (honest feedback)
+    const net = round2(win + (run.banked || 0) - run.bet);
+    banner.className = "banner " + (net > 0 ? cfg[0] : "lose");
+    const kept = run.banked ? ` · spice money ${money(run.banked)} included` : "";
+    banner.innerHTML = `<span class="t">${cfg[1]}</span><span class="amt"></span><small>${cfg[2]}${kept}</small>`;
+    const amt = banner.querySelector(".amt"), fmt = (v) => (net < 0 ? "−" : net > 0 ? "+" : "±") + money(Math.abs(v));
+    if (animate && net > 0) { amt._v = 0; countUp(amt, net, fmt, 900); } else amt.textContent = fmt(net);
+    banner.hidden = false; banner.classList.remove("fade"); clearTimeout(bannerTimer);
+    if (animate) { banner.style.animation = "none"; void banner.offsetWidth; banner.style.animation = ""; bannerTimer = setTimeout(() => banner.classList.add("fade"), kind === "sun" || kind === "goal" || kind === "star" ? 4800 : 3000); }
+    else banner.classList.add("fade");
+  }
+  banner.addEventListener("click", () => banner.classList.toggle("fade"));
+
+  // ---------- rocks: gems and thieves ----------
+  const wkey = (id) => (LANDMARKS[id] && LANDMARKS[id].key === "mines" ? "mines" : tierKey(id));
+  const gemMean = (id) => GEM_W[wkey(id)].reduce((a, w, i) => a + w * GEMS[i].x, 0);
+  function pickGem(id, u) { const w = GEM_W[wkey(id)]; let acc = 0; for (let i = 0; i < w.length; i++) { acc += w[i]; if (u < acc) return i; } return w.length - 1; }
+  // thief chance that makes this rock worth exactly the current run (counting the Star's chance, the Guide and the Spice prize):
+  //   1 = P(star)*S + (1 - P(star)) * [t * thief + (1 - t) * gemMean] + prize/V
+  // Off the safe road a thief usually (70%) takes everything; on the safe road only pickpockets (half) can appear.
+  // Each kind of road gets its own chance so that a rock is worth exactly the current run either way, which means
+  // knowing or guessing the safe road gives no edge.
+  function thiefP(id, safe = false) {
+    const run = S.run, active = !!(run && !run.over), V = active ? run.mult : RTP;
+    const ps = starP(id), Sx = starMult(active ? steps() : 0);
+    const prize = LANDMARKS[id] && LANDMARKS[id].key === "spice" ? SPICE * V : 0;
+    const shield = active && run.shield;
+    const g = gemMean(id), et = shield ? GUARD : safe ? THIEF : (1 - TAKE_ALL) * THIEF; // what a thief leaves you, on average
+    if (ps >= 1) return 0;
+    const need = (1 - ps * Sx - prize / V) / (1 - ps);
+    return Math.min(T_MAX, Math.max(0, (g - need) / (g - et)));
+  }
+  // on arriving anywhere, one new road toward Cape Town is secretly made robber-free
+  function chooseSafe() {
+    const run = S.run; if (!run || run.over) return;
+    const here = cur(), cand = reach().filter((n) => !run.path.includes(n) && DJ[n] < DJ[here]);
+    run.safe = cand.length ? cand[Math.floor(rand() * cand.length)] : null;
+    run.safeLog = run.safeLog || {};
+    if (run.safe != null) run.safeLog[here] = run.safe;
+  }
+  // what a rock holds, from the numbers drawn when the run started and the odds for the road you took
+  function rockAt(id) {
+    const run = S.run;
+    if (run.stars && run.stars.includes(id)) return { k: "star" };
+    const [a, b] = run.rolls[id], safe = id === run.safe;
+    return a < thiefP(id, safe) ? { k: "thief", all: !safe && b < TAKE_ALL } : { k: "gem", g: pickGem(id, b) };
+  }
+
+  // ---------- fair pricing ----------
+  // chance that a city holds the Star, given what the player knows
+  function starP(id) {
+    const run = S.run, active = !!(run && !run.over), seen = active ? run.path : [START];
+    const hidden = CITIES.filter((c) => c.id !== START && !seen.includes(c.id));
+    const left = active && run.stars ? run.stars.filter((c) => !run.path.includes(c)) : null;
+    if (active && run.starHint && left) { // the Oracle told you how many Stars lie on each side of the Equator
+      const north = CITIES[id].lat > 0, half = hidden.filter((c) => (c.lat > 0) === north);
+      return half.length ? left.filter((c) => (CITIES[c].lat > 0) === north).length / half.length : 0;
+    }
+    return hidden.length ? (left ? left.length : STARS) / hidden.length : 0;
+  }
+  // the road's multiplier that makes this step worth exactly the current run value:
+  //   V = P(star)*Star + P(bandit)*(guide ? V : 0) + P(sun)*G*V + g*V*(P(safe) + P(gem)*D) + prize
+  function fairParts(id) {
+    const run = S.run, t = tierOf(id), V = run && !run.over ? run.mult : RTP;
+    const ps = starP(id), Sx = starMult(run && !run.over ? steps() : 0) * Math.max(1, 1 / V);
+    let p = t.p, q = t.q, d = t.d;
+    if (run && run.cleared && run.cleared[id]) { p = 0; q = t.q / (1 - t.p); d = t.d / (1 - t.p); }
+    const lm = LANDMARKS[id], prize = lm ? PRIZE[lm.key] || 0 : 0, mines = !!lm && lm.key === "mines";
+    const rest = 1 - ps, sh = run && !run.over && run.shield ? 1 : 0;
+    const grow = mines ? rest * (1 - p - q) * t.D : rest * (1 - p - q - d + d * t.D);
+    const num = 1 - ps * Sx - rest * p * sh - rest * q * t.G - prize / V;
+    return { num, grow };
+  }
+  // the road's price: multiplier g (never below G_MIN) and the roaming-bandit chance x that keeps it fair.
+  // Step value / V at multiplier g is 1 - num + g*grow; roaming bandits (rolled on the road, the Guide can't stop them)
+  // scale that by (1 - x), so x = (e - 1) / e makes the step exactly fair at g = G_MIN.
+  function price(id) {
+    const { num, grow } = fairParts(id), g0 = num / grow;
+    if (g0 >= G_MIN) return { g: g0, x: 0 };
+    const e = 1 - num + G_MIN * grow;
+    return { g: G_MIN, x: Math.min(0.95, (e - 1) / e) };
+  }
+  function fairG(id) { return price(id).g; }
+  // run value if this city turns out safe (a mines city is always a diamond)
+  function prospect(id) {
+    const run = S.run, V = run && !run.over ? run.mult : RTP, lm = LANDMARKS[id];
+    return V * fairG(id) * (lm && lm.key === "mines" ? tierOf(id).D : 1);
+  }
+
+  // ---------- landmarks ----------
+  function scout(ids) {
+    const run = S.run; run.scouted = run.scouted || {};
+    ids.forEach((id) => (run.scouted[id] = true));
+  }
+  // returns a short sentence for the status line
+  function claimLandmark(id) {
+    const run = S.run, lm = LANDMARKS[id], C = CITIES[id];
+    const first = !S.stamps[id];
+    S.stamps[id] = true;
+    run.marks = (run.marks || 0) + 1;
+    setTimeout(() => { popAt(id, lm.title + "!", "landmark", -72); SFX.landmark(); burst(id, "gold"); }, 380);
+    if (first) setTimeout(() => popAt(id, "New passport stamp!", "callout", -104), 1300);
+    let msg = "";
+    switch (lm.key) {
+      case "spice": {
+        const amt = round2(run.bet * SPICE * (run.prevMult ?? run.mult));
+        run.banked = round2((run.banked || 0) + amt);
+        S.balance = round2(S.balance + amt);
+        msg = `${lm.title}: ${money(amt)} credits banked, yours to keep.`;
+        break;
+      }
+      case "mines":
+        msg = `${lm.title}: run value ${fmtX(run.mult)}.`;
+        break;
+      case "guide":
+        run.shield = true;
+        msg = `${lm.title}: the next thief only gets a quarter.`;
+        break;
+      case "oracle": {
+        const left = run.stars.filter((c) => !run.path.includes(c) && c !== id);
+        const n = left.filter((c) => CITIES[c].lat > 0).length, so = left.length - n;
+        setTimeout(() => popAt(id, `Stars: ${n} north · ${so} south`, "starhint", -100), 1700);
+        run.starHint = true; // odds on each side of the Equator now count where the Stars are
+        msg = `${lm.title}: ${n} Star${n === 1 ? "" : "s"} of Africa north of the Equator, ${so} south.`;
+        break;
+      }
+      case "springs":
+        run.water = (run.water ?? WATER) + 3;
+        msg = `${lm.title}: 3 more days of water, ${run.water} in all.`;
+        break;
+    }
+    return msg;
+  }
+
+  // ---------- panel ----------
+  const rockSvg = (fill) => `<svg viewBox="-20 -20 40 40" aria-hidden="true"><path d="M-17 5 L-14 -9 L-4 -16 L9 -15 L17 -4 L15 10 L4 16 L-10 15 Z" fill="${fill}" stroke="#1d2433" stroke-width="2.4" stroke-linejoin="round"/><path d="M-6 -9 L-1 -3 L-4 4 M6 -6 L3 1 L8 6" fill="none" stroke="#1d2433" stroke-opacity=".45" stroke-width="1.4" stroke-linecap="round"/></svg>`;
+  const tokSvg = (fill, stroke, inner, extra = "") => `<svg viewBox="-42 -42 84 84" aria-hidden="true"><circle r="38" fill="${fill}" stroke="${stroke}" stroke-width="3.5"/><g fill="none" stroke="${stroke}" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" ${extra}>${inner}</g></svg>`;
+  const gemSvg = `<svg viewBox="-20 -20 40 40" aria-hidden="true"><path d="M-14 -5 L-8 -13 L8 -13 L14 -5 L0 15 Z" fill="#dff7ff" stroke="#2a8fc0" stroke-width="1.6" stroke-linejoin="round"/><path d="M-14 -5 L14 -5 M-8 -13 L-4 -5 L0 15 L4 -5 L8 -13" fill="none" stroke="#2a8fc0" stroke-width="1.3"/></svg>`;
+  const tierSwatch = { s: ["#f0c27a", "#6e431b"], j: ["#7fd47e", "#1d5a2a"], r: ["#ff8a6a", "#6a1a12"] };
+  const ROCKCOL = { s: "#e0a33c", j: "#5f8f4a", r: "#c8553d" };
+  const TIER_LINE = { s: "Smaller gems, fewer thieves", j: "Better gems, more thieves", r: "The biggest gems, and the most thieves" };
+  $("#terrain").innerHTML = Object.entries(TIERS).map(([k, t]) =>
+    `<div>${rockSvg(ROCKCOL[k])}<span><b>${t.name}</b><small>${TIER_LINE[k]}: ${t.gems}</small></span></div>`).join("")
+    + `<div>${rockSvg("#e0a33c").replace("<svg", '<svg class="mines-rock"')}<span><b>Diamond Mines</b><small>Johannesburg. The richest rocks in Africa, and thieves love it.</small></span></div>`;
+  const gemCard = (gm) => `<svg viewBox="-24 -24 48 48" aria-hidden="true" style="--gemfill:${gm.fill};--gemedge:${gm.edge}"><use href="#i-${gm.k}" x="-20" y="-20" width="40" height="40"/></svg>`;
+  $("#tokenCards").innerHTML = [
+    [rockSvg("#e0a33c"), "Rock", "Turned when you arrive"],
+    ...GEMS.map((gm) => [gemCard(gm), gm.name, `Run ×${gm.x}`]),
+    [`<svg viewBox="-24 -24 48 48" aria-hidden="true"><circle r="21" fill="#1d2433" stroke="#b8372c" stroke-width="2.5"/><g class="thief-ico">${ICONS.thief}</g></svg>`, "Thief", "Robbers take everything; pickpockets take half"],
+    [`<svg viewBox="-24 -24 48 48" aria-hidden="true"><circle r="21" fill="#2d5d8f" stroke="#1d2433" stroke-width="2.5"/><path d="${star(15, 6, 5)}" fill="#f8f0de" stroke="#e0a33c" stroke-width="1.6"/></svg>`, "Star of Africa", "Three per board. Your run ×2, +0.25 per city explored first"],
+  ].map(([s, b, t]) => `<div class="tok-card">${s}<div><b>${b}</b><span>${t}</span></div></div>`).join("");
+
+  function readBet() { let v = parseFloat(betIn.value); return isFinite(v) ? round2(v) : 0; }
+  function defaultPreview() {
+    const run = S.run, active = !!(run && !run.over);
+    if (active) return run.auto ? `Auto-ride is choosing the safest road.` : `Tap a glowing city, or press <b>1</b>–<b>${Math.max(1, reach().length)}</b>.`;
+    return `Set out from <b>Cairo</b>, then pick your road at every city.`;
+  }
+  function previewCity(id) {
+    const t = tierOf(id), run = S.run;
+    if (run && !run.over && run.path.includes(id)) { previewEl.innerHTML = `<b>Back to ${CITIES[id].name}</b>: a road you know. No risk, and your run keeps its value.`; return; }
+    const lm = LANDMARKS[id], mines = wkey(id) === "mines";
+    let line = `<b>${CITIES[id].name}</b> · ${mines ? "Diamond Mines: the richest rocks, and the most thieves" : `${t.name}: ${TIER_LINE[tierKey(id)].toLowerCase()}`}`;
+    if (run && !run.over && id !== GOAL) line += ` · ${DJ[id]} day${DJ[id] === 1 ? "" : "s"} from Cape Town`;
+    const ps = starP(id);
+    if (run && !run.over && run.starHint) line += ps ? ` · <span class="m">the Star could be here</span>` : ` · <span class="r">wrong side of the Equator for the Star</span>`;
+    if (lm) line += `<br><b style="color:#ffd77a">★ ${lm.title}:</b> ${lm.reward}`;
+    previewEl.innerHTML = line;
+  }
+  function render() {
+    if (!purseAnim) { purseShown = S.balance; $("#balance").textContent = money(S.balance); }
+    const run = S.run, active = !!(run && !run.over);
+    betIn.disabled = active; autoSel.disabled = active;
+    ["#half", "#double", "#max"].forEach((s) => ($(s).disabled = active));
+    const sp = $("#starPays"), sv = starMult(active ? steps() : 0);
+    if (sp.textContent !== `×${sv}`) { sp.textContent = `×${sv}`; if (active && steps()) { sp.classList.remove("grow"); void sp.offsetWidth; sp.classList.add("grow"); } }
+    const wl = active ? run.water ?? WATER : WATER, wEl = $("#water");
+    wEl.textContent = wl; wEl.classList.toggle("low", active && wl <= 2);
+    primary.classList.remove("riding");
+    if (active) {
+      const val = steps() ? payout(run.bet, run.mult) : 0, rv = $("#runVal");
+      if (steps()) countUp(rv, val, money, 400); else { rv.textContent = "—"; rv._v = 0; }
+      const sf = safest();
+      if (run.auto) { primary.classList.add("riding"); primary.innerHTML = `Stop auto-ride<span class="sub">cashing out after ${run.auto} cities</span>`; primary.disabled = false; }
+      else { primary.innerHTML = sf != null ? `Safest: ${CITIES[sf].name}<span class="sub">or tap any glowing city</span>` : `No new road here<span class="sub">go back or cash out</span>`; primary.disabled = busy || sf == null; }
+      cashBtn.disabled = busy || steps() === 0;
+      cashBtn.innerHTML = steps() ? `Cash out ${fmtX(run.mult)}<span class="sub">${money(val)} credits</span>` : `Cash out<span class="sub">after the first city</span>`;
+      cashBtn.classList.toggle("hot", steps() >= 3);
+    } else {
+      const bet = readBet();
+      const rv0 = $("#runVal"); rv0._cu = (rv0._cu || 0) + 1; rv0.textContent = "—"; rv0._v = 0;
+      primary.innerHTML = (run ? "Set out again" : "Set out from Cairo") + `<span class="sub">stake ${money(bet)}${S.auto ? ` · auto ${S.auto} cities` : ""}</span>`;
+      primary.disabled = busy || !(bet >= 1 && bet <= S.balance);
+      cashBtn.disabled = true; cashBtn.classList.remove("hot"); cashBtn.innerHTML = `Cash out<span class="sub">during a run</span>`;
+    }
+    if (!busy) previewEl.innerHTML = defaultPreview();
+    $("#broke").hidden = active || S.balance >= 1;
+    const perks = [];
+    if (active && run.shield) perks.push(`<span class="perk guide"><svg viewBox="-14 -14 28 28"><use href="#l-guide"/></svg>Guide ready</span>`);
+    if (run && run.banked) perks.push(`<span class="perk bank"><svg viewBox="-14 -14 28 28"><use href="#l-spice"/></svg>Banked +${money(run.banked)}</span>`);
+    if (active && run.scouted && Object.keys(run.scouted).some((id) => !run.path.includes(+id))) perks.push(`<span class="perk intel"><svg viewBox="-14 -14 28 28"><use href="#l-oracle"/></svg>Scouted cities shown</span>`);
+    $("#perks").innerHTML = perks.join("");
+    const found = run && run.found ? run.found : [];
+    $("#satchel").innerHTML = found.length ? found.map((k) => k === "thief"
+      ? `<span class="sg thief" title="Thief: half stolen"><svg viewBox="-20 -20 40 40"><use href="#i-thief" x="-20" y="-20" width="40" height="40"/></svg></span>`
+      : (() => { const gm = GEMS.find((x) => x.k === k); return `<span class="sg" title="${gm.name} ×${gm.x}" style="--gemfill:${gm.fill};--gemedge:${gm.edge}"><svg viewBox="-20 -20 40 40"><use href="#i-${gm.k}" x="-20" y="-20" width="40" height="40"/></svg></span>`; })()).join("")
+      : (active ? `<span class="sg-empty">Your satchel is empty. Turn some rocks.</span>` : "");
+    renderPassport();
+    renderHistory();
+  }
+  let passKey = "";
+  function renderPassport() {
+    const key = Object.keys(S.stamps).sort().join(",");
+    if (key === passKey) return; passKey = key;
+    const ids = Object.keys(LANDMARKS).map(Number);
+    $("#passcount").textContent = `${ids.filter((id) => S.stamps[id]).length} of ${ids.length} stamps`;
+    $("#passport").innerHTML = ids.map((id) => {
+      const lm = LANDMARKS[id], got = !!S.stamps[id];
+      return `<div class="stamp${got ? " got" : ""}"><svg viewBox="-22 -22 44 44" aria-hidden="true"><circle r="19" fill="url(#gLm)" stroke="#6e431b" stroke-width="2"/><circle r="15" fill="none" stroke="#6e431b" stroke-opacity=".4" stroke-dasharray="2 3"/><use href="#l-${lm.key}" x="-11" y="-11" width="22" height="22" style="color:#4a2a0c"/></svg><div><b>${lm.title}</b><span>${lm.reward}</span><em>${got ? "Stamped" : CITIES[id].name}</em></div></div>`;
+    }).join("");
+  }
+  let histKey = "";
+  function renderHistory() {
+    const key = S.history.length + ":" + (S.history[0] ? S.history[0].t : "");
+    if (key === histKey) return; histKey = key;
+    $("#histEmpty").hidden = S.history.length > 0;
+    $("#hist").innerHTML = S.history.map((h) => {
+      const net = round2(h.win - h.bet);
+      const tag = h.kind === "bust" || h.kind === "roam" ? ["lose", "Bust"] : h.kind === "star" ? ["star", "★ " + fmtX(h.m)] : h.kind === "sun" || h.kind === "goal" ? ["sun", fmtX(h.m)] : ["win", fmtX(h.m)];
+      const what = { bust: `Robbed in ${h.city}`, roam: `Roaming bandits near ${h.city}`, cash: `Cashed out in ${h.city}`, stuck: `Stranded in ${h.city}`, sun: `Sunstone in ${h.city}`, star: `Star of Africa in ${h.city}`, goal: "Reached Cape Town", water: `Out of water in ${h.city}`, cap: `Max win in ${h.city}` }[h.kind] + ` · ${h.steps} cities${h.gems ? ` · ${h.gems}◆` : ""}${h.marks ? ` · ${h.marks}★` : ""}`;
+      return `<li><span class="tag ${tag[0]}">${tag[1]}</span><span class="what">${what}</span><span class="amt ${net >= 0 ? "pos" : "neg"}">${net >= 0 ? "+" : "−"}${money(Math.abs(net))}</span></li>`;
+    }).join("");
+  }
+  function say(t) { statusEl.textContent = t; statusEl.classList.remove("sr"); }
+  // travel journal: one line a day, newest first (after 80 Days)
+  function journal(text) {
+    const run = S.run; if (!run) return;
+    run.journal = run.journal || [];
+    if (run.journal[0] && run.journal[0].text === text) { if (statusEl.textContent === text) statusEl.classList.add("sr"); return; }
+    run.journal.unshift({ day: run.day || 0, text });
+    run.journal = run.journal.slice(0, 4);
+    renderJournal();
+    if (statusEl.textContent === text) statusEl.classList.add("sr"); // the journal already shows it; screen readers still hear it
+  }
+  function renderJournal() {
+    const run = S.run, el = $("#journal");
+    el.innerHTML = run && run.journal ? run.journal.map((j) => `<li><span>Day ${j.day}</span><div>${j.text.replace(/&/g, "&amp;").replace(/</g, "&lt;")}</div></li>`).join("") : "";
+  }
+  // session tracking (Ontario 2.21 net position in credits, 2.22 time played)
+  let SESS = { t0: Date.now(), net: 0 };
+  try { const v = JSON.parse(sessionStorage.getItem("sunstone-session") || "null"); if (v && typeof v.net === "number") SESS = v; } catch (e) {}
+  function sessionAdd(d) { SESS.net = round2(SESS.net + d); try { sessionStorage.setItem("sunstone-session", JSON.stringify(SESS)); } catch (e) {} renderSession(); }
+  function renderSession() {
+    const el = $("#sessNet"), mins = Math.floor((Date.now() - SESS.t0) / 60000);
+    el.textContent = (SESS.net > 0 ? "+" : SESS.net < 0 ? "−" : "±") + money(Math.abs(SESS.net));
+    el.className = SESS.net > 0 ? "pos" : SESS.net < 0 ? "neg" : "";
+    $("#sessTime").textContent = mins < 60 ? `${mins} min` : `${Math.floor(mins / 60)} h ${mins % 60} min`;
+  }
+  setInterval(renderSession, 15000);
+
+  // ---------- actions ----------
+  const MIN_CYCLE = 2500; // Ontario 2.18: at least 2.5 s per game cycle
+  let lastStart = -Infinity, startQueued = 0;
+  function start() {
+    if (busy || (S.run && !S.run.over)) return;
+    const since = performance.now() - lastStart;
+    if (since < MIN_CYCLE) {
+      if (!startQueued) { startQueued = setTimeout(() => { startQueued = 0; start(); }, MIN_CYCLE - since); primary.disabled = true; say("Next run is on its way…"); }
+      return;
+    }
+    lastStart = performance.now();
+    const bet = readBet();
+    if (!(bet >= 1)) { say("Stake at least 1 credit."); return; }
+    if (bet > S.balance) { say(`You have ${money(S.balance)} credits. Lower the stake.`); return; }
+    S.bet = bet; S.balance = round2(S.balance - bet);
+    // every rock's two random numbers are drawn now; the Star is placed now (any city but Cairo)
+    const rolls = {}; for (const c of CITIES) if (c.id !== START) rolls[c.id] = [rand(), rand()];
+    const pool = CITIES.map((c) => c.id).filter((i) => i !== START), stars = [];
+    while (stars.length < STARS) { const i = pool.splice(Math.floor(rand() * pool.length), 1)[0]; stars.push(i); }
+    S.run = { bet, safeRoads: true, tiles: {}, rolls, stars, found: [], path: [START], mult: RTP, mults: {}, gems: 0, over: false, result: null, auto: S.auto || 0, shield: false, banked: 0, scouted: {}, cleared: {}, starHint: null, water: WATER, marks: 0 };
+    save(); follow = true; layout(); paint(); render();
+    tone(330, 0.12, "triangle", 0.08); tone(494, 0.16, "triangle", 0.08, 0.08);
+    chooseSafe(); save();
+    say("The caravan leaves Cairo. Pick your first road.");
+    journal("Left Cairo with ten days of water. Three Stars of Africa are out there.");
+    if (narrow) mapWrap.scrollIntoView({ block: "start", behavior: reduced ? "auto" : "smooth" });
+    if (S.run.auto) autoTimer = setTimeout(() => go(safest()), 500);
+  }
+
+  async function go(to) {
+    const run = S.run;
+    if (busy || !run || run.over || to == null || !reach().includes(to)) return;
+    const from = cur(), t = tierOf(to), g = $("#n" + to), C = CITIES[to];
+    picked = null; document.querySelectorAll(".node.picked").forEach((x) => x.classList.remove("picked"));
+    const starS = starMult(steps()); // the Star's multiplier if it is in this city
+    const tile = run.path.includes(to) ? run.tiles[to] : rockAt(to); // decided by the run's numbers and the odds shown when you chose
+    busy = true;
+    run.water = Math.max(0, (run.water ?? WATER) - 1);
+    run.day = (run.day || 0) + 1;
+    document.querySelectorAll(".node.choice").forEach((n) => { if (n !== g) n.classList.remove("choice"); });
+    document.querySelectorAll(".road.open").forEach((e) => e.classList.remove("open"));
+    $("#n" + from).classList.remove("here");
+    render();
+    previewCity(to);
+    SFX.step();
+    ensureVisible((CITIES[from].x + C.x) / 2, (CITIES[from].y + C.y) / 2);
+    await moveCamel(from, to);
+    burst(to, "dust");
+    drawSteps(from, to);
+    $("#trail").setAttribute("d", trailD(run.path.concat(to)));
+    g.classList.remove("choice");
+    if (run.path.includes(to)) {
+      run.path.push(to);
+      tone(330, 0.1, "triangle", 0.05);
+      popAt(to, "Back on a known road", "callout", -60);
+      const fresh = ADJ[to].filter((n) => !run.path.includes(n)).length;
+      say(`Back in ${C.name}. ${fresh ? `${fresh} new road${fresh > 1 ? "s" : ""} from here.` : "No new roads from here yet."}`);
+      journal(statusEl.textContent);
+      if (run.water <= 0) { busy = false; outOfWater(); return; }
+      chooseSafe();
+      save(); paint();
+      busy = false; render();
+      return;
+    }
+    run.tiles[to] = tile;
+    const susp = run.auto ? 200 : Math.min(760, 320 + steps() * 50 + (wkey(to) === "r" || wkey(to) === "mines" ? 120 : 0));
+    g.classList.add("suspense"); SFX.roll(susp);
+    await wait(susp);
+    g.classList.remove("suspense");
+    SFX.flip(); g.classList.add("flipping");
+    await wait(170);
+    applyFace(g, tile, false); g.classList.add("visited");
+    await wait(200);
+    g.classList.remove("flipping");
+    const prevMult = run.mult;
+    run.prevMult = prevMult;
+    run.path.push(to);
+    const n = steps();
+
+    // the Spice Market pays on arrival, whatever the rock holds (its prize is counted in the odds that way)
+    const lmFirst = LANDMARKS[to] && LANDMARKS[to].key === "spice" ? claimLandmark(to) : "";
+    if (tile.k === "thief" && tile.all && !run.shield) {
+      // most thieves take everything
+      run.found.push("thief");
+      run.robbedFrom = from;
+      SFX.bust(); setTimeout(SFX.stamp, 120); flash("red"); burst(to, "bust"); stamp("ROBBED!", "", CITIES[to]); buzz([90, 50, 140]);
+      mapWrap.classList.remove("shake"); void mapWrap.offsetWidth; mapWrap.classList.add("shake");
+      finish("bust", 0, 0);
+      say(`A thief in ${C.name} took everything. The stake is gone.${lmFirst ? " " + lmFirst : ""}`);
+    } else if (tile.k === "star") {
+      const m = floor2(Math.min(CAP, starS * prevMult)); // the Star multiplies your run
+      SFX.sun(); setTimeout(SFX.fanfare, 400); flash("gold"); burst(to, "gem"); burst(to, "gold");
+      stamp("STAR OF AFRICA!", "ice"); confetti(); setTimeout(confetti, 900); buzz([60, 40, 60, 40, 200]);
+      finish("star", m, payout(run.bet, m));
+      say(`You found a Star of Africa in ${C.name}! It multiplied your run by ${starS}: ${fmtX(m)}.`);
+    } else {
+      if (tile.k === "thief") {
+        const took = run.shield ? GUARD : THIEF;
+        run.mult = prevMult * took; run.shield = false;
+        run.found.push("thief");
+        SFX.thief(); flash("red"); burst(to, "bust"); stamp("PICKPOCKET!", "", CITIES[to]); buzz([60, 40, 90]);
+        mapWrap.classList.remove("shake"); void mapWrap.offsetWidth; mapWrap.classList.add("shake");
+        popAt(to, took === THIEF ? "−½" : "−¼", "theft");
+        say(took === THIEF ? `A pickpocket in ${C.name} stole half your run. It's worth ${fmtX(run.mult)} now.` : `A thief in ${C.name}, but your guide saved most of it: ${fmtX(run.mult)}.`);
+      } else {
+        const gm = GEMS[tile.g];
+        run.mult = prevMult * gm.x; run.gems++;
+        run.found.push(gm.k);
+        SFX.gem(tile.g); burst(to, "gem"); popAt(to, `${gm.name} ×${gm.x}`, "gem gem-" + gm.k); buzz(tile.g >= 3 ? [20, 30, 20, 30, 60] : [20, 30, 20]);
+        if (tile.g >= 3) stamp(gm.name.toUpperCase() + "!", "gem-" + gm.k, CITIES[to]);
+        say(`${gm.name} in ${C.name}! ×${gm.x}: your run is worth ${fmtX(run.mult)}.`);
+      }
+      if (LANDMARKS[to]) say(`${statusEl.textContent} ${lmFirst || claimLandmark(to)}`);
+      run.mults[to] = run.mult;
+      setPill(g, fmtX(run.mult));
+      g.classList.add("justnow"); setTimeout(() => g.classList.remove("justnow"), 600);
+      if (CITIES[from].lat > 0 && C.lat <= 0) setTimeout(() => popAt(to, "Crossed the equator!", "callout", -64), 300);
+      else if (STREAK[n]) setTimeout(() => popAt(to, STREAK[n], "callout", -64), 300);
+      setHeat(n, false);
+      if (to === GOAL) {
+        const m = floor2(run.mult);
+        setTimeout(SFX.fanfare, 200); flash("gold"); burst(to, "gold"); stamp("CAPE TOWN!", "teal"); confetti();
+        finish("goal", m, payout(run.bet, m));
+        say(`The caravan made it to Cape Town. Paid ${fmtX(m)}.`);
+      } else if (run.mult >= CAP) {
+        run.mult = CAP;
+        finish("cap", CAP, payout(run.bet, CAP));
+        say(`Maximum win reached: ${CAP}× your stake.`);
+      } else if (run.water <= 0) {
+        outOfWater();
+      } else if (!CITIES.some((x) => !run.path.includes(x.id))) {
+        const m = floor2(run.mult);
+        SFX.cash(); burst(to, "cash");
+        finish("stuck", m, payout(run.bet, m));
+        say(`Every city explored! Cashed out at ${fmtX(m)}.`);
+      } else {
+        chooseSafe();
+        save();
+        paint();
+      }
+    }
+    busy = false;
+    render();
+    journal(statusEl.textContent);
+    if (!run.over && run.auto) {
+      if (steps() >= run.auto) autoTimer = setTimeout(cashOut, 300);
+      else autoTimer = setTimeout(() => { const nx = safest(); if (nx == null) cashOut(); else go(nx); }, 380);
+    }
+  }
+
+  function outOfWater() {
+    const run = S.run, m = floor2(run.mult), win = payout(run.bet, m);
+    finish("water", m, win);
+    say(`Out of water in ${CITIES[cur()].name}. The run cashed out at ${fmtX(m)}.`);
+    journal(statusEl.textContent);
+    render();
+  }
+
+  function cashOut() {
+    const run = S.run;
+    if (busy || !run || run.over || steps() < 1) return;
+    clearTimeout(autoTimer);
+    const m = floor2(run.mult), win = payout(run.bet, m);
+    if (win + (run.banked || 0) > run.bet) { SFX.cash(); burst(cur(), "cash"); buzz([30, 30, 30]); } // Ontario 2.20
+    if (m >= 5) { setTimeout(SFX.fanfare, 150); confetti(); stamp("BIG WIN!", "gold"); }
+    finish("cash", m, win);
+    say(`Cashed out in ${CITIES[cur()].name} for ${money(win)} credits.`);
+    journal(statusEl.textContent);
+    render();
+  }
+
+  function finish(kind, m, win) {
+    const run = S.run;
+    clearTimeout(autoTimer);
+    for (const c of CITIES) if (c.id !== START && !run.path.includes(c.id)) run.tiles[c.id] = rockAt(c.id);
+    run.over = true; run.auto = 0; run.result = { kind, m, win };
+    S.balance = round2(S.balance + win);
+    S.history.unshift({ kind, m, bet: run.bet, win: round2(win + (run.banked || 0)), city: CITIES[kind === "roam" ? run.roamAt : cur()].name, steps: steps(), gems: run.gems, marks: run.marks || 0, t: Date.now() });
+    S.history = S.history.slice(0, 12);
+    save();
+    const back = round2(win + (run.banked || 0));
+    sessionAdd(back - run.bet);
+    if (back > run.bet) { purseAnim = true; coinsToPurse(cur(), win, run.bet); } // only real wins get coins (Ontario 2.20)
+    setHeat(0, true);
+    const lost = kind === "bust" || kind === "roam";
+    const c = $("#camel"); c.classList.toggle("hit", lost); c.classList.toggle("down", lost);
+    document.querySelectorAll(".node.choice").forEach((n) => n.classList.remove("choice"));
+    document.querySelectorAll(".node.back").forEach((n) => { n.classList.remove("back"); const id = +n.dataset.id; if (run.mults[id]) setPill(n, fmtX(run.mults[id])); });
+    document.querySelectorAll(".road.open").forEach((e) => e.classList.remove("open"));
+    $("#n" + cur()).classList.remove("here");
+    showBanner(true);
+    if (kind === "bust" && run.robbedFrom != null && run.safeLog && run.safeLog[run.robbedFrom] != null) {
+      const sf = run.robbedFrom, st = run.safeLog[sf];
+      setTimeout(() => { if (S.run === run) drawSafeRoad(sf, st); }, reduced ? 0 : 900);
+    }
+    // reveal the rest of the map, spreading out from where the run ended
+    const here = CITIES[cur()];
+    const rest = CITIES.filter((x) => x.id !== START && !run.path.includes(x.id))
+      .sort((a, b) => Math.hypot(a.x - here.x, a.y - here.y) - Math.hypot(b.x - here.x, b.y - here.y));
+    rest.forEach((x, i) => setTimeout(() => { if (S.run !== run) return; applyFace($("#n" + x.id), run.tiles[x.id], true); }, reduced ? 0 : 450 + i * 30));
+    setTimeout(() => {
+      if (S.run !== run) return;
+      const sts = rest.filter((x) => run.tiles[x.id].k === "star").map((x) => x.name);
+      if (sts.length) say(`${statusEl.textContent} ${sts.length === 1 ? "A Star of Africa was" : "Stars of Africa were"} in ${sts.length > 1 ? sts.slice(0, -1).join(", ") + " and " + sts.at(-1) : sts[0]}.`);
+    }, reduced ? 0 : 600 + rest.length * 30);
+  }
+
+  function refill() {
+    if (S.run && !S.run.over) { say("Finish the current run first."); return; }
+    S.balance = START_CREDITS; S.run = null; save(); paint(); render(); bumpPurse();
+    say("Credits reset to 1,000.");
+  }
+
+  // ---------- wiring ----------
+  primary.addEventListener("click", () => {
+    const run = S.run;
+    if (run && !run.over) {
+      if (run.auto) { run.auto = 0; clearTimeout(autoTimer); save(); render(); say("Auto-ride stopped. You're steering."); return; }
+      go(safest());
+    } else start();
+  });
+  cashBtn.addEventListener("click", cashOut);
+  let lastPointer = "mouse", picked = null;
+  svg.addEventListener("pointerdown", (e) => { lastPointer = e.pointerType || "mouse"; });
+  function pickCity(id) {
+    document.querySelectorAll(".node.picked").forEach((x) => x.classList.remove("picked"));
+    picked = id; $("#n" + id).classList.add("picked");
+    previewCity(id);
+    previewEl.innerHTML += `<br><b>Tap ${CITIES[id].name} again to travel.</b>`;
+    SFX.pick();
+  }
+  svg.addEventListener("click", (e) => {
+    const n = e.target.closest && e.target.closest(".node.choice"); if (!n) return;
+    const id = +n.dataset.id, touch = lastPointer === "touch";
+    if (S.run && !S.run.over) {
+      if (S.run.auto) return;
+      if (touch && picked !== id) { pickCity(id); return; } // phones: first tap shows value and risk
+      go(id);
+    } else {
+      start();
+      if (S.run && !S.run.over && !S.run.auto) { if (touch) setTimeout(() => pickCity(id), 300); else setTimeout(() => go(id), 250); }
+    }
+  });
+  svg.addEventListener("mouseover", (e) => { const n = e.target.closest && e.target.closest(".node.choice"); if (n && !busy) { previewCity(+n.dataset.id); SFX.pick(); } });
+  svg.addEventListener("mouseout", (e) => { const n = e.target.closest && e.target.closest(".node.choice"); if (n && !busy && !n.contains(e.relatedTarget)) previewEl.innerHTML = defaultPreview(); });
+  svg.addEventListener("focusin", (e) => { const n = e.target.closest && e.target.closest(".node.choice"); if (n) previewCity(+n.dataset.id); });
+  svg.addEventListener("keydown", (e) => { const n = e.target.closest && e.target.closest(".node.choice"); if (n && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); e.stopPropagation(); n.dispatchEvent(new MouseEvent("click", { bubbles: true })); } });
+  autoSel.addEventListener("change", () => { S.auto = parseInt(autoSel.value, 10) || 0; save(); render(); });
+  betIn.addEventListener("input", render);
+  betIn.addEventListener("change", () => { const v = Math.max(1, readBet()); betIn.value = v; S.bet = v; save(); render(); });
+  const setBet = (v) => { betIn.value = Math.max(1, round2(v)); betIn.dispatchEvent(new Event("change")); };
+  $("#half").addEventListener("click", () => setBet(readBet() / 2));
+  $("#double").addEventListener("click", () => setBet(Math.min(readBet() * 2, Math.floor(S.balance * 100) / 100)));
+  $("#max").addEventListener("click", () => setBet(Math.floor(S.balance * 100) / 100));
+  // reset asks for a second tap, so a stray click can't wipe the purse
+  const resetBtn = $("#reset");
+  let resetArmed = 0;
+  resetBtn.addEventListener("click", () => {
+    if (!resetArmed) {
+      resetBtn.textContent = "Tap again to reset"; resetBtn.classList.add("armed");
+      resetArmed = setTimeout(() => { resetArmed = 0; resetBtn.textContent = "Reset credits"; resetBtn.classList.remove("armed"); }, 3000);
+      return;
+    }
+    clearTimeout(resetArmed); resetArmed = 0; resetBtn.textContent = "Reset credits"; resetBtn.classList.remove("armed");
+    refill();
+  });
+  $("#refill").addEventListener("click", refill);
+  const muteBtn = $("#mute");
+  const syncMute = () => { muteBtn.textContent = S.muted ? "Sound off" : "Sound on"; muteBtn.setAttribute("aria-checked", String(!S.muted)); };
+  muteBtn.addEventListener("click", () => { S.muted = !S.muted; save(); syncMute(); if (!S.muted) tone(660, 0.1, "triangle", 0.08); });
+  syncMute();
+
+  // ---------- Info and Settings sheets ----------
+  const scrim = $("#scrim");
+  let openSheet = null, sheetOpener = null;
+  function showSheet(id, tab) {
+    closeSheet(true);
+    const sh = $("#" + id);
+    sheetOpener = document.activeElement;
+    scrim.hidden = false; sh.hidden = false; openSheet = sh;
+    if (tab) selectTab(tab);
+    if (id === "infoSheet") { renderPassport(); histKey = ""; renderHistory(); }
+    (sh.querySelector('[aria-selected="true"]') || sh.querySelector(".x")).focus();
+  }
+  function closeSheet(silent) {
+    if (!openSheet) return;
+    openSheet.hidden = true; scrim.hidden = true; openSheet = null;
+    if (!silent && sheetOpener && sheetOpener.focus) sheetOpener.focus();
+  }
+  function selectTab(name) {
+    document.querySelectorAll("#infoSheet [role=tab]").forEach((t) => {
+      const on = t.dataset.tab === name;
+      t.setAttribute("aria-selected", String(on)); t.tabIndex = on ? 0 : -1;
+      $("#panel-" + t.dataset.tab).hidden = !on;
+    });
+  }
+  $("#openInfo").addEventListener("click", () => showSheet("infoSheet"));
+  $("#openSettings").addEventListener("click", () => showSheet("settingsSheet"));
+  document.querySelectorAll("[data-info-tab]").forEach((b) => b.addEventListener("click", () => showSheet("infoSheet", b.dataset.infoTab)));
+  document.querySelectorAll(".sheet [data-close]").forEach((b) => b.addEventListener("click", () => closeSheet()));
+  scrim.addEventListener("click", () => closeSheet());
+  document.querySelectorAll("#infoSheet [role=tab]").forEach((t) => {
+    t.addEventListener("click", () => selectTab(t.dataset.tab));
+    t.addEventListener("keydown", (e) => {
+      if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+      const tabs = [...document.querySelectorAll("#infoSheet [role=tab]")], i = tabs.indexOf(t);
+      const nx = tabs.at((i + (e.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length);
+      selectTab(nx.dataset.tab); nx.focus(); e.preventDefault();
+    });
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (openSheet) {
+      if (e.key === "Escape") { e.preventDefault(); closeSheet(); }
+      else if (e.key === "Tab") { // keep focus inside the open sheet
+        const f = [...openSheet.querySelectorAll("button:not([disabled]), select, [tabindex='0']")].filter((el) => !el.closest("[hidden]"));
+        if (f.length) { const first = f[0], last = f.at(-1); if (e.shiftKey && document.activeElement === first) { last.focus(); e.preventDefault(); } else if (!e.shiftKey && document.activeElement === last) { first.focus(); e.preventDefault(); } }
+      }
+      return; // game keys are off while a sheet is open
+    }
+    const tag = e.target.tagName;
+    if (tag === "INPUT" || tag === "SELECT") return;
+    if (e.key === " " && (tag === "BUTTON" || (e.target.closest && e.target.closest(".node")))) return;
+    if (e.key === " ") { e.preventDefault(); primary.click(); }
+    else if (e.key === "c" || e.key === "C") cashOut();
+    else if (/^[1-9]$/.test(e.key) && S.run && !S.run.over && !S.run.auto) { const o = choices()[+e.key - 1]; if (o != null) go(o); }
+  });
+
+  if (S.run && !S.run.over && S.run.safe === undefined) { chooseSafe(); save(); } // a run saved before its safe road was stored
+  buildMap();
+  render();
+  renderSession();
+  renderJournal();
+  if (S.run && !S.run.over) say(`Run in progress in ${CITIES[cur()].name}. Pick a road or cash out.`);
+})();
+</script>

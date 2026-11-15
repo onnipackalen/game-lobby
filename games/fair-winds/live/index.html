@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#080d24">
+<title>Magellan Live</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;800;900&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="logo"><span id="logoShip"></span><b>Magellan</b><span class="livepill" id="live" title="Every player sees the same voyage at the same moment"><i></i>LIVE</span></div>
+    <div class="tr">
+      <div class="wallet" id="walletBox"><span class="coin"></span><span id="gold">10,000</span></div>
+      <button class="gear" id="soundBtn" type="button" aria-label="Sound on" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path class="w1" d="M16.5 8.5a5 5 0 0 1 0 7"/><path class="w2" d="M19 6a8.5 8.5 0 0 1 0 12"/></svg></button>
+      <button class="gear" id="infoBtn" type="button" aria-label="Game info"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg></button>
+    </div>
+  </header>
+
+  <section class="stage" id="stage">
+    <canvas id="scene"></canvas>
+    <div class="hud">
+      <canvas class="mini" id="mini" aria-label="Route map"></canvas>
+      <div class="hist" id="hist" aria-label="Recent voyages"></div>
+      <canvas class="chart" id="chart" aria-label="The climb"></canvas>
+      <div class="mult" id="mult"></div>
+      <div class="banner" id="banner" hidden></div>
+      <span class="livepill stagepill"><i></i>LIVE</span>
+    </div>
+  </section>
+
+  <aside class="deck">
+    <!-- the big buttons sit on top (user, 2026-11-14); with a second bet its button comes up beside the first -->
+    <div class="acts" id="acts">
+      <button class="big go" id="action0" type="button"><span class="a1">JOIN THE VOYAGE</span><small class="a2"></small></button>
+      <button class="big go" id="action1" type="button" hidden><span class="a1">JOIN</span><small class="a2"></small></button>
+    </div>
+    <div class="note" id="note"></div>
+    <button class="ghost rescue" id="rescue" type="button" hidden>Out of gold? The crown sends 100</button>
+    <!-- one bet, or two separate bets (user, 2026-11-14): each its own stake, chips, auto cash-out and button; filled in by game.js -->
+    <div class="slips" id="slips"></div>
+    <button class="addbet" id="addBet" type="button"><i class="bn">+</i>Add bet 2</button>
+
+    <div class="card">
+      <h3>Your log</h3>
+      <ul class="log" id="log"><li class="empty">No voyages yet.</li></ul>
+    </div>
+  </aside>
+</div>
+
+<div class="modal" id="modal" hidden><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <header><h2 id="sheetTitle">Game info</h2><button type="button" class="ghost" id="closeModal">Close</button></header>
+  <p>Sail the route of Magellan's fleet, the first voyage around the world; the checkpoints on the map mark where the fleet really put in. One voyage at a time, and every player sees the same one at the same moment. Join while the ship boards, then cash out before she is lost. The multiplier grows with the distance sailed round the world: make it all the way home and everyone still aboard is paid <b>×1000</b>.</p>
+  <p>Storms, trade winds and rough water speed the climb up. They never change where a voyage ends.</p>
+  <table class="facts"><tbody>
+    <tr><th>Payback</th><td>99% for any cash-out target</td></tr>
+    <tr><th>Biggest win</th><td>×1000 your stake</td></tr>
+    <tr><th>Stake</th><td>from 1 gold, up to all you have</td></tr>
+    <tr><th>Bets</th><td>one, or add a second under your stake (each with its own stake and cash-out)</td></tr>
+    <tr><th>Voyages lost at the quay</th><td>about 2 in 100 (×1.00)</td></tr>
+  </tbody></table>
+  <p class="fine"><b>Demo build.</b> Each voyage's result comes from a public schedule: SHA-256 of <code>magellan-live:v1:&lt;hour&gt;:&lt;voyage&gt;</code>; the first 13 hex digits give <i>u</i>, and the ship is lost at ⌊99 ÷ (1 − <i>u</i>)⌋ ÷ 100. Anyone can check a finished voyage by tapping it in the strip. A real-money version would keep the seeds on a server (a hash chain) so no one can see a result ahead of time.</p>
+  <p class="fine" id="clockInfo"></p>
+</div></div>
+
+<div class="pop" id="pop" hidden></div>
+
+<script src="data.js"></script>
+<script src="engine.js"></script>
+<script src="fw-render.js"></script>
+<script src="adapter.js"></script>
+<script src="game.js"></script>
+</body>
+</html>

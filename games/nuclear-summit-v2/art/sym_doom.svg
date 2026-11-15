@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 250" width="200" height="250">
+<style>.ol{stroke:#3b2a22;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}.il{fill:none;stroke:#3b2a22;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}</style>
+<!-- Doomsday (free spins only, v2): a black-violet bomb in a green glow, green trefoil and a x2 stamp.
+     Green is reserved for Doomsday. -->
+<defs>
+  <clipPath id="dkBody"><ellipse cx="100" cy="148" rx="80" ry="94"/></clipPath>
+  <radialGradient id="dkGlow"><stop offset="0.55" stop-color="#5CFF6A" stop-opacity=".55"/><stop offset="1" stop-color="#5CFF6A" stop-opacity="0"/></radialGradient>
+</defs>
+<ellipse cx="100" cy="140" rx="100" ry="112" fill="url(#dkGlow)"/>
+<!-- tail fins -->
+<path class="ol" d="M56 66 L144 66 L166 8 L34 8 Z" fill="#1E1530"/>
+<path d="M72 58 L128 58 L144 16 L56 16 Z" fill="#3A2A5C"/>
+<path d="M100 16 L100 58" stroke="#5CFF6A" stroke-width="3" stroke-linecap="round"/>
+<!-- body -->
+<ellipse cx="100" cy="148" rx="80" ry="94" fill="#2B1B4A"/>
+<g clip-path="url(#dkBody)">
+  <path d="M180 116 Q178 200 118 248 L200 250 L200 50 Z" fill="#1E1530"/>
+  <rect x="0" y="60" width="200" height="10" fill="#5CFF6A"/>
+  <rect x="0" y="174" width="200" height="6" fill="#5CFF6A"/>
+</g>
+<ellipse class="ol" cx="100" cy="148" rx="80" ry="94" fill="none"/>
+<!-- trefoil badge -->
+<circle class="ol" cx="100" cy="124" r="44" fill="#1E1530"/>
+<g transform="translate(100 124) scale(1.15) translate(-100 -112)">
+  <path d="M104.5 104.2 L116 84.3 A32 32 0 0 1 132 112 L109 112 A9 9 0 0 0 104.5 104.2 Z M91 112 L68 112 A32 32 0 0 1 84 84.3 L95.5 104.2 A9 9 0 0 0 91 112 Z M104.5 119.8 L116 139.7 A32 32 0 0 1 84 139.7 L95.5 119.8 A9 9 0 0 0 104.5 119.8 Z" fill="#5CFF6A"/>
+  <circle cx="100" cy="112" r="6" fill="#5CFF6A"/>
+</g>
+<!-- x2 stamp -->
+<rect class="ol" x="62" y="190" width="76" height="36" rx="18" fill="#5CFF6A"/>
+<text x="100" y="217" font-family="system-ui,-apple-system,sans-serif" font-weight="900" font-size="27" text-anchor="middle" fill="#1E1530">×2</text>
+<!-- highlight -->
+<ellipse cx="44" cy="104" rx="7" ry="20" fill="#6B5A94" transform="rotate(14 44 104)"/>
+</svg>

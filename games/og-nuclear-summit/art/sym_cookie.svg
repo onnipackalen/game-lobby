@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 250" width="200" height="250">
+<style>.ol{stroke:#3b2a22;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}.il{fill:none;stroke:#3b2a22;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}.t{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-weight:800}</style>
+<!-- The EU cookie banner: a jab at Brussels red tape. A bitten chocolate-chip cookie buried under consent pop-ups,
+     one stacked on another, with the cursor already heading for "Accept all". No EU flag or emblem. -->
+<!-- the cookie, with a bite out of it -->
+<path class="ol" d="M100 88 A74 74 0 1 0 172 144 Q160 142 155 132 Q146 134 141 124 Q132 122 131 110 Q120 106 119 94 Q110 90 100 88 Z" fill="#D9A15B"/>
+<path d="M40 190 Q60 228 104 234 Q150 230 168 196 Q150 218 104 222 Q62 220 40 190 Z" fill="#C08744"/>
+<g fill="#5A3520">
+  <ellipse cx="62" cy="168" rx="8" ry="6"/><ellipse cx="94" cy="196" rx="9" ry="7"/><ellipse cx="132" cy="186" rx="8" ry="6"/>
+  <ellipse cx="76" cy="212" rx="7" ry="5"/><ellipse cx="118" cy="214" rx="7" ry="5"/><ellipse cx="150" cy="164" rx="6" ry="5"/>
+  <ellipse cx="48" cy="140" rx="6" ry="5"/>
+</g>
+<g fill="#E8BD7E"><circle cx="80" cy="182" r="2.4"/><circle cx="110" cy="172" r="2.4"/><circle cx="142" cy="206" r="2.4"/><circle cx="58" cy="196" r="2.4"/></g>
+<!-- the pop-up behind: there is always another one -->
+<rect class="ol" x="34" y="26" width="152" height="92" rx="12" fill="#ECE8F4"/>
+<path d="M34 46 L186 46" stroke="#3b2a22" stroke-width="2"/>
+<rect x="46" y="58" width="96" height="6" rx="3" fill="#CFC8DE"/><rect x="46" y="70" width="120" height="6" rx="3" fill="#CFC8DE"/>
+<!-- the pop-up in front -->
+<rect class="ol" x="14" y="50" width="156" height="98" rx="12" fill="#FFFFFF"/>
+<path d="M14 72 L170 72" stroke="#3b2a22" stroke-width="2"/>
+<circle class="il" cx="29" cy="61" r="6" fill="#D9A15B"/>
+<circle cx="27" cy="60" r="1.4" fill="#5A3520"/><circle cx="31" cy="63" r="1.4" fill="#5A3520"/>
+<rect x="40" y="57" width="66" height="7" rx="3.5" fill="#3b2a22"/>
+<path d="M152 56 L161 65 M161 56 L152 65" stroke="#9AA0AC" stroke-width="2.4" stroke-linecap="round"/>
+<rect x="26" y="82" width="132" height="6" rx="3" fill="#C9CED8"/>
+<rect x="26" y="93" width="112" height="6" rx="3" fill="#C9CED8"/>
+<rect x="26" y="104" width="124" height="6" rx="3" fill="#C9CED8"/>
+<rect class="ol" x="24" y="118" width="80" height="22" rx="11" fill="#2F6FD6" style="stroke-width:2"/>
+<text class="t" x="64" y="133.5" font-size="11" fill="#FFFFFF" text-anchor="middle">Accept all</text>
+<rect class="ol" x="110" y="118" width="50" height="22" rx="11" fill="#E4E7EE" style="stroke-width:2"/>
+<text class="t" x="135" y="133" font-size="9" fill="#5A6070" text-anchor="middle">Manage</text>
+<!-- the cursor, already giving up -->
+<path class="ol" d="M88 128 L88 154 L95 147 L100 158 L106 155 L101 145 L110 144 Z" fill="#FFFFFF" style="stroke-width:2.2"/>
+</svg>

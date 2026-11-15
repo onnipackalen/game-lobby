@@ -1,0 +1,1961 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>OG Nuclear Summit</title>
+<style>
+:root{--bg1:#ffd6ec;--bg2:#d9c8ff;--panel:rgba(255,255,255,.72);--text:#2a1f3a;--muted:#6b5a7a;--deep:#4b1d8f;--hot:#e8306f;--rim:#8A64D6}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--text);background:linear-gradient(160deg,var(--bg1),var(--bg2)) fixed;min-height:100vh;-webkit-tap-highlight-color:transparent}
+button{font:inherit;border:0;cursor:pointer;border-radius:14px;min-height:44px;min-width:44px;color:var(--text)}
+button:focus-visible{outline:3px solid var(--deep);outline-offset:2px}
+
+/* ===== Cabinet layout =====
+   Phone (portrait): logo, board, message, buy panel, a row with tools | spin | free-spins box, control bar.
+   Desktop / landscape: buy panel and tools on the left, board in the middle, logo, free-spins box and
+   spin on the right, control bar along the bottom. */
+.cabinet{min-height:100vh;min-height:100dvh;display:grid;grid-template-columns:1fr auto 1fr;
+  grid-template-areas:"logo logo logo" "board board board" "msg msg msg" "buy buy buy" "tools spin info" "bar bar bar";
+  justify-items:center;align-content:start;gap:8px 14px;padding-block:10px 0;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+.logo{grid-area:logo;text-align:center}
+h1{font-size:clamp(26px,7vw,40px);margin:0;font-weight:900;letter-spacing:.5px;color:var(--deep);line-height:1}
+/* Game Lobby: this frozen copy is the original version, shown as "OG" */
+.og-title{position:relative}
+.og-tag{position:absolute;right:100%;top:50%;transform:translateY(-55%);margin-right:.3em;padding:.22em .4em .16em;border-radius:.3em;background:linear-gradient(135deg,#ffe28a,#ffb627);color:#2b1b00;font-size:.36em;letter-spacing:.08em;line-height:1;text-shadow:none;box-shadow:0 2px 0 rgba(0,0,0,.25)}
+.badges{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:6px}
+.badge{font-size:10px;font-weight:800;background:var(--text);color:#fff;padding:3px 7px;border-radius:999px;white-space:nowrap}
+.badge.warn{background:#f2b705;color:#3a2a00}
+.board{grid-area:board}
+.stage{position:relative}
+/* Red alert when the bonus triggers: a slow red pulse over the grid (about 1.4 flashes a second,
+   well under the 3-per-second photosensitivity limit); held steady for reduced motion. */
+.stage::after{content:'';position:absolute;inset:0;border-radius:18px;pointer-events:none;opacity:0;z-index:1;background:radial-gradient(circle at 50% 50%,rgba(255,40,40,.08),rgba(220,0,0,.6));box-shadow:inset 0 0 0 6px #ff2b2b}
+.stage.alert::after{animation:redalert .7s ease-in-out infinite}
+@keyframes redalert{0%,100%{opacity:.15}50%{opacity:1}}
+@media (prefers-reduced-motion: reduce){.stage.alert::after{animation:none;opacity:.6}}
+.stage .overlay{z-index:2}
+/* Blast wave when the bonus triggers: one white flash over the grid (a single flash, not a strobe). */
+.stage::before{content:'';position:absolute;inset:0;border-radius:18px;pointer-events:none;opacity:0;z-index:3;background:radial-gradient(circle at 50% 50%,#fff 0%,#fff3d6 45%,rgba(255,170,80,.85) 100%)}
+.stage.flash::before{animation:blastflash .9s ease-out}
+@keyframes blastflash{0%{opacity:0}12%{opacity:.95}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.stage.flash::before{animation:none}}
+.stage.doom::before{background:radial-gradient(circle at 50% 50%,#f0ffe9 0%,#a8ff9e 45%,rgba(40,190,70,.85) 100%)}
+canvas{display:block;border-radius:18px;background:rgba(255,255,255,.4);box-shadow:inset 0 0 0 3px rgba(123,47,247,.25)}
+.overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;pointer-events:none;opacity:0;transition:opacity .25s;padding:16px}
+.overlay.show{opacity:1}
+.overlay.tap{pointer-events:auto;cursor:pointer}
+.overlay.tap .sub{animation:tapPulse 1.1s ease-in-out infinite}
+@keyframes tapPulse{50%{transform:scale(1.08)}}
+@media (prefers-reduced-motion: reduce){.overlay.tap .sub{animation:none}}
+.overlay .big{font-size:clamp(30px,9vw,56px);font-weight:900;color:#fff;-webkit-text-stroke:2px var(--deep);text-shadow:0 4px 0 var(--deep);line-height:1.05}
+.overlay .sub{font-size:16px;font-weight:800;color:var(--deep);background:rgba(255,255,255,.92);padding:4px 12px;border-radius:999px;margin-top:10px}
+.msg{grid-area:msg;min-height:24px;text-align:center;font-weight:900;font-size:16px;color:var(--deep);max-width:640px}
+
+/* Buy panel */
+.buycard{grid-area:buy;display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 22px;border-radius:18px;
+  background:linear-gradient(#ffe066,#f2b705);color:#3a2a00;box-shadow:0 0 0 3px #fff,0 0 0 6px #2a1f1a,0 6px 0 6px #b88700;line-height:1.1}
+.buycard .t{font-size:13px;font-weight:900;letter-spacing:1px}
+.buycard .s{font-size:18px;font-weight:900}
+.buycard b{font-size:20px;font-variant-numeric:tabular-nums;background:#2a1f1a;color:#FFD23F;border-radius:10px;padding:3px 10px;margin-top:4px}
+.buycard small{font-size:11px;font-weight:700}
+.buycard:disabled{filter:grayscale(.7);opacity:.6;cursor:default}
+.buycard[hidden]{display:none}
+
+/* Spin and round tool buttons */
+.spinbox{grid-area:spin;display:flex;flex-direction:column;align-items:center;gap:4px}
+#spin{width:96px;height:96px;border-radius:50%;padding:0;color:#fff;background:radial-gradient(circle at 50% 35%,#ff8ab8,#e8306f 70%);box-shadow:0 0 0 4px #fff,0 0 0 7px #2a1f1a,0 6px 0 7px #a3134a;display:grid;place-items:center;position:relative}
+#spin svg{width:52px;height:52px}
+#spin .count{position:absolute;inset:0;display:grid;place-items:center;font-size:30px;font-weight:900}
+#spin.free{background:radial-gradient(circle at 50% 35%,#b48bff,#7B2FF7 70%);box-shadow:0 0 0 4px #fff,0 0 0 7px #2a1f1a,0 6px 0 7px var(--deep)}
+#spin:disabled{filter:saturate(.7) brightness(.92);cursor:default}
+#spin:active:not(:disabled){transform:translateY(3px)}
+.spinbox .hint{font-size:11px;font-weight:800;color:#FFE9B8;text-shadow:0 1px 2px #140d26;text-transform:uppercase;letter-spacing:.5px}
+/* Settings (gear) and sound sit in the top-right corner on every layout, the gear in the corner. */
+.tools{position:absolute;top:max(8px, env(safe-area-inset-top, 0px));right:max(10px, env(safe-area-inset-right, 0px));z-index:4;display:flex;flex-direction:row-reverse;align-items:center;gap:6px}
+.round{width:40px;height:40px;min-width:40px;min-height:40px;border-radius:50%;background:rgba(42,31,58,.85);color:#fff;font-size:18px;font-weight:900;display:grid;place-items:center;padding:0}
+.tools input[type=range]{width:90px;accent-color:#7B2FF7}
+
+/* Free-spins box */
+.featurebox{grid-area:info;justify-self:start;min-width:132px;border-radius:16px;background:rgba(255,255,255,.85);border:3px solid var(--rim);text-align:center;padding:8px 10px;display:flex;flex-direction:column;gap:2px}
+.featurebox .k{font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.featurebox .v{font-size:20px;font-weight:900;color:var(--deep);font-variant-numeric:tabular-nums;line-height:1.1}
+.featurebox .v.sm{font-size:15px}
+.featurebox.on{background:#2a1f3a;border-color:#ff7a3a;box-shadow:0 0 18px rgba(255,122,58,.55)}
+.featurebox.on .k{color:#ffcf9e}.featurebox.on .v{color:#fff}
+
+/* Control bar: credit, bet, win, net position and session time stay visible (market rule). */
+.bar{grid-area:bar;position:sticky;bottom:0;justify-self:stretch;margin:4px calc(-1 * max(16px, env(safe-area-inset-right, 0px))) 0 calc(-1 * max(16px, env(safe-area-inset-left, 0px)));background:rgba(42,31,58,.94);color:#fff;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px 20px;padding-top:8px;padding-bottom:calc(8px + env(safe-area-inset-bottom, 0px));padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));z-index:5}
+.kv{display:flex;align-items:baseline;gap:6px;white-space:nowrap}
+.kv span{font-size:11px;font-weight:900;color:#FFD23F;letter-spacing:.5px}
+.kv b{font-size:16px;font-variant-numeric:tabular-nums}
+.betctl{display:flex;align-items:center;gap:8px}
+.betctl button{width:40px;height:40px;min-width:40px;min-height:40px;border-radius:50%;background:rgba(255,255,255,.16);color:#fff;font-size:22px;font-weight:900;padding:0}
+.betctl button:disabled{opacity:.35;cursor:default}
+
+@media (orientation:landscape) and (min-width:560px){
+  .cabinet{grid-template-columns:minmax(150px,220px) auto minmax(150px,220px);
+    grid-template-areas:"buy board logo" "buy board info" "tools board spin" ". msg ." "bar bar bar";
+    grid-template-rows:auto 1fr auto auto auto;justify-content:center;align-items:center;gap:8px 22px;padding-block:14px 0}
+  .logo,.featurebox,.spinbox,.buycard{justify-self:center}
+  .logo{padding-top:40px}
+  .buycard{padding:16px 18px}
+  .buycard .s{font-size:22px}
+  #spin{width:112px;height:112px}
+  #spin svg{width:60px;height:60px}
+  h1{font-size:clamp(26px,3vw,40px)}
+}
+/* Phones held upright: keep the spin row inside narrow screens. */
+@media (orientation:portrait){
+  .cabinet{column-gap:10px;grid-template-rows:auto auto auto auto auto 1fr}
+  .bar{align-self:end} /* spare height goes above the bar, so it sits at the bottom of the screen */
+  .featurebox{min-width:0;max-width:128px;padding:6px 8px}
+  h1{font-size:clamp(22px,6vw,40px)}
+}
+/* Short landscape screens (phones turned sideways, small windows): compact side panels. */
+@media (orientation:landscape) and (min-width:560px) and (max-height:560px){
+  .cabinet{padding-top:6px;gap:4px 16px}
+  h1{font-size:22px}
+  .badges{margin-top:3px;gap:3px}.badge{font-size:9px;padding:2px 5px}
+  .buycard{padding:8px 12px}.buycard .s{font-size:15px}.buycard b{font-size:16px}
+  #spin{width:76px;height:76px}#spin svg{width:42px;height:42px}#spin .count{font-size:24px}
+  .spinbox .hint{display:none}
+  .featurebox{padding:4px 8px;min-width:120px}.featurebox .v{font-size:16px}.featurebox .v.sm{font-size:13px}
+  .round{width:36px;height:36px;min-width:36px;min-height:36px;font-size:16px}
+  .msg{font-size:14px;min-height:18px}
+  .bar{padding-top:4px;padding-bottom:calc(4px + env(safe-area-inset-bottom, 0px))}.kv b{font-size:14px}
+  .betctl button{width:34px;height:34px;min-width:34px;min-height:34px}
+}
+
+/* Short portrait screens (the Game Lobby's phone window, phones in a browser, small windows): the
+   whole cabinet fits on one screen. Info and sound sit beside the title; the buy panel, spin button
+   and free-spins box share one row; the control bar is tighter. resize() then gives the board
+   whatever height is left. */
+@media (orientation:portrait) and (max-height:780px){
+  .cabinet{grid-template-areas:"logo logo logo" "board board board" "msg msg msg" "buy spin info" "bar bar bar";grid-template-rows:auto auto auto auto 1fr;gap:6px 8px;padding-top:4px}
+  h1{font-size:22px}
+  .tools{top:max(4px, env(safe-area-inset-top, 0px))}
+  .round{width:34px;height:34px;min-width:34px;min-height:34px;font-size:15px}
+  .msg{font-size:13px;min-height:17px}
+  .buycard{justify-self:end;align-self:center;padding:5px 10px;box-shadow:0 0 0 2px #fff,0 0 0 4px #2a1f1a,0 4px 0 4px #b88700}
+  .buycard .t{font-size:9px;letter-spacing:.5px}.buycard .s{font-size:12px}.buycard b{font-size:14px;padding:1px 8px;margin-top:2px}
+  #spin{width:66px;height:66px}#spin svg{width:36px;height:36px}#spin .count{font-size:22px}
+  .spinbox{align-self:center}.spinbox .hint{display:none}
+  .featurebox{justify-self:start;align-self:center;padding:4px 8px;border-width:2px;max-width:124px}
+  .featurebox .k{font-size:9px}.featurebox .v{font-size:15px}.featurebox .v.sm{font-size:12px}
+  .bar{gap:2px 14px;padding-top:4px;padding-bottom:calc(4px + env(safe-area-inset-bottom, 0px))}
+  .kv span{font-size:10px}.kv b{font-size:14px}
+  .betctl{gap:6px}.betctl button{width:36px;height:36px;min-width:36px;min-height:36px;font-size:19px}
+}
+
+/* Below the cabinet: paytable, settings and dev tools. */
+.below{max-width:900px;margin:0 auto;padding:12px 16px 28px;display:flex;flex-direction:column;gap:10px}
+/* Settings sheet (the gear button): sound, paytable and rules, dev tools and the parody notice. */
+.sheet{position:fixed;inset:0;z-index:15;background:rgba(20,13,38,.62);display:flex;justify-content:center;align-items:flex-start;padding:max(10px, env(safe-area-inset-top, 0px)) 10px 10px;overflow:auto;-webkit-overflow-scrolling:touch}
+.sheet[hidden]{display:none}
+.sheet .below{width:100%;margin:0 auto;background:rgba(246,241,255,.97);border-radius:18px;box-shadow:0 10px 40px rgba(0,0,0,.4);padding:10px 12px 16px}
+.sheethead{display:flex;align-items:center;justify-content:space-between}
+.sheethead h2{margin:0;font-size:18px;color:var(--deep)}
+#setClose{width:40px;height:40px;min-width:40px;min-height:40px;border-radius:50%;background:rgba(42,31,58,.1);font-size:18px;font-weight:900;padding:0}
+.volrow{display:flex;align-items:center;gap:10px;font-weight:800;font-size:14px;background:var(--panel);border-radius:12px;padding:8px 12px}
+.volrow input{flex:1;accent-color:#7B2FF7}
+.small-btn{background:var(--panel);font-size:13px;font-weight:700;padding:0 12px}
+details{background:var(--panel);border-radius:12px;padding:8px 12px;font-size:14px}
+summary{cursor:pointer;font-weight:800;min-height:28px;line-height:28px}
+.pt{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px;margin-top:8px}
+.pt .s.wide{grid-column:1/-1}
+.pt .p{display:flex;flex-wrap:wrap;gap:3px 4px}
+.pt .band{display:inline-flex;gap:3px;align-items:baseline;padding:1px 5px;border-radius:6px;background:rgba(0,0,0,.05);white-space:nowrap}
+.pt .band i{font-style:normal;font-size:11px;font-weight:700;opacity:.6}
+.pt .s{display:flex;gap:8px;align-items:center;background:rgba(255,255,255,.6);border-radius:10px;padding:6px}
+.pt img{width:44px;height:55px;flex:none}
+.pt .n{font-weight:800;font-size:13px}
+.pt .p{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.rules{margin:8px 0 0;padding-left:18px;line-height:1.5}
+.dev label{display:flex;gap:8px;align-items:center;margin:6px 0;flex-wrap:wrap}
+.dev select{font:inherit;min-height:36px;border-radius:8px}
+.dev .out{font-family:ui-monospace,Menlo,monospace;font-size:12px;white-space:pre-wrap;background:rgba(255,255,255,.7);border-radius:8px;padding:6px;margin-top:6px}
+.log{list-style:none;margin:6px 0 0;padding:0;max-height:220px;overflow:auto;font-family:ui-monospace,Menlo,monospace;font-size:12px}
+.log li{display:flex;justify-content:space-between;gap:6px;align-items:center;padding:3px 0;border-bottom:1px solid rgba(0,0,0,.06)}
+.log button{min-height:30px;min-width:30px;font-size:12px;padding:0 8px;background:#fff;border-radius:8px}
+.modal{position:fixed;inset:0;background:rgba(42,31,58,.55);display:flex;align-items:center;justify-content:center;z-index:20;padding:16px}
+.modal[hidden]{display:none}
+.modal .card{background:#fff;border-radius:18px;padding:18px;max-width:340px;width:100%;text-align:center}
+.modal h2{margin:0 0 8px;font-size:20px;color:var(--deep)}
+.modal p{margin:0 0 14px;line-height:1.45}
+.modal .row{display:flex;gap:10px;justify-content:center}
+.modal .row button{padding:0 18px;font-weight:800}
+#buyOk{background:var(--hot);color:#fff}
+#buyCancel{background:#eee}
+footer{font-size:12px;color:var(--muted);text-align:center;line-height:1.5}
+/* Summit Hall background (sources: art/bg_base_wide.svg, art/bg_base.svg). A fixed layer, so it also stays put on iOS. */
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1920 1080%22 width=%221920%22 height=%221080%22 preserveAspectRatio=%22xMidYMid slice%22%3E %3Cdefs%3E %3ClinearGradient id=%22wall%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%232A3758%22/%3E%3Cstop offset=%220.6%22 stop-color=%22%231F2A47%22/%3E%3Cstop offset=%221%22 stop-color=%22%23161E35%22/%3E %3C/linearGradient%3E %3CradialGradient id=%22glow%22 cx=%22960%22 cy=%22420%22 r=%22620%22 gradientUnits=%22userSpaceOnUse%22%3E %3Cstop offset=%220%22 stop-color=%22%23F2A93B%22 stop-opacity=%220.42%22/%3E%3Cstop offset=%220.55%22 stop-color=%22%23F2A93B%22 stop-opacity=%220.14%22/%3E%3Cstop offset=%221%22 stop-color=%22%23F2A93B%22 stop-opacity=%220%22/%3E %3C/radialGradient%3E %3ClinearGradient id=%22screen%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%23162746%22/%3E%3Cstop offset=%221%22 stop-color=%22%23101C36%22/%3E %3C/linearGradient%3E %3ClinearGradient id=%22curtainL%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%220%22%3E %3Cstop offset=%220%22 stop-color=%22%235E1626%22/%3E%3Cstop offset=%221%22 stop-color=%22%239C2F3F%22/%3E %3C/linearGradient%3E %3ClinearGradient id=%22curtainR%22 x1=%221%22 y1=%220%22 x2=%220%22 y2=%220%22%3E %3Cstop offset=%220%22 stop-color=%22%235E1626%22/%3E%3Cstop offset=%221%22 stop-color=%22%239C2F3F%22/%3E %3C/linearGradient%3E %3ClinearGradient id=%22carpet%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%239C2F3F%22/%3E%3Cstop offset=%221%22 stop-color=%22%236E1F2E%22/%3E %3C/linearGradient%3E %3ClinearGradient id=%22table%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%238A5A3A%22/%3E%3Cstop offset=%221%22 stop-color=%22%236B4128%22/%3E %3C/linearGradient%3E %3C/defs%3E %3Crect width=%221920%22 height=%221080%22 fill=%22url(%23wall)%22/%3E %3Cg fill=%22%233A4A72%22 opacity=%220.5%22%3E %3Crect x=%22400%22 y=%22110%22 width=%2270%22 height=%22760%22 rx=%2235%22/%3E%3Crect x=%22520%22 y=%22110%22 width=%2270%22 height=%22760%22 rx=%2235%22/%3E %3Crect x=%221330%22 y=%22110%22 width=%2270%22 height=%22760%22 rx=%2235%22/%3E%3Crect x=%221450%22 y=%22110%22 width=%2270%22 height=%22760%22 rx=%2235%22/%3E %3C/g%3E %3Crect width=%221920%22 height=%221080%22 fill=%22url(%23glow)%22/%3E %3Cpath d=%22M660 900 L660 330 Q660 90 960 90 Q1260 90 1260 330 L1260 900 Z%22 fill=%22url(%23screen)%22 stroke=%22%23B88A2E%22 stroke-width=%2210%22 opacity=%220.85%22/%3E %3Cg fill=%22none%22 stroke=%22%232C4672%22 stroke-width=%223%22 opacity=%220.9%22%3E %3Cpath d=%22M690 300 Q960 270 1230 300 M680 450 Q960 430 1240 450 M680 600 Q960 590 1240 600 M680 750 Q960 745 1240 750%22/%3E %3Cpath d=%22M810 130 Q790 500 820 890 M960 92 L960 900 M1110 130 Q1130 500 1100 890%22/%3E %3C/g%3E %3Cg fill=%22%232E5A8A%22 opacity=%220.95%22%3E %3Cpath d=%22M720 300 Q750 240 840 250 Q900 260 880 320 Q870 370 820 380 Q800 440 760 420 Q730 390 745 350 Q710 330 720 300 Z%22/%3E %3Cpath d=%22M810 460 Q850 450 870 500 Q880 560 850 610 Q830 640 815 610 Q800 550 810 460 Z%22/%3E %3Cpath d=%22M980 260 Q1030 230 1110 250 Q1190 270 1180 330 Q1170 380 1120 380 Q1090 430 1050 410 Q1020 390 1030 350 Q980 330 980 260 Z%22/%3E %3Cpath d=%22M1010 420 Q1050 410 1070 460 Q1080 520 1050 570 Q1030 590 1020 550 Q1005 480 1010 420 Z%22/%3E %3Cpath d=%22M1120 540 Q1170 530 1190 570 Q1190 610 1150 610 Q1120 600 1120 540 Z%22/%3E %3C/g%3E %3Cg fill=%22%23F2A93B%22 opacity=%220.8%22%3E %3Ccircle cx=%22460%22 cy=%22420%22 r=%2226%22 opacity=%220.35%22/%3E%3Ccircle cx=%221480%22 cy=%22520%22 r=%2234%22 opacity=%220.3%22/%3E %3Ccircle cx=%221420%22 cy=%22250%22 r=%2214%22 opacity=%220.5%22/%3E%3Ccircle cx=%22520%22 cy=%22760%22 r=%2218%22 opacity=%220.4%22/%3E %3C/g%3E %3Cg fill=%22%23FFC867%22 opacity=%220.7%22%3E %3Cpath d=%22M560 260 Q560 280 580 280 Q560 280 560 300 Q560 280 540 280 Q560 280 560 260 Z%22/%3E %3Cpath d=%22M1380 380 Q1380 404 1404 404 Q1380 404 1380 428 Q1380 404 1356 404 Q1380 404 1380 380 Z%22/%3E %3C/g%3E %3Cg fill=%22none%22 stroke=%22%23F2A93B%22 stroke-width=%226%22 stroke-dasharray=%2212 9%22 stroke-linecap=%22round%22 opacity=%220.65%22%3E %3Cpath d=%22M760 320 Q900 170 1080 300%22/%3E %3Cpath d=%22M1120 360 Q1000 520 830 560%22/%3E %3Cpath d=%22M760 640 Q960 560 1150 640%22/%3E %3C/g%3E%3Cg fill=%22none%22 stroke=%22%23FF4D6D%22 stroke-width=%224%22 opacity=%220.7%22%3E %3Ccircle cx=%221080%22 cy=%22300%22 r=%2212%22/%3E%3Ccircle cx=%221080%22 cy=%22300%22 r=%224%22 fill=%22%23FF4D6D%22/%3E %3Ccircle cx=%22830%22 cy=%22560%22 r=%2212%22/%3E%3Ccircle cx=%22830%22 cy=%22560%22 r=%224%22 fill=%22%23FF4D6D%22/%3E %3Ccircle cx=%221150%22 cy=%22640%22 r=%2212%22/%3E%3Ccircle cx=%221150%22 cy=%22640%22 r=%224%22 fill=%22%23FF4D6D%22/%3E %3C/g%3E %3Cpath d=%22M0 860 L1920 860 L1920 1080 L0 1080 Z%22 fill=%22%2318203A%22/%3E %3Cpath d=%22M760 860 L1160 860 L1360 1080 L560 1080 Z%22 fill=%22url(%23carpet)%22/%3E %3Cellipse cx=%22960%22 cy=%221010%22 rx=%22820%22 ry=%22110%22 fill=%22%234A2C18%22/%3E %3Cellipse cx=%22960%22 cy=%22992%22 rx=%22820%22 ry=%22100%22 fill=%22url(%23table)%22 stroke=%22%233A2212%22 stroke-width=%226%22/%3E %3Cg stroke=%22%234B3A44%22 stroke-width=%225%22 stroke-linecap=%22round%22 fill=%22none%22%3E %3Cpath d=%22M380 950 Q390 912 420 898 M620 925 Q630 888 660 876 M1260 925 Q1270 888 1300 876 M1500 950 Q1510 912 1540 898%22/%3E %3C/g%3E %3Cg fill=%22%233A2E36%22%3E%3Ccircle cx=%22422%22 cy=%22897%22 r=%229%22/%3E%3Ccircle cx=%22662%22 cy=%22875%22 r=%229%22/%3E%3Ccircle cx=%221302%22 cy=%22875%22 r=%229%22/%3E%3Ccircle cx=%221542%22 cy=%22897%22 r=%229%22/%3E%3C/g%3E %3Cg fill=%22%23FFFFFF%22 stroke=%22%23B88A2E%22 stroke-width=%224%22%3E %3Cpath d=%22M300 990 L360 990 L346 960 L314 960 Z%22/%3E%3Cpath d=%22M520 960 L580 960 L566 930 L534 930 Z%22/%3E %3Cpath d=%22M1340 960 L1400 960 L1386 930 L1354 930 Z%22/%3E%3Cpath d=%22M1560 990 L1620 990 L1606 960 L1574 960 Z%22/%3E %3C/g%3E %3Cg transform=%22translate(470 860) scale(0.6)%22 stroke=%22%231C2742%22 stroke-width=%225%22 stroke-linejoin=%22round%22%3E %3Cpath d=%22M86 200 Q90 150 92 110 L108 110 Q110 150 114 200 Z%22 fill=%22%23F6D38A%22/%3E %3Cellipse cx=%22100%22 cy=%22156%22 rx=%2230%22 ry=%228%22 fill=%22%23F2A93B%22/%3E %3Ccircle cx=%2266%22 cy=%22206%22 r=%2216%22 fill=%22%23F6D38A%22/%3E%3Ccircle cx=%22134%22 cy=%22206%22 r=%2216%22 fill=%22%23F6D38A%22/%3E %3Ccircle cx=%2288%22 cy=%22212%22 r=%2218%22 fill=%22%23F6D38A%22/%3E%3Ccircle cx=%22112%22 cy=%22212%22 r=%2218%22 fill=%22%23F6D38A%22/%3E %3Ccircle cx=%2252%22 cy=%2284%22 r=%2224%22 fill=%22%23F08A4B%22/%3E%3Ccircle cx=%22154%22 cy=%2292%22 r=%2220%22 fill=%22%23F08A4B%22/%3E %3Ccircle cx=%2276%22 cy=%2258%22 r=%2226%22 fill=%22%23F08A4B%22/%3E%3Ccircle cx=%22140%22 cy=%2264%22 r=%2226%22 fill=%22%23F08A4B%22/%3E%3Ccircle cx=%22108%22 cy=%2248%22 r=%2230%22 fill=%22%23F08A4B%22/%3E %3Cellipse cx=%22100%22 cy=%2288%22 rx=%2258%22 ry=%2232%22 fill=%22%23F08A4B%22 stroke=%22none%22/%3E %3Cpath d=%22M44 100 Q100 136 156 100 Q160 112 146 118 Q100 136 54 118 Q40 112 44 100 Z%22 fill=%22%23D9622E%22/%3E %3Ccircle cx=%2298%22 cy=%2238%22 r=%2210%22 fill=%22%23FFD9A8%22 stroke=%22none%22/%3E%3Ccircle cx=%2270%22 cy=%2252%22 r=%227%22 fill=%22%23FFD9A8%22 stroke=%22none%22/%3E %3C/g%3E %3Cg transform=%22translate(1330 860) scale(0.6)%22 stroke=%22%231C2742%22 stroke-width=%225%22 stroke-linejoin=%22round%22%3E %3Cpath d=%22M86 200 Q90 150 92 110 L108 110 Q110 150 114 200 Z%22 fill=%22%23F6D38A%22/%3E %3Cellipse cx=%22100%22 cy=%22156%22 rx=%2230%22 ry=%228%22 fill=%22%23F2A93B%22/%3E %3Ccircle cx=%2266%22 cy=%22206%22 r=%2216%22 fill=%22%23F6D38A%22/%3E%3Ccircle cx=%22134%22 cy=%22206%22 r=%2216%22 fill=%22%23F6D38A%22/%3E %3Ccircle cx=%2288%22 cy=%22212%22 r=%2218%22 fill=%22%23F6D38A%22/%3E%3Ccircle cx=%22112%22 cy=%22212%22 r=%2218%22 fill=%22%23F6D38A%22/%3E %3Ccircle cx=%2252%22 cy=%2284%22 r=%2224%22 fill=%22%23F08A4B%22/%3E%3Ccircle cx=%22154%22 cy=%2292%22 r=%2220%22 fill=%22%23F08A4B%22/%3E %3Ccircle cx=%2276%22 cy=%2258%22 r=%2226%22 fill=%22%23F08A4B%22/%3E%3Ccircle cx=%22140%22 cy=%2264%22 r=%2226%22 fill=%22%23F08A4B%22/%3E%3Ccircle cx=%22108%22 cy=%2248%22 r=%2230%22 fill=%22%23F08A4B%22/%3E %3Cellipse cx=%22100%22 cy=%2288%22 rx=%2258%22 ry=%2232%22 fill=%22%23F08A4B%22 stroke=%22none%22/%3E %3Cpath d=%22M44 100 Q100 136 156 100 Q160 112 146 118 Q100 136 54 118 Q40 112 44 100 Z%22 fill=%22%23D9622E%22/%3E %3Ccircle cx=%2298%22 cy=%2238%22 r=%2210%22 fill=%22%23FFD9A8%22 stroke=%22none%22/%3E%3Ccircle cx=%2270%22 cy=%2252%22 r=%227%22 fill=%22%23FFD9A8%22 stroke=%22none%22/%3E %3C/g%3E %3Cpath d=%22M0 0 L330 0 Q300 260 282 440 Q270 540 210 600 Q130 660 0 670 Z%22 fill=%22url(%23curtainL)%22/%3E %3Cpath d=%22M0 670 Q110 660 200 610 Q230 820 270 1080 L0 1080 Z%22 fill=%22url(%23curtainL)%22/%3E %3Cg fill=%22none%22 stroke=%22%233E0E18%22 stroke-width=%225%22 opacity=%220.5%22%3E %3Cpath d=%22M80 0 Q90 330 70 660 M170 0 Q180 340 140 640 M260 0 Q250 300 230 560 M70 680 Q90 880 80 1080 M150 650 Q170 860 180 1080%22/%3E %3C/g%3E %3Cpath d=%22M1920 0 L1590 0 Q1620 260 1638 440 Q1650 540 1710 600 Q1790 660 1920 670 Z%22 fill=%22url(%23curtainR)%22/%3E %3Cpath d=%22M1920 670 Q1810 660 1720 610 Q1690 820 1650 1080 L1920 1080 Z%22 fill=%22url(%23curtainR)%22/%3E %3Cg fill=%22none%22 stroke=%22%233E0E18%22 stroke-width=%225%22 opacity=%220.5%22%3E %3Cpath d=%22M1840 0 Q1830 330 1850 660 M1750 0 Q1740 340 1780 640 M1660 0 Q1670 300 1690 560 M1850 680 Q1830 880 1840 1080 M1770 650 Q1750 860 1740 1080%22/%3E %3C/g%3E %3Cg fill=%22%23F2C14E%22 stroke=%22%23B88A2E%22 stroke-width=%224%22%3E %3Cellipse cx=%22205%22 cy=%22610%22 rx=%2262%22 ry=%2222%22/%3E%3Cellipse cx=%221715%22 cy=%22610%22 rx=%2262%22 ry=%2222%22/%3E %3Cpath d=%22M185 628 L166 712 L224 712 L205 628 Z%22/%3E%3Cpath d=%22M1695 628 L1676 712 L1734 712 L1715 628 Z%22/%3E %3C/g%3E %3Cg transform=%22translate(316 500) scale(1.2)%22%3E %3Crect x=%22-14%22 y=%22292%22 width=%22108%22 height=%2230%22 rx=%228%22 fill=%22%233A4A72%22 stroke=%22%231C2742%22 stroke-width=%225%22/%3E %3Cpath d=%22M18 220 L-8 288 L22 282 Z M62 220 L88 288 L58 282 Z%22 fill=%22%238FA3BF%22 stroke=%22%231C2742%22 stroke-width=%224%22 stroke-linejoin=%22round%22/%3E %3Crect x=%2218%22 y=%2270%22 width=%2244%22 height=%22214%22 rx=%2210%22 fill=%22%23FFFFFF%22 stroke=%22%231C2742%22 stroke-width=%225%22/%3E %3Cg fill=%22%23D7263D%22%3E%3Crect x=%2220%22 y=%22124%22 width=%2240%22 height=%2218%22/%3E%3Crect x=%2220%22 y=%22166%22 width=%2240%22 height=%2218%22/%3E%3Crect x=%2220%22 y=%22208%22 width=%2240%22 height=%2218%22/%3E%3Crect x=%2220%22 y=%22250%22 width=%2240%22 height=%2218%22/%3E%3C/g%3E %3Cpath d=%22M18 76 Q18 12 40 -12 Q62 12 62 76 Z%22 fill=%22%23FF4D6D%22 stroke=%22%231C2742%22 stroke-width=%225%22 stroke-linejoin=%22round%22/%3E %3Ccircle cx=%2240%22 cy=%2298%22 r=%229%22 fill=%22%23FFD23F%22 stroke=%22%231C2742%22 stroke-width=%223%22/%3E %3Cpath d=%22M28 20 Q30 0 40 -6%22 stroke=%22%23FFD0D6%22 stroke-width=%225%22 stroke-linecap=%22round%22 fill=%22none%22/%3E %3Cpath d=%22M27 84 L27 276%22 stroke=%22%23E3E8F0%22 stroke-width=%225%22 stroke-linecap=%22round%22 fill=%22none%22/%3E %3C/g%3E %3Cg transform=%22translate(1508 500) scale(1.2)%22%3E %3Crect x=%22-14%22 y=%22292%22 width=%22108%22 height=%2230%22 rx=%228%22 fill=%22%233A4A72%22 stroke=%22%231C2742%22 stroke-width=%225%22/%3E %3Cpath d=%22M18 220 L-8 288 L22 282 Z M62 220 L88 288 L58 282 Z%22 fill=%22%238FA3BF%22 stroke=%22%231C2742%22 stroke-width=%224%22 stroke-linejoin=%22round%22/%3E %3Crect x=%2218%22 y=%2270%22 width=%2244%22 height=%22214%22 rx=%2210%22 fill=%22%23FFFFFF%22 stroke=%22%231C2742%22 stroke-width=%225%22/%3E %3Cg fill=%22%23D7263D%22%3E%3Crect x=%2220%22 y=%22124%22 width=%2240%22 height=%2218%22/%3E%3Crect x=%2220%22 y=%22166%22 width=%2240%22 height=%2218%22/%3E%3Crect x=%2220%22 y=%22208%22 width=%2240%22 height=%2218%22/%3E%3Crect x=%2220%22 y=%22250%22 width=%2240%22 height=%2218%22/%3E%3C/g%3E %3Cpath d=%22M18 76 Q18 12 40 -12 Q62 12 62 76 Z%22 fill=%22%23FF4D6D%22 stroke=%22%231C2742%22 stroke-width=%225%22 stroke-linejoin=%22round%22/%3E %3Ccircle cx=%2240%22 cy=%2298%22 r=%229%22 fill=%22%23FFD23F%22 stroke=%22%231C2742%22 stroke-width=%223%22/%3E %3Cpath d=%22M28 20 Q30 0 40 -6%22 stroke=%22%23FFD0D6%22 stroke-width=%225%22 stroke-linecap=%22round%22 fill=%22none%22/%3E %3Cpath d=%22M27 84 L27 276%22 stroke=%22%23E3E8F0%22 stroke-width=%225%22 stroke-linecap=%22round%22 fill=%22none%22/%3E %3C/g%3E %3Cg%3E %3Ccircle cx=%22360%22 cy=%22190%22 r=%2265%22 fill=%22%237A2232%22 stroke=%22%231C2742%22 stroke-width=%226%22/%3E %3Ccircle cx=%22360%22 cy=%22190%22 r=%2256%22 fill=%22%23FFF6E8%22 stroke=%22%23F2C14E%22 stroke-width=%225%22/%3E %3Cpath d=%22M360 190 L360 138 A52 52 0 0 0 334.0 145.0 Z%22 fill=%22%23FF4D6D%22 opacity=%220.28%22/%3E %3Cg stroke=%22%231C2742%22 stroke-width=%225%22 stroke-linecap=%22round%22%3E%3Cpath d=%22M360 144 L360 158%22 transform=%22rotate(0 360 190)%22/%3E%3Cpath d=%22M360 144 L360 151%22 transform=%22rotate(30 360 190)%22/%3E%3Cpath d=%22M360 144 L360 151%22 transform=%22rotate(60 360 190)%22/%3E%3Cpath d=%22M360 144 L360 158%22 transform=%22rotate(90 360 190)%22/%3E%3Cpath d=%22M360 144 L360 151%22 transform=%22rotate(120 360 190)%22/%3E%3Cpath d=%22M360 144 L360 151%22 transform=%22rotate(150 360 190)%22/%3E%3Cpath d=%22M360 144 L360 158%22 transform=%22rotate(180 360 190)%22/%3E%3Cpath d=%22M360 144 L360 151%22 transform=%22rotate(210 360 190)%22/%3E%3Cpath d=%22M360 144 L360 151%22 transform=%22rotate(240 360 190)%22/%3E%3Cpath d=%22M360 144 L360 158%22 transform=%22rotate(270 360 190)%22/%3E%3Cpath d=%22M360 144 L360 151%22 transform=%22rotate(300 360 190)%22/%3E%3Cpath d=%22M360 144 L360 151%22 transform=%22rotate(330 360 190)%22/%3E%3C/g%3E %3Cpath d=%22M360 190 L360 159.2%22 stroke=%22%231C2742%22 stroke-width=%228%22 stroke-linecap=%22round%22 transform=%22rotate(-4 360 190)%22/%3E %3Cpath d=%22M360 190 L360 141.8%22 stroke=%22%23E8384F%22 stroke-width=%225%22 stroke-linecap=%22round%22 transform=%22rotate(-14 360 190)%22/%3E %3Ccircle cx=%22360%22 cy=%22190%22 r=%226%22 fill=%22%231C2742%22/%3E %3C/g%3E %3Cpath d=%22M0 0 L1920 0 L1920 50 Q1840 96 1760 50 Q1680 96 1600 50 Q1520 96 1440 50 Q1360 96 1280 50 Q1200 96 1120 50 Q1040 96 960 50 Q880 96 800 50 Q720 96 640 50 Q560 96 480 50 Q400 96 320 50 Q240 96 160 50 Q80 96 0 50 Z%22 fill=%22%237A2232%22/%3E %3Cpath d=%22M0 50 Q80 96 160 50 Q240 96 320 50 Q400 96 480 50 Q560 96 640 50 Q720 96 800 50 Q880 96 960 50 Q1040 96 1120 50 Q1200 96 1280 50 Q1360 96 1440 50 Q1520 96 1600 50 Q1680 96 1760 50 Q1840 96 1920 50%22 fill=%22none%22 stroke=%22%23F2C14E%22 stroke-width=%228%22 stroke-dasharray=%223 9%22 stroke-linecap=%22round%22/%3E %3C/svg%3E") center top/cover no-repeat}
+@media (orientation:portrait){body::before{background-image:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1080 1920%22 width=%221080%22 height=%221920%22 preserveAspectRatio=%22xMidYMid slice%22%3E %3Cdefs%3E %3ClinearGradient id=%22wall%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%232A3758%22/%3E%3Cstop offset=%220.6%22 stop-color=%22%231F2A47%22/%3E%3Cstop offset=%221%22 stop-color=%22%23161E35%22/%3E %3C/linearGradient%3E %3CradialGradient id=%22glow%22 cx=%22540%22 cy=%22700%22 r=%22560%22 gradientUnits=%22userSpaceOnUse%22%3E %3Cstop offset=%220%22 stop-color=%22%23F2A93B%22 stop-opacity=%220.42%22/%3E%3Cstop offset=%220.55%22 stop-color=%22%23F2A93B%22 stop-opacity=%220.14%22/%3E%3Cstop offset=%221%22 stop-color=%22%23F2A93B%22 stop-opacity=%220%22/%3E %3C/radialGradient%3E %3ClinearGradient id=%22screen%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%23162746%22/%3E%3Cstop offset=%221%22 stop-color=%22%23101C36%22/%3E %3C/linearGradient%3E %3ClinearGradient id=%22curtainL%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%220%22%3E %3Cstop offset=%220%22 stop-color=%22%235E1626%22/%3E%3Cstop offset=%221%22 stop-color=%22%239C2F3F%22/%3E %3C/linearGradient%3E %3ClinearGradient id=%22curtainR%22 x1=%221%22 y1=%220%22 x2=%220%22 y2=%220%22%3E %3Cstop offset=%220%22 stop-color=%22%235E1626%22/%3E%3Cstop offset=%221%22 stop-color=%22%239C2F3F%22/%3E %3C/linearGradient%3E %3ClinearGradient id=%22carpet%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%239C2F3F%22/%3E%3Cstop offset=%221%22 stop-color=%22%236E1F2E%22/%3E %3C/linearGradient%3E %3ClinearGradient id=%22table%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%238A5A3A%22/%3E%3Cstop offset=%221%22 stop-color=%22%236B4128%22/%3E %3C/linearGradient%3E %3C/defs%3E %3Crect width=%221080%22 height=%221920%22 fill=%22url(%23wall)%22/%3E %3Cg fill=%22%233A4A72%22 opacity=%220.5%22%3E %3Crect x=%22130%22 y=%22180%22 width=%2270%22 height=%221300%22 rx=%2235%22/%3E%3Crect x=%22250%22 y=%22180%22 width=%2270%22 height=%221300%22 rx=%2235%22/%3E %3Crect x=%22760%22 y=%22180%22 width=%2270%22 height=%221300%22 rx=%2235%22/%3E%3Crect x=%22880%22 y=%22180%22 width=%2270%22 height=%221300%22 rx=%2235%22/%3E %3C/g%3E %3Crect width=%221080%22 height=%221920%22 fill=%22url(%23glow)%22/%3E %3Cpath d=%22M270 1180 L270 560 Q270 270 540 270 Q810 270 810 560 L810 1180 Z%22 fill=%22url(%23screen)%22 stroke=%22%23B88A2E%22 stroke-width=%2210%22 opacity=%220.85%22/%3E %3Cg fill=%22none%22 stroke=%22%232C4672%22 stroke-width=%223%22 opacity=%220.9%22%3E %3Cpath d=%22M300 520 Q540 480 780 520 M290 680 Q540 650 790 680 M290 840 Q540 820 790 840 M290 1000 Q540 990 790 1000%22/%3E %3Cpath d=%22M400 330 Q380 760 410 1170 M540 280 L540 1180 M680 330 Q700 760 670 1170%22/%3E %3C/g%3E %3Cg fill=%22%232E5A8A%22 opacity=%220.95%22%3E %3Cpath d=%22M330 520 Q360 450 440 460 Q500 470 480 540 Q470 600 420 610 Q400 680 360 660 Q330 620 345 580 Q320 560 330 520 Z%22/%3E %3Cpath d=%22M410 700 Q450 690 470 740 Q480 800 450 860 Q430 900 415 860 Q400 800 410 700 Z%22/%3E %3Cpath d=%22M560 470 Q610 440 690 460 Q760 480 750 540 Q740 590 690 590 Q660 640 620 620 Q590 600 600 560 Q560 540 560 470 Z%22/%3E %3Cpath d=%22M590 640 Q630 630 650 680 Q660 740 630 790 Q610 810 600 770 Q585 700 590 640 Z%22/%3E %3Cpath d=%22M690 780 Q740 770 760 810 Q760 850 720 850 Q690 840 690 780 Z%22/%3E %3C/g%3E %3Cg fill=%22%23F2A93B%22 opacity=%220.8%22%3E %3Ccircle cx=%22170%22 cy=%22560%22 r=%2226%22 opacity=%220.35%22/%3E%3Ccircle cx=%22930%22 cy=%22700%22 r=%2234%22 opacity=%220.3%22/%3E %3Ccircle cx=%22900%22 cy=%22420%22 r=%2214%22 opacity=%220.5%22/%3E%3Ccircle cx=%22190%22 cy=%22980%22 r=%2218%22 opacity=%220.4%22/%3E %3Ccircle cx=%22880%22 cy=%221120%22 r=%2222%22 opacity=%220.35%22/%3E%3Ccircle cx=%22230%22 cy=%221260%22 r=%2212%22 opacity=%220.5%22/%3E %3C/g%3E %3Cg fill=%22%23FFC867%22 opacity=%220.7%22%3E %3Cpath d=%22M220 420 Q220 440 240 440 Q220 440 220 460 Q220 440 200 440 Q220 440 220 420 Z%22/%3E %3Cpath d=%22M860 560 Q860 584 884 584 Q860 584 860 608 Q860 584 836 584 Q860 584 860 560 Z%22/%3E %3Cpath d=%22M860 1300 Q860 1318 878 1318 Q860 1318 860 1336 Q860 1318 842 1318 Q860 1318 860 1300 Z%22/%3E %3C/g%3E %3Cg fill=%22none%22 stroke=%22%23F2A93B%22 stroke-width=%226%22 stroke-dasharray=%2212 9%22 stroke-linecap=%22round%22 opacity=%220.65%22%3E %3Cpath d=%22M380 560 Q520 380 700 520%22/%3E %3Cpath d=%22M720 600 Q600 760 440 830%22/%3E %3Cpath d=%22M350 900 Q560 820 740 960%22/%3E %3C/g%3E%3Cg fill=%22none%22 stroke=%22%23FF4D6D%22 stroke-width=%224%22 opacity=%220.7%22%3E %3Ccircle cx=%22700%22 cy=%22520%22 r=%2212%22/%3E%3Ccircle cx=%22700%22 cy=%22520%22 r=%224%22 fill=%22%23FF4D6D%22/%3E %3Ccircle cx=%22440%22 cy=%22830%22 r=%2212%22/%3E%3Ccircle cx=%22440%22 cy=%22830%22 r=%224%22 fill=%22%23FF4D6D%22/%3E %3Ccircle cx=%22740%22 cy=%22960%22 r=%2212%22/%3E%3Ccircle cx=%22740%22 cy=%22960%22 r=%224%22 fill=%22%23FF4D6D%22/%3E %3C/g%3E %3Cpath d=%22M0 1500 L1080 1500 L1080 1920 L0 1920 Z%22 fill=%22%2318203A%22/%3E %3Cpath d=%22M330 1500 L750 1500 L1000 1920 L80 1920 Z%22 fill=%22url(%23carpet)%22/%3E %3Cpath d=%22M420 1500 L660 1500 L760 1920 L320 1920 Z%22 fill=%22%23FFFFFF%22 opacity=%220.12%22/%3E %3Cellipse cx=%22540%22 cy=%221700%22 rx=%22560%22 ry=%22150%22 fill=%22%234A2C18%22/%3E %3Cellipse cx=%22540%22 cy=%221680%22 rx=%22560%22 ry=%22140%22 fill=%22url(%23table)%22 stroke=%22%233A2212%22 stroke-width=%226%22/%3E %3Cg stroke=%22%234B3A44%22 stroke-width=%225%22 stroke-linecap=%22round%22 fill=%22none%22%3E %3Cpath d=%22M220 1640 Q230 1600 260 1585 M440 1600 Q450 1560 480 1548 M640 1600 Q650 1560 680 1548 M860 1640 Q870 1600 900 1585%22/%3E %3C/g%3E %3Cg fill=%22%233A2E36%22%3E%3Ccircle cx=%22262%22 cy=%221584%22 r=%229%22/%3E%3Ccircle cx=%22482%22 cy=%221547%22 r=%229%22/%3E%3Ccircle cx=%22682%22 cy=%221547%22 r=%229%22/%3E%3Ccircle cx=%22902%22 cy=%221584%22 r=%229%22/%3E%3C/g%3E %3Cg fill=%22%23FFFFFF%22 stroke=%22%23B88A2E%22 stroke-width=%224%22%3E %3Cpath d=%22M150 1680 L210 1680 L196 1650 L164 1650 Z%22/%3E%3Cpath d=%22M360 1640 L420 1640 L406 1610 L374 1610 Z%22/%3E %3Cpath d=%22M570 1640 L630 1640 L616 1610 L584 1610 Z%22/%3E%3Cpath d=%22M790 1680 L850 1680 L836 1650 L804 1650 Z%22/%3E %3C/g%3E %3Cg fill=%22%23CFE8FF%22 stroke=%22%239FC4EA%22 stroke-width=%223%22 opacity=%220.9%22%3E %3Crect x=%22300%22 y=%221625%22 width=%2218%22 height=%2230%22 rx=%224%22/%3E%3Crect x=%22520%22 y=%221605%22 width=%2218%22 height=%2230%22 rx=%224%22/%3E %3Crect x=%22740%22 y=%221625%22 width=%2218%22 height=%2230%22 rx=%224%22/%3E %3C/g%3E %3Cg transform=%22translate(214 1500) scale(0.62)%22 stroke=%22%231C2742%22 stroke-width=%225%22 stroke-linejoin=%22round%22%3E %3Cpath d=%22M86 200 Q90 150 92 110 L108 110 Q110 150 114 200 Z%22 fill=%22%23F6D38A%22/%3E %3Cellipse cx=%22100%22 cy=%22156%22 rx=%2230%22 ry=%228%22 fill=%22%23F2A93B%22/%3E %3Ccircle cx=%2266%22 cy=%22206%22 r=%2216%22 fill=%22%23F6D38A%22/%3E%3Ccircle cx=%22134%22 cy=%22206%22 r=%2216%22 fill=%22%23F6D38A%22/%3E %3Ccircle cx=%2288%22 cy=%22212%22 r=%2218%22 fill=%22%23F6D38A%22/%3E%3Ccircle cx=%22112%22 cy=%22212%22 r=%2218%22 fill=%22%23F6D38A%22/%3E %3Ccircle cx=%2252%22 cy=%2284%22 r=%2224%22 fill=%22%23F08A4B%22/%3E%3Ccircle cx=%22154%22 cy=%2292%22 r=%2220%22 fill=%22%23F08A4B%22/%3E %3Ccircle cx=%2276%22 cy=%2258%22 r=%2226%22 fill=%22%23F08A4B%22/%3E%3Ccircle cx=%22140%22 cy=%2264%22 r=%2226%22 fill=%22%23F08A4B%22/%3E%3Ccircle cx=%22108%22 cy=%2248%22 r=%2230%22 fill=%22%23F08A4B%22/%3E %3Cellipse cx=%22100%22 cy=%2288%22 rx=%2258%22 ry=%2232%22 fill=%22%23F08A4B%22 stroke=%22none%22/%3E %3Cpath d=%22M44 100 Q100 136 156 100 Q160 112 146 118 Q100 136 54 118 Q40 112 44 100 Z%22 fill=%22%23D9622E%22/%3E %3Ccircle cx=%2298%22 cy=%2238%22 r=%2210%22 fill=%22%23FFD9A8%22 stroke=%22none%22/%3E%3Ccircle cx=%2270%22 cy=%2252%22 r=%227%22 fill=%22%23FFD9A8%22 stroke=%22none%22/%3E %3C/g%3E %3Cg transform=%22translate(742 1500) scale(0.62)%22 stroke=%22%231C2742%22 stroke-width=%225%22 stroke-linejoin=%22round%22%3E %3Cpath d=%22M86 200 Q90 150 92 110 L108 110 Q110 150 114 200 Z%22 fill=%22%23F6D38A%22/%3E %3Cellipse cx=%22100%22 cy=%22156%22 rx=%2230%22 ry=%228%22 fill=%22%23F2A93B%22/%3E %3Ccircle cx=%2266%22 cy=%22206%22 r=%2216%22 fill=%22%23F6D38A%22/%3E%3Ccircle cx=%22134%22 cy=%22206%22 r=%2216%22 fill=%22%23F6D38A%22/%3E %3Ccircle cx=%2288%22 cy=%22212%22 r=%2218%22 fill=%22%23F6D38A%22/%3E%3Ccircle cx=%22112%22 cy=%22212%22 r=%2218%22 fill=%22%23F6D38A%22/%3E %3Ccircle cx=%2252%22 cy=%2284%22 r=%2224%22 fill=%22%23F08A4B%22/%3E%3Ccircle cx=%22154%22 cy=%2292%22 r=%2220%22 fill=%22%23F08A4B%22/%3E %3Ccircle cx=%2276%22 cy=%2258%22 r=%2226%22 fill=%22%23F08A4B%22/%3E%3Ccircle cx=%22140%22 cy=%2264%22 r=%2226%22 fill=%22%23F08A4B%22/%3E%3Ccircle cx=%22108%22 cy=%2248%22 r=%2230%22 fill=%22%23F08A4B%22/%3E %3Cellipse cx=%22100%22 cy=%2288%22 rx=%2258%22 ry=%2232%22 fill=%22%23F08A4B%22 stroke=%22none%22/%3E %3Cpath d=%22M44 100 Q100 136 156 100 Q160 112 146 118 Q100 136 54 118 Q40 112 44 100 Z%22 fill=%22%23D9622E%22/%3E %3Ccircle cx=%2298%22 cy=%2238%22 r=%2210%22 fill=%22%23FFD9A8%22 stroke=%22none%22/%3E%3Ccircle cx=%2270%22 cy=%2252%22 r=%227%22 fill=%22%23FFD9A8%22 stroke=%22none%22/%3E %3C/g%3E %3Cpath d=%22M0 0 L210 0 Q190 420 176 760 Q166 900 130 990 Q80 1060 0 1080 Z%22 fill=%22url(%23curtainL)%22/%3E %3Cpath d=%22M0 1080 Q70 1060 124 1000 Q150 1320 190 1720 L0 1720 Z%22 fill=%22url(%23curtainL)%22/%3E %3Cg fill=%22none%22 stroke=%22%233E0E18%22 stroke-width=%225%22 opacity=%220.5%22%3E %3Cpath d=%22M60 0 Q70 500 50 1060 M130 0 Q140 520 100 1030 M180 0 Q172 480 160 900%22/%3E %3Cpath d=%22M60 1090 Q80 1400 70 1720 M130 1040 Q150 1380 160 1720%22/%3E %3C/g%3E %3Cpath d=%22M1080 0 L870 0 Q890 420 904 760 Q914 900 950 990 Q1000 1060 1080 1080 Z%22 fill=%22url(%23curtainR)%22/%3E %3Cpath d=%22M1080 1080 Q1010 1060 956 1000 Q930 1320 890 1720 L1080 1720 Z%22 fill=%22url(%23curtainR)%22/%3E %3Cg fill=%22none%22 stroke=%22%233E0E18%22 stroke-width=%225%22 opacity=%220.5%22%3E %3Cpath d=%22M1020 0 Q1010 500 1030 1060 M950 0 Q940 520 980 1030 M900 0 Q908 480 920 900%22/%3E %3Cpath d=%22M1020 1090 Q1000 1400 1010 1720 M950 1040 Q930 1380 920 1720%22/%3E %3C/g%3E %3Cg fill=%22%23F2C14E%22 stroke=%22%23B88A2E%22 stroke-width=%224%22%3E %3Cellipse cx=%22130%22 cy=%221000%22 rx=%2256%22 ry=%2220%22/%3E%3Cellipse cx=%22950%22 cy=%221000%22 rx=%2256%22 ry=%2220%22/%3E %3Cpath d=%22M110 1018 L92 1100 L148 1100 L130 1018 Z%22/%3E%3Cpath d=%22M930 1018 L912 1100 L968 1100 L950 1018 Z%22/%3E %3C/g%3E %3Cg transform=%22translate(110 930) scale(1.25)%22%3E %3Crect x=%22-14%22 y=%22292%22 width=%22108%22 height=%2230%22 rx=%228%22 fill=%22%233A4A72%22 stroke=%22%231C2742%22 stroke-width=%225%22/%3E %3Cpath d=%22M18 220 L-8 288 L22 282 Z M62 220 L88 288 L58 282 Z%22 fill=%22%238FA3BF%22 stroke=%22%231C2742%22 stroke-width=%224%22 stroke-linejoin=%22round%22/%3E %3Crect x=%2218%22 y=%2270%22 width=%2244%22 height=%22214%22 rx=%2210%22 fill=%22%23FFFFFF%22 stroke=%22%231C2742%22 stroke-width=%225%22/%3E %3Cg fill=%22%23D7263D%22%3E%3Crect x=%2220%22 y=%22124%22 width=%2240%22 height=%2218%22/%3E%3Crect x=%2220%22 y=%22166%22 width=%2240%22 height=%2218%22/%3E%3Crect x=%2220%22 y=%22208%22 width=%2240%22 height=%2218%22/%3E%3Crect x=%2220%22 y=%22250%22 width=%2240%22 height=%2218%22/%3E%3C/g%3E %3Cpath d=%22M18 76 Q18 12 40 -12 Q62 12 62 76 Z%22 fill=%22%23FF4D6D%22 stroke=%22%231C2742%22 stroke-width=%225%22 stroke-linejoin=%22round%22/%3E %3Ccircle cx=%2240%22 cy=%2298%22 r=%229%22 fill=%22%23FFD23F%22 stroke=%22%231C2742%22 stroke-width=%223%22/%3E %3Cpath d=%22M28 20 Q30 0 40 -6%22 stroke=%22%23FFD0D6%22 stroke-width=%225%22 stroke-linecap=%22round%22 fill=%22none%22/%3E %3Cpath d=%22M27 84 L27 276%22 stroke=%22%23E3E8F0%22 stroke-width=%225%22 stroke-linecap=%22round%22 fill=%22none%22/%3E %3C/g%3E %3Cg transform=%22translate(840 930) scale(1.25)%22%3E %3Crect x=%22-14%22 y=%22292%22 width=%22108%22 height=%2230%22 rx=%228%22 fill=%22%233A4A72%22 stroke=%22%231C2742%22 stroke-width=%225%22/%3E %3Cpath d=%22M18 220 L-8 288 L22 282 Z M62 220 L88 288 L58 282 Z%22 fill=%22%238FA3BF%22 stroke=%22%231C2742%22 stroke-width=%224%22 stroke-linejoin=%22round%22/%3E %3Crect x=%2218%22 y=%2270%22 width=%2244%22 height=%22214%22 rx=%2210%22 fill=%22%23FFFFFF%22 stroke=%22%231C2742%22 stroke-width=%225%22/%3E %3Cg fill=%22%23D7263D%22%3E%3Crect x=%2220%22 y=%22124%22 width=%2240%22 height=%2218%22/%3E%3Crect x=%2220%22 y=%22166%22 width=%2240%22 height=%2218%22/%3E%3Crect x=%2220%22 y=%22208%22 width=%2240%22 height=%2218%22/%3E%3Crect x=%2220%22 y=%22250%22 width=%2240%22 height=%2218%22/%3E%3C/g%3E %3Cpath d=%22M18 76 Q18 12 40 -12 Q62 12 62 76 Z%22 fill=%22%23FF4D6D%22 stroke=%22%231C2742%22 stroke-width=%225%22 stroke-linejoin=%22round%22/%3E %3Ccircle cx=%2240%22 cy=%2298%22 r=%229%22 fill=%22%23FFD23F%22 stroke=%22%231C2742%22 stroke-width=%223%22/%3E %3Cpath d=%22M28 20 Q30 0 40 -6%22 stroke=%22%23FFD0D6%22 stroke-width=%225%22 stroke-linecap=%22round%22 fill=%22none%22/%3E %3Cpath d=%22M27 84 L27 276%22 stroke=%22%23E3E8F0%22 stroke-width=%225%22 stroke-linecap=%22round%22 fill=%22none%22/%3E %3C/g%3E %3Cg%3E %3Ccircle cx=%22150%22 cy=%22250%22 r=%2280%22 fill=%22%237A2232%22 stroke=%22%231C2742%22 stroke-width=%226%22/%3E %3Ccircle cx=%22150%22 cy=%22250%22 r=%2270%22 fill=%22%23FFF6E8%22 stroke=%22%23F2C14E%22 stroke-width=%225%22/%3E %3Cpath d=%22M150 250 L150 184 A66 66 0 0 0 117.0 192.8 Z%22 fill=%22%23FF4D6D%22 opacity=%220.28%22/%3E %3Cg stroke=%22%231C2742%22 stroke-width=%225%22 stroke-linecap=%22round%22%3E%3Cpath d=%22M150 190 L150 206%22 transform=%22rotate(0 150 250)%22/%3E%3Cpath d=%22M150 190 L150 198%22 transform=%22rotate(30 150 250)%22/%3E%3Cpath d=%22M150 190 L150 198%22 transform=%22rotate(60 150 250)%22/%3E%3Cpath d=%22M150 190 L150 206%22 transform=%22rotate(90 150 250)%22/%3E%3Cpath d=%22M150 190 L150 198%22 transform=%22rotate(120 150 250)%22/%3E%3Cpath d=%22M150 190 L150 198%22 transform=%22rotate(150 150 250)%22/%3E%3Cpath d=%22M150 190 L150 206%22 transform=%22rotate(180 150 250)%22/%3E%3Cpath d=%22M150 190 L150 198%22 transform=%22rotate(210 150 250)%22/%3E%3Cpath d=%22M150 190 L150 198%22 transform=%22rotate(240 150 250)%22/%3E%3Cpath d=%22M150 190 L150 206%22 transform=%22rotate(270 150 250)%22/%3E%3Cpath d=%22M150 190 L150 198%22 transform=%22rotate(300 150 250)%22/%3E%3Cpath d=%22M150 190 L150 198%22 transform=%22rotate(330 150 250)%22/%3E%3C/g%3E %3Cpath d=%22M150 250 L150 211.5%22 stroke=%22%231C2742%22 stroke-width=%229%22 stroke-linecap=%22round%22 transform=%22rotate(-4 150 250)%22/%3E %3Cpath d=%22M150 250 L150 189.8%22 stroke=%22%23E8384F%22 stroke-width=%226%22 stroke-linecap=%22round%22 transform=%22rotate(-14 150 250)%22/%3E %3Ccircle cx=%22150%22 cy=%22250%22 r=%227%22 fill=%22%231C2742%22/%3E %3C/g%3E %3Cpath d=%22M0 0 L1080 0 L1080 56 Q1012 104 945 56 Q877 104 810 56 Q742 104 675 56 Q607 104 540 56 Q472 104 405 56 Q337 104 270 56 Q202 104 135 56 Q67 104 0 56 Z%22 fill=%22%237A2232%22/%3E %3Cpath d=%22M0 56 Q67 104 135 56 Q202 104 270 56 Q337 104 405 56 Q472 104 540 56 Q607 104 675 56 Q742 104 810 56 Q877 104 945 56 Q1012 104 1080 56%22 fill=%22none%22 stroke=%22%23F2C14E%22 stroke-width=%228%22 stroke-dasharray=%223 9%22 stroke-linecap=%22round%22/%3E %3C/svg%3E")}}
+/* Reels sit on a near-solid panel with a purple rim so they pop off the hall; the title gets a soft white glow. */
+canvas{background:rgba(255,253,247,.92);box-shadow:0 0 0 4px rgba(255,255,255,.9),0 0 0 8px #C99A3A,0 12px 34px rgba(5,10,25,.55)}
+/* Text on the navy hall: warm cream title with an amber glow, light message line, steel badges. */
+h1{color:#FFE9B8;text-shadow:0 3px 0 #1C2742,0 0 12px rgba(242,169,59,.75)}
+.msg{color:#FFF4DC;text-shadow:0 1px 3px #0D1426}
+.badge:not(.warn){background:#3A4A72;box-shadow:0 0 0 1px #6F80A8}
+/* Free-spins background, "The Bunker" (sources: art/bg_free_wide.svg, art/bg_free.svg): fades in over the hall while body has .fs. */
+body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:0;transition:opacity .8s ease;background:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1920 1080%22 width=%221920%22 height=%221080%22 preserveAspectRatio=%22xMidYMid slice%22%3E %3Cdefs%3E %3ClinearGradient id=%22wall%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%232B1B4D%22/%3E%3Cstop offset=%220.6%22 stop-color=%22%231D1336%22/%3E%3Cstop offset=%221%22 stop-color=%22%23140D26%22/%3E %3C/linearGradient%3E %3CradialGradient id=%22glow%22 cx=%22960%22 cy=%22430%22 r=%22660%22 gradientUnits=%22userSpaceOnUse%22%3E %3Cstop offset=%220%22 stop-color=%22%233FD1C9%22 stop-opacity=%220.38%22/%3E%3Cstop offset=%220.6%22 stop-color=%22%233FD1C9%22 stop-opacity=%220.08%22/%3E%3Cstop offset=%221%22 stop-color=%22%233FD1C9%22 stop-opacity=%220%22/%3E %3C/radialGradient%3E %3ClinearGradient id=%22sweep%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%220%22%3E %3Cstop offset=%220%22 stop-color=%22%233FD1C9%22 stop-opacity=%220%22/%3E%3Cstop offset=%221%22 stop-color=%22%233FD1C9%22 stop-opacity=%220.55%22/%3E %3C/linearGradient%3E %3CradialGradient id=%22beam%22 cx=%220.5%22 cy=%220%22 r=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%23FF4D6D%22 stop-opacity=%220.45%22/%3E%3Cstop offset=%221%22 stop-color=%22%23FF4D6D%22 stop-opacity=%220%22/%3E %3C/radialGradient%3E %3ClinearGradient id=%22desk%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%23433A61%22/%3E%3Cstop offset=%221%22 stop-color=%22%232A2440%22/%3E %3C/linearGradient%3E %3C/defs%3E %3Crect width=%221920%22 height=%221080%22 fill=%22url(%23wall)%22/%3E %3Cg fill=%22none%22 stroke=%22%233A2A63%22 stroke-width=%224%22%3E %3Crect x=%2230%22 y=%22130%22 width=%22360%22 height=%22330%22 rx=%2210%22/%3E%3Crect x=%2230%22 y=%22480%22 width=%22360%22 height=%22330%22 rx=%2210%22/%3E %3Crect x=%221530%22 y=%22130%22 width=%22360%22 height=%22330%22 rx=%2210%22/%3E%3Crect x=%221530%22 y=%22480%22 width=%22360%22 height=%22330%22 rx=%2210%22/%3E %3C/g%3E %3Cg fill=%22%2347367A%22%3E %3Ccircle cx=%2250%22 cy=%22150%22 r=%225%22/%3E%3Ccircle cx=%22370%22 cy=%22150%22 r=%225%22/%3E%3Ccircle cx=%2250%22 cy=%22790%22 r=%225%22/%3E%3Ccircle cx=%22370%22 cy=%22790%22 r=%225%22/%3E %3Ccircle cx=%221550%22 cy=%22150%22 r=%225%22/%3E%3Ccircle cx=%221870%22 cy=%22150%22 r=%225%22/%3E%3Ccircle cx=%221550%22 cy=%22790%22 r=%225%22/%3E%3Ccircle cx=%221870%22 cy=%22790%22 r=%225%22/%3E %3C/g%3E %3Cg stroke-linecap=%22round%22%3E %3Cpath d=%22M0 60 L1920 60%22 stroke=%22%233E2F66%22 stroke-width=%2226%22/%3E%3Cpath d=%22M0 60 L1920 60%22 stroke=%22%2355448A%22 stroke-width=%226%22/%3E %3Cpath d=%22M0 100 L1920 100%22 stroke=%22%2334275A%22 stroke-width=%2216%22/%3E %3C/g%3E %3Cg fill=%22%232A1F4A%22%3E%3Crect x=%22420%22 y=%2240%22 width=%2222%22 height=%2280%22 rx=%224%22/%3E%3Crect x=%22960%22 y=%2240%22 width=%2222%22 height=%2280%22 rx=%224%22/%3E%3Crect x=%221480%22 y=%2240%22 width=%2222%22 height=%2280%22 rx=%224%22/%3E%3C/g%3E %3Crect width=%221920%22 height=%221080%22 fill=%22url(%23glow)%22/%3E %3Ccircle cx=%22960%22 cy=%22430%22 r=%22340%22 fill=%22%230E2F3A%22 stroke=%22%232C5560%22 stroke-width=%2214%22/%3E %3Cg fill=%22none%22 stroke=%22%233FD1C9%22 stroke-opacity=%220.35%22 stroke-width=%223%22%3E %3Ccircle cx=%22960%22 cy=%22430%22 r=%2285%22/%3E%3Ccircle cx=%22960%22 cy=%22430%22 r=%22170%22/%3E%3Ccircle cx=%22960%22 cy=%22430%22 r=%22255%22/%3E %3Cpath d=%22M620 430 L1300 430 M960 90 L960 770%22/%3E %3C/g%3E %3Cpath d=%22M960 430 L1280 320 A340 340 0 0 1 1298 450 Z%22 fill=%22url(%23sweep)%22/%3E %3Cg fill=%22%23FF5DA2%22%3E%3Ccircle cx=%221080%22 cy=%22290%22 r=%2210%22/%3E%3Ccircle cx=%22850%22 cy=%22570%22 r=%228%22/%3E%3Ccircle cx=%221140%22 cy=%22520%22 r=%227%22/%3E%3Ccircle cx=%22830%22 cy=%22310%22 r=%226%22/%3E%3C/g%3E %3Cg fill=%22%23FF5DA2%22 opacity=%220.25%22%3E%3Ccircle cx=%221080%22 cy=%22290%22 r=%2224%22/%3E%3Ccircle cx=%22850%22 cy=%22570%22 r=%2220%22/%3E%3C/g%3E %3Crect x=%22440%22 y=%22220%22 width=%22220%22 height=%22150%22 rx=%2210%22 fill=%22%230E2F3A%22 stroke=%22%232C5560%22 stroke-width=%226%22/%3E %3Cg fill=%22%233FD1C9%22 opacity=%220.6%22%3E%3Cpath d=%22M465 280 Q500 245 545 258 Q570 280 545 302 Q510 314 485 302 Z%22/%3E%3Cpath d=%22M575 312 Q610 290 640 308 Q630 334 598 338 Z%22/%3E%3C/g%3E %3Ccircle cx=%22520%22 cy=%22280%22 r=%226%22 fill=%22%23FF5DA2%22/%3E %3Crect x=%221260%22 y=%22220%22 width=%22220%22 height=%22150%22 rx=%2210%22 fill=%22%230E2F3A%22 stroke=%22%232C5560%22 stroke-width=%226%22/%3E %3Cg fill=%22%233FD1C9%22 opacity=%220.7%22%3E%3Crect x=%221285%22 y=%22310%22 width=%2224%22 height=%2240%22/%3E%3Crect x=%221320%22 y=%22286%22 width=%2224%22 height=%2264%22/%3E%3Crect x=%221355%22 y=%22262%22 width=%2224%22 height=%2288%22/%3E%3Crect x=%221390%22 y=%22240%22 width=%2224%22 height=%22110%22/%3E%3C/g%3E %3Crect x=%221425%22 y=%22232%22 width=%2224%22 height=%22118%22 fill=%22%23FF5DA2%22 opacity=%220.85%22/%3E %3Cg%3E%3Ccircle cx=%22480%22 cy=%22420%22 r=%2210%22 fill=%22%23F2B705%22/%3E%3Ccircle cx=%22515%22 cy=%22420%22 r=%2210%22 fill=%22%23FF4D6D%22/%3E%3Ccircle cx=%22550%22 cy=%22420%22 r=%2210%22 fill=%22%233FD1C9%22/%3E %3Ccircle cx=%221370%22 cy=%22420%22 r=%2210%22 fill=%22%23FF4D6D%22/%3E%3Ccircle cx=%221405%22 cy=%22420%22 r=%2210%22 fill=%22%23F2B705%22/%3E%3Ccircle cx=%221440%22 cy=%22420%22 r=%2210%22 fill=%22%23FF4D6D%22/%3E%3C/g%3E %3Cpath d=%22M170 170 L-40 640 L380 640 Z%22 fill=%22url(%23beam)%22/%3E %3Cpath d=%22M1750 170 L1540 640 L1960 640 Z%22 fill=%22url(%23beam)%22/%3E %3Cg stroke=%22%232A1F4A%22 stroke-width=%224%22%3E %3Crect x=%22138%22 y=%22166%22 width=%2264%22 height=%2218%22 rx=%224%22 fill=%22%234A3A78%22/%3E%3Cpath d=%22M144 166 Q144 120 170 116 Q196 120 196 166 Z%22 fill=%22%23E8384F%22/%3E %3Crect x=%221718%22 y=%22166%22 width=%2264%22 height=%2218%22 rx=%224%22 fill=%22%234A3A78%22/%3E%3Cpath d=%22M1724 166 Q1724 120 1750 116 Q1776 120 1776 166 Z%22 fill=%22%23E8384F%22/%3E %3C/g%3E %3Cg fill=%22%23FFB3BF%22 opacity=%220.8%22%3E%3Cellipse cx=%22160%22 cy=%22136%22 rx=%227%22 ry=%2212%22/%3E%3Cellipse cx=%221740%22 cy=%22136%22 rx=%227%22 ry=%2212%22/%3E%3C/g%3E %3Crect x=%220%22 y=%22830%22 width=%221920%22 height=%2230%22 fill=%22%232A2440%22/%3E %3Cg fill=%22%23C9A227%22 opacity=%220.55%22%3E %3Cpath d=%22M0 830 L26 830 L0 860 Z M60 830 L90 830 L60 860 L30 860 Z M120 830 L150 830 L120 860 L90 860 Z M180 830 L210 830 L180 860 L150 860 Z M240 830 L270 830 L240 860 L210 860 Z M300 830 L330 830 L300 860 L270 860 Z M360 830 L390 830 L360 860 L330 860 Z M1530 830 L1560 830 L1530 860 L1500 860 Z M1590 830 L1620 830 L1590 860 L1560 860 Z M1650 830 L1680 830 L1650 860 L1620 860 Z M1710 830 L1740 830 L1710 860 L1680 860 Z M1770 830 L1800 830 L1770 860 L1740 860 Z M1830 830 L1860 830 L1830 860 L1800 860 Z M1890 830 L1920 830 L1920 860 L1860 860 Z%22/%3E %3C/g%3E %3Cpath d=%22M0 860 L1920 860 L1920 950 L0 950 Z%22 fill=%22%234A4068%22/%3E %3Cpath d=%22M0 950 L1920 950 L1920 1080 L0 1080 Z%22 fill=%22url(%23desk)%22/%3E %3Cg stroke=%22%232A2440%22 stroke-width=%223%22%3E %3Crect x=%22120%22 y=%22884%22 width=%2260%22 height=%2234%22 rx=%228%22 fill=%22%23FF5DA2%22/%3E%3Crect x=%22200%22 y=%22884%22 width=%2260%22 height=%2234%22 rx=%228%22 fill=%22%234DB6FF%22/%3E %3Crect x=%22280%22 y=%22884%22 width=%2260%22 height=%2234%22 rx=%228%22 fill=%22%23F2B705%22/%3E%3Crect x=%221580%22 y=%22884%22 width=%2260%22 height=%2234%22 rx=%228%22 fill=%22%234DB6FF%22/%3E %3Crect x=%221660%22 y=%22884%22 width=%2260%22 height=%2234%22 rx=%228%22 fill=%22%23FF5DA2%22/%3E%3Crect x=%221740%22 y=%22884%22 width=%2260%22 height=%2234%22 rx=%228%22 fill=%22%23F2B705%22/%3E %3C/g%3E %3Cellipse cx=%221820%22 cy=%221000%22 rx=%2270%22 ry=%2222%22 fill=%22%232A2440%22/%3E %3Cellipse cx=%221820%22 cy=%22992%22 rx=%2256%22 ry=%2217%22 fill=%22%235A5A66%22 stroke=%22%232A2440%22 stroke-width=%224%22/%3E %3Cpath d=%22M1776 990 Q1776 954 1820 952 Q1864 954 1864 990 Z%22 fill=%22%23E8384F%22 stroke=%22%237A1426%22 stroke-width=%225%22/%3E %3Cellipse cx=%221806%22 cy=%22966%22 rx=%2214%22 ry=%226%22 fill=%22%23FF8C9E%22 opacity=%220.8%22/%3E %3C/svg%3E") center top/cover no-repeat}
+@media (orientation:portrait){body::after{background-image:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1080 1920%22 width=%221080%22 height=%221920%22 preserveAspectRatio=%22xMidYMid slice%22%3E %3Cdefs%3E %3ClinearGradient id=%22wall%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%232B1B4D%22/%3E%3Cstop offset=%220.55%22 stop-color=%22%231D1336%22/%3E%3Cstop offset=%221%22 stop-color=%22%23140D26%22/%3E %3C/linearGradient%3E %3CradialGradient id=%22glow%22 cx=%22540%22 cy=%22700%22 r=%22600%22 gradientUnits=%22userSpaceOnUse%22%3E %3Cstop offset=%220%22 stop-color=%22%233FD1C9%22 stop-opacity=%220.38%22/%3E%3Cstop offset=%220.6%22 stop-color=%22%233FD1C9%22 stop-opacity=%220.08%22/%3E%3Cstop offset=%221%22 stop-color=%22%233FD1C9%22 stop-opacity=%220%22/%3E %3C/radialGradient%3E %3ClinearGradient id=%22sweep%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%220%22%3E %3Cstop offset=%220%22 stop-color=%22%233FD1C9%22 stop-opacity=%220%22/%3E%3Cstop offset=%221%22 stop-color=%22%233FD1C9%22 stop-opacity=%220.55%22/%3E %3C/linearGradient%3E %3CradialGradient id=%22beam%22 cx=%220.5%22 cy=%220%22 r=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%23FF4D6D%22 stop-opacity=%220.45%22/%3E%3Cstop offset=%221%22 stop-color=%22%23FF4D6D%22 stop-opacity=%220%22/%3E %3C/radialGradient%3E %3ClinearGradient id=%22desk%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%23433A61%22/%3E%3Cstop offset=%221%22 stop-color=%22%232A2440%22/%3E %3C/linearGradient%3E %3C/defs%3E %3Crect width=%221080%22 height=%221920%22 fill=%22url(%23wall)%22/%3E %3Cg fill=%22none%22 stroke=%22%233A2A63%22 stroke-width=%224%22%3E %3Crect x=%2220%22 y=%22140%22 width=%22250%22 height=%22620%22 rx=%2210%22/%3E%3Crect x=%2220%22 y=%22780%22 width=%22250%22 height=%22620%22 rx=%2210%22/%3E %3Crect x=%22810%22 y=%22140%22 width=%22250%22 height=%22620%22 rx=%2210%22/%3E%3Crect x=%22810%22 y=%22780%22 width=%22250%22 height=%22620%22 rx=%2210%22/%3E %3C/g%3E %3Cg fill=%22%2347367A%22%3E %3Ccircle cx=%2240%22 cy=%22160%22 r=%225%22/%3E%3Ccircle cx=%22250%22 cy=%22160%22 r=%225%22/%3E%3Ccircle cx=%2240%22 cy=%22740%22 r=%225%22/%3E%3Ccircle cx=%22250%22 cy=%22740%22 r=%225%22/%3E %3Ccircle cx=%22830%22 cy=%22160%22 r=%225%22/%3E%3Ccircle cx=%221040%22 cy=%22160%22 r=%225%22/%3E%3Ccircle cx=%22830%22 cy=%22740%22 r=%225%22/%3E%3Ccircle cx=%221040%22 cy=%22740%22 r=%225%22/%3E %3Ccircle cx=%2240%22 cy=%22800%22 r=%225%22/%3E%3Ccircle cx=%22250%22 cy=%22800%22 r=%225%22/%3E%3Ccircle cx=%22830%22 cy=%22800%22 r=%225%22/%3E%3Ccircle cx=%221040%22 cy=%22800%22 r=%225%22/%3E %3C/g%3E %3Cg stroke-linecap=%22round%22%3E %3Cpath d=%22M0 70 L1080 70%22 stroke=%22%233E2F66%22 stroke-width=%2226%22/%3E%3Cpath d=%22M0 70 L1080 70%22 stroke=%22%2355448A%22 stroke-width=%226%22/%3E %3Cpath d=%22M0 112 L1080 112%22 stroke=%22%2334275A%22 stroke-width=%2216%22/%3E %3C/g%3E %3Cg fill=%22%232A1F4A%22%3E%3Crect x=%22200%22 y=%2250%22 width=%2222%22 height=%2280%22 rx=%224%22/%3E%3Crect x=%22540%22 y=%2250%22 width=%2222%22 height=%2280%22 rx=%224%22/%3E%3Crect x=%22860%22 y=%2250%22 width=%2222%22 height=%2280%22 rx=%224%22/%3E%3C/g%3E %3Crect width=%221080%22 height=%221920%22 fill=%22url(%23glow)%22/%3E %3Ccircle cx=%22540%22 cy=%22700%22 r=%22340%22 fill=%22%230E2F3A%22 stroke=%22%232C5560%22 stroke-width=%2214%22/%3E %3Cg fill=%22none%22 stroke=%22%233FD1C9%22 stroke-opacity=%220.35%22 stroke-width=%223%22%3E %3Ccircle cx=%22540%22 cy=%22700%22 r=%2285%22/%3E%3Ccircle cx=%22540%22 cy=%22700%22 r=%22170%22/%3E%3Ccircle cx=%22540%22 cy=%22700%22 r=%22255%22/%3E %3Cpath d=%22M200 700 L880 700 M540 360 L540 1040%22/%3E %3C/g%3E %3Cpath d=%22M540 700 L860 590 A340 340 0 0 1 878 720 Z%22 fill=%22url(%23sweep)%22/%3E %3Cg fill=%22%23FF5DA2%22%3E%3Ccircle cx=%22660%22 cy=%22560%22 r=%2210%22/%3E%3Ccircle cx=%22430%22 cy=%22840%22 r=%228%22/%3E%3Ccircle cx=%22720%22 cy=%22790%22 r=%227%22/%3E%3Ccircle cx=%22410%22 cy=%22580%22 r=%226%22/%3E%3C/g%3E %3Cg fill=%22%23FF5DA2%22 opacity=%220.25%22%3E%3Ccircle cx=%22660%22 cy=%22560%22 r=%2224%22/%3E%3Ccircle cx=%22430%22 cy=%22840%22 r=%2220%22/%3E%3C/g%3E %3Crect x=%2250%22 y=%22420%22 width=%22190%22 height=%22130%22 rx=%2210%22 fill=%22%230E2F3A%22 stroke=%22%232C5560%22 stroke-width=%226%22/%3E %3Cg fill=%22%233FD1C9%22 opacity=%220.6%22%3E%3Cpath d=%22M70 470 Q100 440 140 452 Q160 470 140 490 Q110 500 90 490 Z%22/%3E%3Cpath d=%22M160 500 Q190 480 220 496 Q210 520 180 524 Z%22/%3E%3C/g%3E %3Ccircle cx=%22120%22 cy=%22470%22 r=%226%22 fill=%22%23FF5DA2%22/%3E %3Crect x=%22840%22 y=%22420%22 width=%22190%22 height=%22130%22 rx=%2210%22 fill=%22%230E2F3A%22 stroke=%22%232C5560%22 stroke-width=%226%22/%3E %3Cg fill=%22%233FD1C9%22 opacity=%220.7%22%3E%3Crect x=%22865%22 y=%22500%22 width=%2222%22 height=%2234%22/%3E%3Crect x=%22897%22 y=%22480%22 width=%2222%22 height=%2254%22/%3E%3Crect x=%22929%22 y=%22460%22 width=%2222%22 height=%2274%22/%3E%3Crect x=%22961%22 y=%22440%22 width=%2222%22 height=%2294%22/%3E%3C/g%3E %3Crect x=%22993%22 y=%22430%22 width=%2222%22 height=%22104%22 fill=%22%23FF5DA2%22 opacity=%220.85%22/%3E %3Cg%3E%3Ccircle cx=%2280%22 cy=%22610%22 r=%2210%22 fill=%22%23F2B705%22/%3E%3Ccircle cx=%22115%22 cy=%22610%22 r=%2210%22 fill=%22%23FF4D6D%22/%3E%3Ccircle cx=%22150%22 cy=%22610%22 r=%2210%22 fill=%22%233FD1C9%22/%3E %3Ccircle cx=%22930%22 cy=%22610%22 r=%2210%22 fill=%22%23FF4D6D%22/%3E%3Ccircle cx=%22965%22 cy=%22610%22 r=%2210%22 fill=%22%23F2B705%22/%3E%3Ccircle cx=%221000%22 cy=%22610%22 r=%2210%22 fill=%22%23FF4D6D%22/%3E%3C/g%3E %3Cpath d=%22M110 200 L-60 640 L300 640 Z%22 fill=%22url(%23beam)%22/%3E %3Cpath d=%22M970 200 L780 640 L1140 640 Z%22 fill=%22url(%23beam)%22/%3E %3Cg stroke=%22%232A1F4A%22 stroke-width=%224%22%3E %3Crect x=%2278%22 y=%22196%22 width=%2264%22 height=%2218%22 rx=%224%22 fill=%22%234A3A78%22/%3E%3Cpath d=%22M84 196 Q84 150 110 146 Q136 150 136 196 Z%22 fill=%22%23E8384F%22/%3E %3Crect x=%22938%22 y=%22196%22 width=%2264%22 height=%2218%22 rx=%224%22 fill=%22%234A3A78%22/%3E%3Cpath d=%22M944 196 Q944 150 970 146 Q996 150 996 196 Z%22 fill=%22%23E8384F%22/%3E %3C/g%3E %3Cg fill=%22%23FFB3BF%22 opacity=%220.8%22%3E%3Cellipse cx=%22100%22 cy=%22166%22 rx=%227%22 ry=%2212%22/%3E%3Cellipse cx=%22960%22 cy=%22166%22 rx=%227%22 ry=%2212%22/%3E%3C/g%3E %3Crect x=%220%22 y=%221440%22 width=%221080%22 height=%2234%22 fill=%22%232A2440%22/%3E %3Cg fill=%22%23C9A227%22 opacity=%220.55%22%3E %3Cpath d=%22M0 1440 L30 1440 L0 1474 Z M60 1440 L94 1440 L60 1474 L26 1474 Z M128 1440 L162 1440 L128 1474 L94 1474 Z M196 1440 L230 1440 L196 1474 L162 1474 Z M264 1440 L298 1440 L264 1474 L230 1474 Z M332 1440 L366 1440 L332 1474 L298 1474 Z M400 1440 L434 1440 L400 1474 L366 1474 Z M468 1440 L502 1440 L468 1474 L434 1474 Z M536 1440 L570 1440 L536 1474 L502 1474 Z M604 1440 L638 1440 L604 1474 L570 1474 Z M672 1440 L706 1440 L672 1474 L638 1474 Z M740 1440 L774 1440 L740 1474 L706 1474 Z M808 1440 L842 1440 L808 1474 L774 1474 Z M876 1440 L910 1440 L876 1474 L842 1474 Z M944 1440 L978 1440 L944 1474 L910 1474 Z M1012 1440 L1046 1440 L1012 1474 L978 1474 Z M1080 1440 L1080 1474 L1046 1474 Z%22/%3E %3C/g%3E %3Cpath d=%22M0 1474 L1080 1474 L1080 1600 L0 1600 Z%22 fill=%22%234A4068%22/%3E %3Cpath d=%22M0 1600 L1080 1600 L1080 1920 L0 1920 Z%22 fill=%22url(%23desk)%22/%3E %3Cg stroke=%22%232A2440%22 stroke-width=%223%22%3E %3Crect x=%2280%22 y=%221510%22 width=%2260%22 height=%2234%22 rx=%228%22 fill=%22%23FF5DA2%22/%3E%3Crect x=%22160%22 y=%221510%22 width=%2260%22 height=%2234%22 rx=%228%22 fill=%22%234DB6FF%22/%3E %3Crect x=%22240%22 y=%221510%22 width=%2260%22 height=%2234%22 rx=%228%22 fill=%22%23F2B705%22/%3E%3Crect x=%22780%22 y=%221510%22 width=%2260%22 height=%2234%22 rx=%228%22 fill=%22%234DB6FF%22/%3E %3Crect x=%22860%22 y=%221510%22 width=%2260%22 height=%2234%22 rx=%228%22 fill=%22%23FF5DA2%22/%3E%3Crect x=%22940%22 y=%221510%22 width=%2260%22 height=%2234%22 rx=%228%22 fill=%22%23F2B705%22/%3E %3C/g%3E %3Cg stroke=%22%232A2440%22 stroke-width=%223%22 fill=%22%239E95BF%22%3E %3Crect x=%2296%22 y=%221560%22 width=%2212%22 height=%2226%22 rx=%224%22/%3E%3Crect x=%22176%22 y=%221560%22 width=%2212%22 height=%2226%22 rx=%224%22/%3E%3Crect x=%22256%22 y=%221560%22 width=%2212%22 height=%2226%22 rx=%224%22/%3E %3Crect x=%22796%22 y=%221560%22 width=%2212%22 height=%2226%22 rx=%224%22/%3E%3Crect x=%22876%22 y=%221560%22 width=%2212%22 height=%2226%22 rx=%224%22/%3E%3Crect x=%22956%22 y=%221560%22 width=%2212%22 height=%2226%22 rx=%224%22/%3E %3C/g%3E %3Cellipse cx=%22540%22 cy=%221560%22 rx=%22120%22 ry=%2234%22 fill=%22%232A2440%22/%3E %3Cellipse cx=%22540%22 cy=%221548%22 rx=%2296%22 ry=%2226%22 fill=%22%235A5A66%22 stroke=%22%232A2440%22 stroke-width=%224%22/%3E %3Cpath d=%22M466 1546 Q466 1490 540 1486 Q614 1490 614 1546 Z%22 fill=%22%23E8384F%22 stroke=%22%237A1426%22 stroke-width=%225%22/%3E %3Cellipse cx=%22520%22 cy=%221506%22 rx=%2224%22 ry=%229%22 fill=%22%23FF8C9E%22 opacity=%220.8%22/%3E %3Cpath d=%22M444 1550 Q444 1440 540 1434 Q636 1440 636 1550%22 fill=%22none%22 stroke=%22%23CFE8FF%22 stroke-width=%225%22 opacity=%220.55%22/%3E %3C/svg%3E")}}
+body.fs::after{opacity:1}
+body.fs h1{color:#fff;text-shadow:0 2px 0 #4b1d8f,0 0 10px #3FD1C9}
+body.fs .msg{color:#fff;text-shadow:0 1px 2px #140d26}
+body.fs .badge:not(.warn){background:#5A4A8C;box-shadow:0 0 0 1px #8F7FC8}
+@media (prefers-reduced-motion: reduce){body::after{transition:none}}
+</style>
+</head>
+<body>
+<div class="cabinet" id="cabinet">
+  <div class="logo">
+    <h1 class="og-title"><span class="og-tag">OG</span>Nuclear Summit</h1>
+  </div>
+
+  <div class="board">
+    <div class="stage" id="stage">
+      <canvas id="c" aria-label="Slot grid, 7 columns by 7 rows"></canvas>
+      <div class="overlay" id="ov"><div class="big" id="ovBig"></div><div class="sub" id="ovSub"></div></div>
+    </div>
+  </div>
+
+  <div class="msg" id="msg" aria-live="polite">Press spin to start.</div>
+
+  <button class="buycard" id="buy"><span class="t">LAUNCH CODES</span><span class="s">BUY FREE SPINS</span><b id="buyCost">0.00</b></button>
+
+  <div class="tools">
+    <button class="round" id="info" aria-label="Settings, paytable and rules">⚙️</button>
+    <button class="round" id="mute" aria-pressed="false" aria-label="Mute sound">🔊</button>
+  </div>
+
+  <div class="spinbox">
+    <button id="spin" aria-label="Spin">
+      <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 30a19 19 0 0 1 34-11"/><path d="M38 18l10 2 1-10"/><path d="M51 34a19 19 0 0 1-34 11"/><path d="M26 46l-10-2-1 10"/></svg>
+      <span class="count" id="spinCount" hidden></span>
+    </button>
+    <div class="hint" id="spinHint">Spin</div>
+  </div>
+
+  <div class="featurebox" id="feature" aria-live="polite">
+    <div class="k" id="fbK1">Free spins</div><div class="v" id="fbV1">4+ Nukes</div>
+    <div class="k" id="fbK2">Fallout squares</div><div class="v sm" id="fbV2">×2 to ×20</div>  </div>
+
+  <div class="bar">
+    <div class="kv"><span>CREDIT</span><b id="bal">0</b></div>
+    <div class="betctl">
+      <button id="betDown" aria-label="Lower bet">−</button>
+      <div class="kv"><span>BET</span><b id="bet">0.40</b></div>
+      <button id="betUp" aria-label="Raise bet">+</button>
+    </div>
+    <div class="kv"><span>WIN</span><b id="win">0.00</b></div>
+    <div class="kv"><span>NET</span><b id="net">0.00</b></div>
+    <div class="kv"><span>TIME</span><b id="time">0:00</b></div>
+  </div>
+</div>
+
+<div class="sheet" id="settings" hidden role="dialog" aria-modal="true" aria-labelledby="setTitle">
+<div class="below">
+  <div class="sheethead"><h2 id="setTitle">Settings</h2><button id="setClose" aria-label="Close settings">✕</button></div>
+  <label class="volrow">Sound volume <input id="vol" type="range" min="0" max="1" step="0.05" value="0.6"></label>
+  <details id="ptDetails">
+    <summary>Paytable &amp; rules</summary>
+    <ul class="rules">
+      <li><b>Clusters pay:</b> 5 or more of the same symbol touching up, down, left or right. Bigger clusters pay more. Pays shown are at your current bet.</li>
+      <li>Winning clusters blow away and new symbols tumble in. Tumbles repeat until there are no new wins.</li>
+      <li><span id="fsTrigN">3</span> or more <b>Nukes</b> anywhere trigger <b>10 free spins</b>. In the base game Nukes don't explode.</li>
+      <li><b>Fallout squares:</b> in free spins Nukes keep dropping in. Every Nuke that lands explodes and leaves a <b>fallout multiplier</b> on the squares it hits: ×<span id="spotFirst">2</span> on the first hit, then it doubles each time a blast hits that square again (×4, ×8, ×16 …), up to ×<span id="spotCap">128</span>. Squares keep their multiplier until the free spins end.</li>
+      <li><b>Nuke types</b> in free spins: a <b>Suitcase Nuke</b> hits only its own square, a <b>Nuke</b> hits its own square and the 4 touching it, a <b>Tsar Bomba</b> hits every square up to 2 steps away, and a <b>Doomsday</b> doubles every fallout square on the board.</li>
+      <li><b>Build-up:</b> Nukes drop more often in the first <span id="buildUpN">5</span> free spins. Doomsday can only land after that, so the squares you light early are the ones it doubles.</li>
+      <li>A winning cluster in free spins is multiplied by the total of the fallout multipliers on the squares it covers.</li>
+      <li><span id="retrigN">5</span> or more Nukes in one free spin add <span id="retrigRule">5</span> more free spins. Free spins play automatically, one after another.</li>
+      <li><b>Launch codes:</b> buy a guaranteed trigger (at least <span id="fsTrigN2">3</span> Nukes land, then <span id="buySpinsRule">10</span> free spins with fewer Nukes than a natural trigger) for <span id="buyRule">100</span>× the bet. Only in markets that allow feature buys.</li>
+      <li>Maximum win 5,000× the bet per round. Play credits have no cash value.</li>
+    </ul>
+    <div class="pt" id="pt"></div>
+  </details>
+
+  <details class="dev" id="dev">
+    <summary>Dev tools (prototype only)</summary>
+    <label>Force next spin
+      <select id="force">
+        <option value="">Nothing (normal play)</option>
+        <option value="fs3">3 nukes: free spins</option>
+        <option value="fs4">4 nukes</option>
+        <option value="fs5">5 nukes</option>
+        <option value="fs6">6 nukes</option>
+        <option value="big">Big win (block of 12 Trumps)</option>
+        <option value="n2">Free spin: 2 nukes explode</option>
+        <option value="mini">Free spin: Suitcase Nuke</option>
+        <option value="tsar">Free spin: Tsar Bomba</option>
+        <option value="doom">Free spin: Doomsday</option>
+      </select>
+    </label>
+    <label><button class="small-btn" id="sim">Estimate RTP (200,000 spins)</button> <button class="small-btn" id="reset">Reset play credits</button></label>
+    <div class="out" id="simOut">Not run yet.</div>
+    <div style="margin-top:8px;font-weight:800">Spin log <span id="state" style="font-weight:600;color:var(--muted)"></span></div>
+    <ul class="log" id="log"></ul>
+  </details>
+
+
+  <footer>Parody. Not affiliated with or endorsed by anyone depicted. Caricatures are satire of public figures.<br>Play money only: no deposits, no purchases, no cash-out.</footer>
+</div>
+</div>
+
+  <div class="modal" id="buyModal" hidden role="dialog" aria-modal="true" aria-labelledby="buyTitle">
+    <div class="card">
+      <h2 id="buyTitle">Buy free spins?</h2>
+      <p id="buyText"></p>
+      <div class="row"><button id="buyCancel">Cancel</button><button id="buyOk">Buy</button></div>
+    </div>
+  </div>
+
+<script>
+'use strict';
+/*ENGINE-START*/
+// ===== Market / compliance config =====
+const MARKETS = {
+  // This build: play money only, with UK-style safeguards kept on.
+  playMoney: { name: 'Play-money parody (UK-style safeguards)', minCycleMs: 2500, betLadder: [0.2, 0.4, 1, 2, 5], startCredits: 1000, allowBuy: true },
+  // A real-money build for a market that bans feature buys (the UK, for one) switches the buy off.
+  ukRealMoney: { name: 'UK real money', minCycleMs: 2500, betLadder: [0.2, 0.4, 1, 2, 5], startCredits: 0, allowBuy: false },
+};
+const MARKET = MARKETS.playMoney;
+
+// ===== Game spec. PLACEHOLDER MATH: roughly tuned by simulation only. =====
+// 7x7 grid, 7 symbols, fallout squares, 4 Nuke types. Sim: RTP ~99% (base ~59% from 1M+ spins,
+// free spins ~40%: bonuses average ~345x bet over 50k, triggered about 1 spin in 870 by 3+ Nukes).
+// One 200k-spin run sees only ~230 bonuses, so it can land several points either side of this.
+// A win (often small) on about 1 spin in 2.5; Trump clusters about 1 spin in 60. Obama, the
+// Ayatollah and Bibi are the common symbols (~21%, ~19%, ~18% of squares).
+// About 18-19 Nukes go off per bonus; a Doomsday lands in about half of bonuses.
+// The bonus is a build-up: almost all of its pay comes in spins 6-10, on squares lit in spins 1-5.
+// Launch codes at 100x: 10 spins with fewer Nukes, ~98% back. Not a certified figure.
+const SPEC = {
+  cols: 7, rows: 7,
+  // Cluster pays: 5+ of the same symbol touching up, down, left or right. Pays per cluster size band:
+  // one step per size up to 10, then wider bands. Small clusters pay little; the curve gets steep,
+  // so a 20+ cluster pays about 60-120x its 5-cluster.
+  minCluster: 5, clusterTiers: [5, 6, 7, 8, 9, 10, 12, 15, 20], // bands 5, 6, 7, 8, 9, 10-11, 12-14, 15-19, 20+
+  symbols: {
+    trump:  { name: 'The orange one', pays: [1.9, 2.7, 4.4, 7.7, 14, 27, 53, 110, 225] },
+    putin:  { name: 'Shirtless Vlad', pays: [1.5, 2.1, 3.4, 5.8, 10, 19, 37, 74, 150] },
+    xi:     { name: 'Winnie the Xi',  pays: [1.1, 1.6, 2.6, 4.4, 7.8, 15, 28, 56, 115] },
+    kim:    { name: 'Rocket man',     pays: [0.95, 1.3, 2.1, 3.5, 6.2, 11, 22, 42, 85] },
+    bibi:   { name: 'Bibi',           pays: [0.75, 1, 1.6, 2.7, 4.6, 8.3, 15, 29, 56] },
+    ayat:   { name: 'The ayatollah',  pays: [0.55, 0.8, 1.2, 2, 3.6, 6.4, 12, 23, 45] },
+    obama:  { name: 'No-drama Obama', pays: [0.45, 0.65, 0.95, 1.6, 2.6, 4.6, 8.2, 15, 28] },
+  },
+  scatter: 'nuke', fsTrigger: 3, fsAward: 10,
+  fsRetrigger: 5, fsRetriggerAward: 5, // 5+ Nukes exploding in one free spin add 5 free spins
+  // Fallout zones.
+  // - 3+ Nukes anywhere trigger free spins. In the base game Nukes never explode.
+  // - In free spins Nukes keep dropping in. Every Nuke that lands explodes: it leaves the reels
+  //   (new symbols tumble in) and irradiates its blast area. Each square it hits gets a fallout
+  //   multiplier: x2 on the first hit, then it doubles with every hit after that (x4, x8 ...) up to the cap.
+  //   Squares keep their multiplier for the rest of the feature.
+  // - A winning cluster pays its normal amount times the total of the fallout multipliers on the
+  //   squares it covers (x1 if it covers none).
+  // Nuke types (only the plain Nuke lands in the base game). `reach` is how many steps (up, down,
+  // left, right) the blast travels from the Nuke's square:
+  // - mini (Suitcase Nuke): reach 0, only its own square.
+  // - nuke: reach 1, its own square and the 4 touching it (5 squares).
+  // - tsar (Tsar Bomba): reach 2, every square up to 2 steps away (up to 13 squares).
+  // - doom (Doomsday): lights its own square, then doubles every fallout square on the board.
+  nukeTypes: { mini: { reach: 0 }, nuke: { reach: 1 }, tsar: { reach: 2 }, doom: { reach: 0, doubleAll: true } },
+  // Build-up: free spins 1 to buildUpSpins use reels with more Nukes and no Doomsday. From the next
+  // spin on, Nukes are rarer but Doomsday can land, so it pays off only if the early spins lit squares.
+  buildUpSpins: 5,
+  spotFirst: 2, spotGrow: 2, spotCap: 128,
+  pairChance: 0,
+  nukeStack: [70, 22, 8], // free-spin Nukes land alone, 2 or 3 on top of each other (% chance); Tsar and Doomsday always alone
+  // "Launch codes": for buyCostX times the bet, a guaranteed trigger spin, then buySpins free spins
+  // on the same two reel sets with fewer Nukes (the counts below), so it is priced fairly at 100x.
+  buyCostX: 100, buySpins: 10,
+  buyFreeNukes: { nuke: 52, mini: 17, tsar: 3 }, buyLateNukes: { nuke: 24, mini: 8, tsar: 4, doom: 4 },
+  maxWinX: 5000,
+  // Obama, the Ayatollah and Bibi are the common symbols, Obama only slightly ahead.
+  baseStrip: { obama: 296, ayat: 272, bibi: 256, kim: 184, xi: 152, putin: 116, trump: 152, nuke: 6 },
+  freeStrip: { obama: 624, ayat: 576, bibi: 544, kim: 384, xi: 320, putin: 240, trump: 320, nuke: 86, mini: 26, tsar: 6 }, // free spins 1-5
+  lateStrip: { obama: 624, ayat: 576, bibi: 544, kim: 384, xi: 320, putin: 240, trump: 320, nuke: 34, mini: 12, tsar: 6, doom: 6 }, // free spin 6 on
+  stripSeed: 'nuclear-summit-placeholder-v1',
+};
+
+// ===== RNG =====
+// Live outcomes: crypto.getRandomValues with rejection sampling (no Math.random, no plain modulo bias).
+const CryptoRNG = (() => {
+  const buf = new Uint32Array(512); let i = buf.length;
+  const u32 = () => { if (i >= buf.length) { crypto.getRandomValues(buf); i = 0; } return buf[i++]; };
+  return { int(n) { const lim = 4294967296 - (4294967296 % n); let x; do { x = u32(); } while (x >= lim); return x % n; } };
+})();
+// Records every draw so a spin can be replayed exactly.
+const TapeRNG = (src, tape) => ({ int(n) { const v = src.int(n); tape.push(v); return v; } });
+const ReplayRNG = (tape) => { let k = 0; return { int() { if (k >= tape.length) throw new Error('replay tape ran out'); return tape[k++]; } }; };
+// Seeded PRNG, used only to build the fixed placeholder strips.
+function SeededRNG(str) {
+  let h = 1779033703 ^ str.length;
+  for (let i = 0; i < str.length; i++) { h = Math.imul(h ^ str.charCodeAt(i), 3432918353); h = h << 13 | h >>> 19; }
+  const s = () => { h = Math.imul(h ^ h >>> 16, 2246822507); h = Math.imul(h ^ h >>> 13, 3266489909); return (h ^= h >>> 16) >>> 0; };
+  let a = s(), b = s(), c = s(), d = s();
+  const next = () => { a |= 0; b |= 0; c |= 0; d |= 0; const t = (a + b | 0) + d | 0; d = d + 1 | 0; a = b ^ b >>> 9; b = c + (c << 3) | 0; c = c << 21 | c >>> 11; c = c + t | 0; return t >>> 0; };
+  return { int(n) { const lim = 4294967296 - (4294967296 % n); let x; do { x = next(); } while (x >= lim); return x % n; } };
+}
+const round2 = (x) => Math.round(x * 100) / 100;
+
+// ===== Mock game server: the client only animates what this returns =====
+const Server = (() => {
+  const C = SPEC.cols, R = SPEC.rows, NUKE = SPEC.scatter, NUKES = SPEC.nukeTypes;
+  // Placeholder reel strips: some symbols come in pairs (pairChance %) so touching clusters form
+  // often enough. With `stack` (free spins) plain Nukes land alone, 2 or 3 on top of each other;
+  // otherwise every Nuke type is single.
+  function buildStrips(counts, seed, pairChance, stack) {
+    const rng = SeededRNG(seed), out = [];
+    for (let c = 0; c < C; c++) {
+      const chunks = [];
+      for (const [k, n] of Object.entries(counts)) {
+        for (let left = n; left > 0;) {
+          let size;
+          if (k === NUKE && stack) { const roll = rng.int(100); size = Math.min(left, roll < stack[0] ? 1 : roll < stack[0] + stack[1] ? 2 : 3); }
+          else size = NUKES[k] ? 1 : (left >= 2 && rng.int(100) < pairChance ? 2 : 1);
+          chunks.push(Array(size).fill(k)); left -= size;
+        }
+      }
+      for (let i = chunks.length - 1; i > 0; i--) { const j = rng.int(i + 1); [chunks[i], chunks[j]] = [chunks[j], chunks[i]]; }
+      out.push(chunks.flat());
+    }
+    return out;
+  }
+  const STRIPS = {
+    base: buildStrips(SPEC.baseStrip, SPEC.stripSeed + '/base', SPEC.pairChance),
+    free: buildStrips(SPEC.freeStrip, SPEC.stripSeed + '/free', SPEC.pairChance, SPEC.nukeStack),
+    late: buildStrips(SPEC.lateStrip, SPEC.stripSeed + '/late', SPEC.pairChance, SPEC.nukeStack),
+    boughtFree: buildStrips({ ...SPEC.freeStrip, ...SPEC.buyFreeNukes }, SPEC.stripSeed + '/free', SPEC.pairChance, SPEC.nukeStack),
+    boughtLate: buildStrips({ ...SPEC.lateStrip, ...SPEC.buyLateNukes }, SPEC.stripSeed + '/late', SPEC.pairChance, SPEC.nukeStack),
+  };
+  // Free spin number fsNo (1-based) picks the build-up or the late reels.
+  const freeStrips = (fsNo, bought) => fsNo > SPEC.buildUpSpins ? (bought ? STRIPS.boughtLate : STRIPS.late) : (bought ? STRIPS.boughtFree : STRIPS.free);
+  const clone = (g) => g.map(col => col.map(x => ({ ...x })));
+  const emptySpots = () => Array.from({ length: C }, () => Array(R).fill(0));
+  const cloneSpots = (s) => s.map((col) => col.slice());
+
+  // Cluster pays: flood-fill each symbol through touching cells (up, down, left, right).
+  // In free spins a cluster's multiplier is the total of the fallout multipliers under it.
+  const NEIGHBOURS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+  function evaluate(g, bet, spots) {
+    const wins = [], tiers = SPEC.clusterTiers;
+    for (const s of Object.keys(SPEC.symbols)) {
+      const seen = new Set();
+      for (let c = 0; c < C; c++) for (let r = 0; r < R; r++) {
+        if (g[c][r].s !== s || seen.has(c * 10 + r)) continue;
+        const stack = [[c, r]], cells = [];
+        seen.add(c * 10 + r);
+        while (stack.length) {
+          const [x, y] = stack.pop(); cells.push([x, y]);
+          for (const [dx, dy] of NEIGHBOURS) {
+            const nx = x + dx, ny = y + dy, k = nx * 10 + ny;
+            if (nx < 0 || nx >= C || ny < 0 || ny >= R || seen.has(k) || g[nx][ny].s !== s) continue;
+            seen.add(k); stack.push([nx, ny]);
+          }
+        }
+        if (cells.length < SPEC.minCluster) continue;
+        let tier = 0; for (let i = 0; i < tiers.length; i++) if (cells.length >= tiers[i]) tier = i;
+        let mult = 0; if (spots) for (const [x, y] of cells) mult += spots[x][y];
+        mult = mult || 1;
+        const base = round2(bet * SPEC.symbols[s].pays[tier]);
+        wins.push({ s, count: cells.length, base, mult, pay: round2(base * mult), cells });
+      }
+    }
+    return wins.sort((a, b) => b.pay - a.pay);
+  }
+
+  function atLeast(g, sym, n, rng) {
+    let have = 0; for (const col of g) for (const x of col) if (x.s === sym) have++;
+    let guard = 0;
+    while (have < n && guard++ < 500) {
+      const c = rng.int(C), r = rng.int(R), cur = g[c][r].s;
+      if (cur === sym || (!NUKES[sym] && NUKES[cur])) continue;
+      g[c][r] = { s: sym }; have++;
+    }
+  }
+  function applyForce(g, force, mode, rng) {
+    if (mode === 'base' && /^fs[3-6]$/.test(force)) atLeast(g, NUKE, +force[2], rng);
+    if (force === 'big') { const c0 = rng.int(C - 2), r0 = rng.int(R - 3); for (let dc = 0; dc < 3; dc++) for (let dr = 0; dr < 4; dr++) g[c0 + dc][r0 + dr] = { s: 'trump' }; }
+    if (mode === 'free' && force === 'n2') atLeast(g, NUKE, 2, rng);
+    if (mode === 'free' && ['mini', 'tsar', 'doom'].includes(force)) atLeast(g, force, 1, rng);
+  }
+  // Take cells out and drop new ones in from above, continuing up each reel strip.
+  function refill(g, removed, strips, pos) {
+    const rm = new Set(removed.map(([c, r]) => c * 10 + r)), next = [];
+    for (let c = 0; c < C; c++) {
+      const keep = g[c].filter((_, r) => !rm.has(c * 10 + r)), k = R - keep.length, L = strips[c].length;
+      pos[c] = ((pos[c] - k) % L + L) % L;
+      const fresh = []; for (let i = 0; i < k; i++) fresh.push({ s: strips[c][(pos[c] + i) % L] });
+      next.push(fresh.concat(keep));
+    }
+    return next;
+  }
+  // Every Nuke on the grid goes off and hits every square within its reach, counted in steps up,
+  // down, left and right (overlapping blasts hit a square once per Nuke). A Doomsday hits its own
+  // square; spin() then doubles every fallout square on the board once per Doomsday.
+  function blast(g) {
+    const nukes = [], hits = []; let doom = 0;
+    for (let c = 0; c < C; c++) for (let r = 0; r < R; r++) {
+      const s = g[c][r].s, type = NUKES[s]; if (!type) continue;
+      nukes.push([c, r, s]);
+      if (type.doubleAll) doom++;
+      const d = type.reach;
+      for (let dc = -d; dc <= d; dc++) for (let dr = -d; dr <= d; dr++) {
+        if (Math.abs(dc) + Math.abs(dr) > d) continue;
+        const cc = c + dc, rr = r + dr;
+        if (cc >= 0 && cc < C && rr >= 0 && rr < R) hits.push([cc, rr]);
+      }
+    }
+    return { nukes, hits, doom };
+  }
+
+  // One paid base spin or one free spin. `spots` is the feature's fallout grid carried in.
+  // Steps: 'blast' (free spins: Nukes explode and irradiate squares, then tumble), 'win'
+  // (clusters pay and tumble), then 'end'.
+  function spin({ bet, mode, force, rng, spots, bought, fsNo = 1 }) {
+    const free = mode === 'free', strips = free ? freeStrips(fsNo, bought) : STRIPS.base, pos = [], grid = [];
+    for (let c = 0; c < C; c++) {
+      const L = strips[c].length, p = rng.int(L); pos.push(p);
+      grid.push(Array.from({ length: R }, (_, r) => ({ s: strips[c][(p + r) % L] })));
+    }
+    if (force) applyForce(grid, force, mode, rng);
+    const sp = free ? cloneSpots(spots || emptySpots()) : null;
+    let detonations = 0, win = 0, guard = 0;
+    const steps = []; let g = grid;
+    for (;;) {
+      if (++guard > 100) break;
+      if (free) {
+        const b = blast(g);
+        if (b.nukes.length) {
+          detonations += b.nukes.length;
+          for (const [c, r] of b.hits) sp[c][r] = sp[c][r] ? Math.min(SPEC.spotCap, sp[c][r] * SPEC.spotGrow) : SPEC.spotFirst;
+          let cells = b.hits;
+          if (b.doom) { // Doomsday: every lit square on the board doubles (once per Doomsday)
+            cells = [];
+            for (let c = 0; c < C; c++) for (let r = 0; r < R; r++) {
+              if (!sp[c][r]) continue;
+              for (let d = 0; d < b.doom; d++) sp[c][r] = Math.min(SPEC.spotCap, sp[c][r] * SPEC.spotGrow);
+              cells.push([c, r]);
+            }
+          }
+          steps.push({ kind: 'blast', grid: clone(g), nukes: b.nukes, cells, doom: b.doom, spots: cloneSpots(sp), detonations });
+          g = refill(g, b.nukes, strips, pos);
+          continue;
+        }
+      }
+      const wins = evaluate(g, bet, sp);
+      if (!wins.length) break;
+      const removed = []; for (const w of wins) for (const rc of w.cells) removed.push(rc);
+      steps.push({ kind: 'win', grid: clone(g), wins, removed });
+      for (const w of wins) win += w.pay;
+      g = refill(g, removed, strips, pos);
+    }
+    steps.push({ kind: 'end', grid: clone(g) });
+    let nukesLeft = 0;
+    for (const col of g) for (const x of col) if (x.s === NUKE) nukesLeft++;
+    const triggered = !free && nukesLeft >= SPEC.fsTrigger;
+    const fsAwarded = triggered ? SPEC.fsAward : (free && SPEC.fsRetrigger && detonations >= SPEC.fsRetrigger ? SPEC.fsRetriggerAward : 0);
+    return { mode, bet, steps, totalWin: round2(win), detonations, triggered, fsAwarded, nukes: free ? detonations : nukesLeft, spotsAfter: sp };
+  }
+  // Feature buy: priced by the server; it buys a base spin forced to land 4 Nukes.
+  function buy({ bet }) { return { cost: round2(bet * SPEC.buyCostX), force: 'fs' + SPEC.fsTrigger, spins: SPEC.buySpins }; }
+  return { spin, buy, STRIPS, emptySpots };
+})();
+
+// ===== Batch simulation (placeholder-math check) =====
+const spotStats = (s) => { let hot = 0, top = 0; for (const col of s) for (const v of col) { if (v) hot++; if (v > top) top = v; } return { hot, top }; };
+function newSim() { return { spins: 0, spent: 0, won: 0, baseWon: 0, fsWon: 0, hits: 0, triggers: 0, maxX: 0, hot: 0, top: 0, nukes: 0, retriggers: 0 }; }
+function playFeature(st, bet, rng, already, cap, spins = SPEC.fsAward, bought = false) {
+  let left = spins, fw = 0, spots = Server.emptySpots(), fsNo = 0;
+  while (left > 0) {
+    left--; fsNo++;
+    const f = Server.spin({ bet, mode: 'free', rng, spots, bought, fsNo });
+    fw += f.totalWin; left += f.fsAwarded; if (f.fsAwarded) st.retriggers++; st.nukes += f.detonations; spots = f.spotsAfter;
+    if (already + fw >= cap) { fw = cap - already; break; }
+  }
+  const s = spotStats(spots); st.hot += s.hot; st.top += s.top;
+  return fw;
+}
+function simChunk(st, n, bet, rng) {
+  const cap = SPEC.maxWinX * bet;
+  for (let i = 0; i < n; i++) {
+    st.spins++; st.spent += bet;
+    const o = Server.spin({ bet, mode: 'base', rng });
+    let round = Math.min(o.totalWin, cap); st.baseWon += round;
+    if (o.fsAwarded) { st.triggers++; const fw = playFeature(st, bet, rng, round, cap); st.fsWon += fw; round += fw; }
+    if (round > 0) st.hits++;
+    st.won += round; st.maxX = Math.max(st.maxX, round / bet);
+  }
+  return st;
+}
+function newBuySim() { return { buys: 0, spent: 0, won: 0, maxX: 0, hot: 0, top: 0, nukes: 0, retriggers: 0 }; }
+function simBuyChunk(st, n, bet, rng) {
+  const cap = SPEC.maxWinX * bet, b = Server.buy({ bet });
+  for (let i = 0; i < n; i++) {
+    st.buys++; st.spent += b.cost;
+    const o = Server.spin({ bet, mode: 'base', force: b.force, rng });
+    let round = Math.min(o.totalWin, cap);
+    round += playFeature(st, bet, rng, round, cap, b.spins, true);
+    st.won += round; st.maxX = Math.max(st.maxX, round / bet);
+  }
+  return st;
+}
+/*ENGINE-END*/
+
+// ===== Symbol art (hand-drawn SVG, 200 x 250) =====
+const STY = '<style>.ink{stroke:#2a1f1a;stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}.in{stroke:#2a1f1a;stroke-width:2;stroke-linejoin:round}.ln{fill:none;stroke:#2a1f1a;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}</style>';
+const svgDoc = (inner) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 250" width="200" height="250">${STY}${inner}</svg>`;
+const SUIT = (suit, tie, longTie) => `
+<path class="ink" d="M62 212 Q58 160 100 150 Q142 160 138 212 Z" fill="${suit}"/>
+<path class="in" d="M86 153 L100 180 L114 153 Z" fill="#ffffff"/>
+<path class="ln" d="M86 153 L94 192 M114 153 L106 192"/>
+${longTie ? `<path class="in" d="M96 158 L104 158 L109 222 L100 231 L91 222 Z" fill="${tie}"/>` : `<path class="in" d="M97 158 L103 158 L106 196 L100 202 L94 196 Z" fill="${tie}"/>`}
+<path class="ink" d="M66 166 Q48 176 50 204 L62 204 Q62 186 74 178 Z" fill="${suit}"/>
+<path class="ink" d="M134 166 Q152 176 150 204 L138 204 Q138 186 126 178 Z" fill="${suit}"/>`;
+const LEGS = (c) => `
+<rect class="ink" x="74" y="198" width="22" height="38" rx="3" fill="${c}"/>
+<rect class="ink" x="104" y="198" width="22" height="38" rx="3" fill="${c}"/>
+<ellipse class="ink" cx="84" cy="238" rx="14" ry="6" fill="#1c1c1c"/>
+<ellipse class="ink" cx="116" cy="238" rx="14" ry="6" fill="#1c1c1c"/>`;
+// Bigger heads: scale a character's head up from its neck (pivot y), so faces read at phone size.
+const HS = (py, s) => `translate(100 ${py}) scale(${s}) translate(-100 -${py})`;
+const TREFOIL ='<path d="M104.5 104.2 L116 84.3 A32 32 0 0 1 132 112 L109 112 A9 9 0 0 0 104.5 104.2 Z M91 112 L68 112 A32 32 0 0 1 84 84.3 L95.5 104.2 A9 9 0 0 0 91 112 Z M104.5 119.8 L116 139.7 A32 32 0 0 1 84 139.7 L95.5 119.8 A9 9 0 0 0 104.5 119.8 Z" fill="#1f1f1f"/><circle cx="100" cy="112" r="6" fill="#1f1f1f"/>';
+
+const ART = {
+trump: LEGS('#1d3566') + SUIT('#24407a', '#D7263D', true) + `
+<circle class="ink" cx="56" cy="207" r="4.5" fill="#F2862B"/><circle class="ink" cx="144" cy="207" r="4.5" fill="#F2862B"/>
+<g transform="${HS(150, 1.25)}"><ellipse class="ink" cx="52" cy="104" rx="8" ry="12" fill="#E8781F"/><ellipse class="ink" cx="148" cy="104" rx="8" ry="12" fill="#E8781F"/>
+<ellipse class="ink" cx="100" cy="98" rx="50" ry="54" fill="#F2862B"/>
+<ellipse cx="80" cy="100" rx="15" ry="10" fill="#FBD9A6"/><ellipse cx="120" cy="100" rx="15" ry="10" fill="#FBD9A6"/>
+<path class="ln" d="M71 100 Q80 95 89 100 M111 100 Q120 95 129 100"/>
+<circle cx="80" cy="102" r="3" fill="#2b2b2b"/><circle cx="120" cy="102" r="3" fill="#2b2b2b"/>
+<path d="M66 88 Q80 80 92 88 M108 88 Q120 80 134 88" stroke="#F5D45A" stroke-width="5" stroke-linecap="round" fill="none"/>
+<path class="ln" d="M100 104 Q107 114 99 117"/>
+<ellipse cx="70" cy="120" rx="8" ry="5" fill="#E46A1E"/><ellipse cx="130" cy="120" rx="8" ry="5" fill="#E46A1E"/>
+<ellipse class="in" cx="100" cy="132" rx="10" ry="7" fill="#E0703A"/><ellipse cx="100" cy="132" rx="4.5" ry="2.5" fill="#7a2312"/>
+<path class="ln" d="M86 146 Q100 151 114 146" style="stroke:#c25d16"/>
+<path class="ink" d="M50 98 Q40 52 84 42 Q132 32 150 74 Q154 88 149 98 Q142 74 120 68 Q96 64 78 74 Q60 80 50 98 Z" fill="#F7CF45"/>
+<path class="ink" d="M56 66 Q96 26 162 58 Q152 70 140 66 Q110 50 76 62 Q64 66 56 66 Z" fill="#FFE07A"/>
+<path class="ln" d="M76 54 Q106 40 142 54 M86 64 Q110 54 134 62" style="stroke:#d9a92a"/></g>`,
+
+biden: `<path d="M166 50 L172 50 L166 58 L172 58 M174 30 L183 30 L174 42 L183 42 M180 6 L194 6 L180 20 L194 20" stroke="#6c8fd1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`
++ LEGS('#2d3b52') + SUIT('#3d5a80', '#7fb3e6', false) + `
+<circle class="ink" cx="56" cy="208" r="8" fill="#F3D2B8"/>
+<path class="ink" d="M136 194 L152 194 L144 222 Z" fill="#D9A35B"/>
+<path class="ln" d="M140 200 L147 212 M148 198 L142 210" style="stroke:#a8743a"/>
+<circle class="ink" cx="144" cy="185" r="11" fill="#F7C6D9"/>
+<circle cx="140" cy="182" r="1.5" fill="#6b3f2a"/><circle cx="148" cy="186" r="1.5" fill="#6b3f2a"/><circle cx="143" cy="190" r="1.5" fill="#6b3f2a"/>
+<circle class="ink" cx="144" cy="202" r="7" fill="#F3D2B8"/>
+<g transform="${HS(150, 1.25)}"><ellipse class="ink" cx="52" cy="104" rx="8" ry="12" fill="#EBC2A4"/><ellipse class="ink" cx="148" cy="104" rx="8" ry="12" fill="#EBC2A4"/>
+<ellipse class="ink" cx="100" cy="98" rx="50" ry="54" fill="#F3D2B8"/>
+<path class="ink" d="M52 92 Q48 52 100 44 Q152 52 148 92 Q144 70 124 62 Q100 56 78 62 Q58 70 52 92 Z" fill="#F1F1F1"/>
+<path class="in" d="M70 64 L92 64 Q94 80 82 82 Q70 80 70 64 Z" fill="#33414f"/>
+<path class="in" d="M108 64 L130 64 Q130 80 118 82 Q106 80 108 64 Z" fill="#33414f"/>
+<path d="M92 66 L108 66" stroke="#c9a24a" stroke-width="2.5" fill="none"/>
+<path d="M75 68 L80 75 M113 68 L118 75" stroke="#8aa0b4" stroke-width="2" stroke-linecap="round" fill="none"/>
+<path class="ln" d="M70 93 Q81 89 92 93 M108 93 Q119 89 130 93" style="stroke:#a89a90"/>
+<path class="ln" d="M72 104 Q81 111 90 104 M110 104 Q119 111 128 104"/>
+<path class="ln" d="M100 108 Q106 118 99 120"/>
+<path class="ln" d="M70 120 Q74 128 72 134 M130 120 Q126 128 128 134" style="stroke:#c99a7e"/>
+<ellipse class="in" cx="100" cy="134" rx="7" ry="5" fill="#7a3a2e"/></g>`,
+
+bibi: LEGS('#1f2c47') + SUIT('#2b3d63', '#2F6FD6', false) + `
+<circle class="ink" cx="56" cy="208" r="8" fill="#F1C9A5"/>
+<rect class="ink" x="124" y="150" width="64" height="74" rx="3" fill="#ffffff"/>
+<circle class="in" cx="156" cy="198" r="17" fill="#222222"/>
+<rect class="in" x="150" y="174" width="12" height="9" fill="#222222"/>
+<path d="M156 174 Q162 163 172 166" stroke="#d48a2a" stroke-width="2.5" fill="none"/>
+<circle cx="173" cy="165" r="3.5" fill="#F2B705"/>
+<path d="M131 186 L182 183" stroke="#D7263D" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+<circle class="ink" cx="127" cy="204" r="8" fill="#F1C9A5"/>
+<g transform="${HS(150, 1.25)}"><ellipse class="ink" cx="52" cy="104" rx="8" ry="12" fill="#E8B993"/><ellipse class="ink" cx="148" cy="104" rx="8" ry="12" fill="#E8B993"/>
+<ellipse class="ink" cx="100" cy="98" rx="50" ry="54" fill="#F1C9A5"/>
+<path class="ink" d="M52 94 Q44 50 100 44 Q154 48 148 94 Q146 72 132 64 Q112 54 84 64 Q64 72 52 94 Z" fill="#BFC3CA"/>
+<path class="ln" d="M68 62 Q96 46 140 60 M62 76 Q80 60 104 58 M72 54 Q78 62 75 72" style="stroke:#8f959e"/>
+<path d="M68 90 Q80 84 92 92 M108 92 Q120 84 132 90" stroke="#8f959e" stroke-width="5" stroke-linecap="round" fill="none"/>
+<ellipse class="in" cx="81" cy="101" rx="7" ry="5" fill="#ffffff"/><ellipse class="in" cx="119" cy="101" rx="7" ry="5" fill="#ffffff"/>
+<circle cx="82" cy="102" r="3" fill="#2b2b2b"/><circle cx="120" cy="102" r="3" fill="#2b2b2b"/>
+<path class="ln" d="M74 111 Q81 114 88 111 M112 111 Q119 114 126 111" style="stroke:#c99a7e"/>
+<path class="ln" d="M100 104 Q107 116 99 118"/>
+<path class="ln" d="M64 124 Q70 140 82 146 M136 124 Q130 140 118 146" style="stroke:#d8a888"/>
+<path class="ln" d="M86 132 Q100 138 116 128" style="stroke:#8a4b3a;stroke-width:2.5"/></g>`,
+
+ayat: `
+<ellipse class="ink" cx="84" cy="238" rx="12" ry="5" fill="#1c1c1c"/><ellipse class="ink" cx="116" cy="238" rx="12" ry="5" fill="#1c1c1c"/>
+<path class="ink" d="M58 236 Q54 162 100 150 Q146 162 142 236 Z" fill="#3b2f29"/>
+<path class="in" d="M88 156 L112 156 L118 236 L82 236 Z" fill="#6b5a4c"/>
+<path class="ink" d="M64 168 Q42 182 46 210 L66 210 Q64 190 76 180 Z" fill="#3b2f29"/>
+<path class="ink" d="M136 168 Q158 182 154 210 L134 210 Q136 190 124 180 Z" fill="#3b2f29"/>
+<path d="M152 176 Q171 160 190 176 M152 228 Q171 244 190 228" stroke="#E0A526" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+<rect class="ink" x="158" y="168" width="26" height="68" rx="13" fill="#A5ADB7"/>
+<path class="ln" d="M158 190 L184 190 M158 214 L184 214" style="stroke:#6f7883"/>
+<circle class="in" cx="171" cy="202" r="5" fill="#F2B705"/>
+<circle class="ink" cx="56" cy="212" r="8" fill="#E7C09A"/><circle class="ink" cx="152" cy="210" r="8" fill="#E7C09A"/>
+<g transform="${HS(150, 1.2)}"><ellipse class="ink" cx="57" cy="108" rx="7" ry="11" fill="#DDB18A"/><ellipse class="ink" cx="143" cy="108" rx="7" ry="11" fill="#DDB18A"/>
+<ellipse class="ink" cx="100" cy="104" rx="44" ry="48" fill="#E7C09A"/>
+<path class="ink" d="M58 104 Q54 170 100 182 Q146 170 142 104 Q134 136 100 138 Q66 136 58 104 Z" fill="#F2F2F2"/>
+<path class="ln" d="M80 150 Q84 162 82 170 M100 154 L100 174 M120 150 Q116 162 118 170" style="stroke:#c8c8c8"/>
+<path class="ln" d="M100 108 Q106 118 99 121"/>
+<path class="in" d="M80 128 Q100 116 120 128 Q100 136 80 128 Z" fill="#E6E6E6"/>
+<circle cx="82" cy="104" r="3" fill="#2b2b2b"/><circle cx="118" cy="104" r="3" fill="#2b2b2b"/>
+<circle cx="82" cy="103" r="12" fill="none" stroke="#3a3a3a" stroke-width="2.5"/><circle cx="118" cy="103" r="12" fill="none" stroke="#3a3a3a" stroke-width="2.5"/>
+<path d="M94 103 L106 103" stroke="#3a3a3a" stroke-width="2" fill="none"/>
+<path d="M68 86 Q82 80 94 88 M106 88 Q118 80 132 86" stroke="#f0f0f0" stroke-width="6" stroke-linecap="round" fill="none"/>
+<path class="ink" d="M52 86 Q46 38 100 32 Q154 38 148 86 Q140 70 100 70 Q60 70 52 86 Z" fill="#2a2a2a"/>
+<path d="M58 66 Q100 44 142 66 M56 78 Q100 58 144 78 M70 46 Q100 36 130 46" stroke="#555555" stroke-width="2.5" stroke-linecap="round" fill="none"/></g>`,
+
+putin: `
+<rect class="ink" x="74" y="196" width="22" height="28" fill="#5a6b3f"/><rect class="ink" x="104" y="196" width="22" height="28" fill="#5a6b3f"/>
+<ellipse cx="82" cy="206" rx="5" ry="3" fill="#3f4c2b"/><ellipse cx="90" cy="216" rx="4" ry="3" fill="#7b8a52"/>
+<ellipse cx="112" cy="208" rx="5" ry="3" fill="#7b8a52"/><ellipse cx="120" cy="217" rx="4" ry="3" fill="#3f4c2b"/>
+<rect class="ink" x="73" y="222" width="24" height="14" rx="2" fill="#2b2b2b"/><rect class="ink" x="103" y="222" width="24" height="14" rx="2" fill="#2b2b2b"/>
+<ellipse class="ink" cx="84" cy="238" rx="15" ry="6" fill="#1c1c1c"/><ellipse class="ink" cx="116" cy="238" rx="15" ry="6" fill="#1c1c1c"/>
+<rect class="ink" x="88" y="134" width="24" height="18" fill="#EFC6A4"/>
+<path class="ink" d="M66 196 Q58 158 100 148 Q142 158 134 196 Z" fill="#EFC6A4"/>
+<path class="ln" d="M76 168 Q88 178 99 168 M101 168 Q112 178 124 168" style="stroke:#c08f6c"/>
+<path class="ln" d="M100 178 L100 192 M91 182 L109 182 M92 188 L108 188" style="stroke:#c08f6c"/>
+<rect class="ink" x="68" y="192" width="64" height="8" rx="2" fill="#3a2a1e"/><rect x="95" y="193" width="10" height="6" fill="#c9a24a"/>
+<path class="ink" d="M70 160 Q46 162 38 150 L36 130 Q44 122 52 130 L52 146 Q60 152 72 150 Z" fill="#EFC6A4"/>
+<path class="ink" d="M130 160 Q154 162 162 150 L164 130 Q156 122 148 130 L148 146 Q140 152 128 150 Z" fill="#EFC6A4"/>
+<path class="ln" d="M42 150 Q52 136 62 152 M158 150 Q148 136 138 152" style="stroke:#c08f6c"/>
+<circle class="ink" cx="44" cy="124" r="10" fill="#EFC6A4"/><circle class="ink" cx="156" cy="124" r="10" fill="#EFC6A4"/>
+<g transform="${HS(146, 1.25)}"><ellipse class="ink" cx="55" cy="96" rx="7" ry="11" fill="#E8BC9C"/><ellipse class="ink" cx="145" cy="96" rx="7" ry="11" fill="#E8BC9C"/>
+<ellipse class="ink" cx="100" cy="92" rx="46" ry="52" fill="#F2CDAE"/>
+<ellipse cx="96" cy="54" rx="11" ry="4" fill="#FBE3CF"/>
+<path class="ink" d="M56 84 Q54 58 72 48 Q66 62 68 76 Q62 76 56 84 Z" fill="#D2B98E"/>
+<path class="ink" d="M144 84 Q146 58 128 48 Q134 62 132 76 Q138 76 144 84 Z" fill="#D2B98E"/>
+<path class="ln" d="M90 44 Q100 38 110 44 M94 48 Q102 44 108 48" style="stroke:#c4a77a"/>
+<path class="ln" d="M70 86 L90 85 M110 85 L130 86" style="stroke:#b8996a"/>
+<ellipse class="in" cx="80" cy="96" rx="8" ry="5" fill="#ffffff"/><ellipse class="in" cx="120" cy="96" rx="8" ry="5" fill="#ffffff"/>
+<circle cx="80" cy="97" r="3" fill="#5d8fc4"/><circle cx="120" cy="97" r="3" fill="#5d8fc4"/>
+<path d="M71 94 L89 93 M111 93 L129 94" stroke="#2a1f1a" stroke-width="3" stroke-linecap="round" fill="none"/>
+<path class="ln" d="M100 100 Q106 110 99 113"/>
+<path class="ln" d="M66 110 Q70 118 76 120 M134 110 Q130 118 124 120" style="stroke:#d9ab8c"/>
+<path class="ln" d="M88 126 Q100 124 112 127" style="stroke:#8a5a48;stroke-width:2.5"/></g>`,
+
+xi: `
+<ellipse class="ink" cx="78" cy="234" rx="16" ry="9" fill="#E0A42F"/><ellipse class="ink" cx="122" cy="234" rx="16" ry="9" fill="#E0A42F"/>
+<ellipse class="ink" cx="100" cy="194" rx="46" ry="42" fill="#E9B13B"/>
+<ellipse cx="96" cy="200" rx="28" ry="26" fill="#F6D27A"/>
+<path class="ink" d="M62 170 Q46 186 56 204 Q64 206 66 196 Q62 186 72 178 Z" fill="#E9B13B"/>
+<path class="in" d="M112 188 Q140 166 168 188 Z" fill="#F2B705"/>
+<path class="ink" d="M112 196 Q108 236 140 236 Q172 236 168 196 Z" fill="#C9773A"/>
+<rect class="ink" x="108" y="186" width="64" height="12" rx="4" fill="#A85F2C"/>
+<path d="M124 197 Q126 212 130 197 Z M150 197 Q151 206 154 197 Z" fill="#F2B705"/>
+<path class="ink" d="M136 166 Q150 170 148 182 L136 184 Q134 176 128 174 Z" fill="#E9B13B"/>
+<circle cx="142" cy="184" r="5" fill="#F2B705"/>
+<g transform="${HS(150, 1.25)}"><circle class="ink" cx="62" cy="54" r="16" fill="#E9B13B"/><circle cx="62" cy="54" r="8" fill="#D4962A"/>
+<circle class="ink" cx="138" cy="54" r="16" fill="#E9B13B"/><circle cx="138" cy="54" r="8" fill="#D4962A"/>
+<circle class="ink" cx="100" cy="100" r="50" fill="#F0BE48"/>
+<path class="ink" d="M66 66 Q100 34 134 66 Q122 56 100 56 Q78 56 66 66 Z" fill="#1f1f1f"/>
+<ellipse cx="70" cy="122" rx="8" ry="5" fill="#EBA046"/><ellipse cx="130" cy="122" rx="8" ry="5" fill="#EBA046"/>
+<ellipse class="in" cx="100" cy="124" rx="22" ry="16" fill="#F8DA8C"/>
+<ellipse cx="100" cy="116" rx="8" ry="5.5" fill="#3a2a1a"/>
+<path class="ln" d="M100 121 L100 129 M90 129 Q100 137 110 129"/>
+<rect class="ink" x="56" y="88" width="88" height="18" rx="2" fill="#111111"/></g>`,
+
+kim: LEGS('#2f2f35') + `
+<path class="ink" d="M60 214 Q54 160 100 150 Q146 160 140 214 Z" fill="#3a3a42"/>
+<path class="in" d="M86 152 L100 160 L114 152 L114 160 L100 168 L86 160 Z" fill="#2f2f35"/>
+<path class="ln" d="M100 168 L100 212" style="stroke:#1d1d22"/>
+<circle cx="100" cy="178" r="2.5" fill="#b8bec8"/><circle cx="100" cy="192" r="2.5" fill="#b8bec8"/><circle cx="100" cy="206" r="2.5" fill="#b8bec8"/>
+<path class="ln" d="M72 186 L90 186 M110 186 L128 186" style="stroke:#1d1d22"/>
+<path class="ink" d="M64 166 Q46 176 48 204 L60 204 Q60 186 72 178 Z" fill="#3a3a42"/>
+<path class="ink" d="M136 166 Q160 176 158 202 L146 204 Q144 188 128 178 Z" fill="#3a3a42"/>
+<circle class="ink" cx="54" cy="208" r="8" fill="#F3D3B5"/>
+<g transform="translate(8 16)">
+<path class="ink" d="M138 184 L128 200 L138 197 Z M154 184 L164 200 L154 197 Z" fill="#E8384F"/>
+<rect class="ink" x="138" y="150" width="16" height="50" rx="6" fill="#ffffff"/>
+<rect x="139.5" y="166" width="13" height="6" fill="#E8384F"/>
+<path class="ink" d="M138 156 Q146 130 154 156 Z" fill="#E8384F"/>
+<path d="M141 201 Q146 218 151 201 Z" fill="#FF9F1C"/>
+<circle class="ink" cx="146" cy="190" r="8" fill="#F3D3B5"/>
+</g>
+<g transform="${HS(154, 1.2)}"><ellipse class="ink" cx="50" cy="106" rx="8" ry="12" fill="#EBC3A3"/><ellipse class="ink" cx="150" cy="106" rx="8" ry="12" fill="#EBC3A3"/>
+<ellipse class="ink" cx="100" cy="102" rx="52" ry="52" fill="#F3D3B5"/>
+<path d="M53 98 Q50 74 62 60 L68 63 Q60 78 60 100 Z" fill="#bdb0a4"/>
+<path d="M147 98 Q150 74 138 60 L132 63 Q140 78 140 100 Z" fill="#bdb0a4"/>
+<path class="ink" d="M62 68 Q60 32 100 30 Q140 32 138 68 Q128 58 100 58 Q72 58 62 68 Z" fill="#1a1a1a"/>
+<path d="M76 42 Q100 35 124 42" stroke="#4a4a4a" stroke-width="3" stroke-linecap="round" fill="none"/>
+<path class="ln" d="M72 88 Q81 84 90 88 M110 88 Q119 84 128 88" style="stroke:#1a1a1a;stroke-width:3"/>
+<ellipse class="in" cx="81" cy="100" rx="7" ry="5" fill="#ffffff"/><ellipse class="in" cx="119" cy="100" rx="7" ry="5" fill="#ffffff"/>
+<circle cx="81" cy="101" r="3" fill="#2b2b2b"/><circle cx="119" cy="101" r="3" fill="#2b2b2b"/>
+<ellipse cx="68" cy="122" rx="9" ry="6" fill="#F2A9A0"/><ellipse cx="132" cy="122" rx="9" ry="6" fill="#F2A9A0"/>
+<path class="ln" d="M100 104 Q106 113 99 115"/>
+<path class="in" d="M82 124 Q100 148 118 124 Z" fill="#7a2a22"/>
+<path d="M85 126 L115 126 L113 130 L87 130 Z" fill="#ffffff"/>
+<path class="ln" d="M84 150 Q100 156 116 150" style="stroke:#d9ab8c"/></g>`,
+
+cookie: `
+<path class="ln" d="M44 136 Q26 172 46 204" style="stroke:#8a1222;stroke-width:3"/>
+<path class="ink" d="M44 214 L62 148 L138 148 L156 214 Z" fill="#D7263D"/>
+<rect class="ink" x="38" y="208" width="124" height="16" rx="6" fill="#B81D30"/>
+<circle class="in" cx="100" cy="180" r="27" fill="#ffffff"/>
+<circle cx="100" cy="162" r="4" fill="#D7263D"/><circle cx="112.7" cy="167.3" r="4" fill="#D7263D"/><circle cx="118" cy="180" r="4" fill="#D7263D"/><circle cx="112.7" cy="192.7" r="4" fill="#D7263D"/>
+<circle cx="100" cy="198" r="4" fill="#D7263D"/><circle cx="87.3" cy="192.7" r="4" fill="#D7263D"/><circle cx="82" cy="180" r="4" fill="#D7263D"/><circle cx="87.3" cy="167.3" r="4" fill="#D7263D"/>
+<circle cx="100" cy="180" r="7" fill="#D7263D"/>
+<rect class="ink" x="70" y="136" width="12" height="14" rx="3" fill="#B81D30"/><rect class="ink" x="118" y="136" width="12" height="14" rx="3" fill="#B81D30"/>
+<path class="ink" d="M34 132 Q32 102 60 102 L140 102 Q168 102 166 132 L148 142 Q144 126 132 126 L68 126 Q56 126 52 142 Z" fill="#B81D30"/>
+<path d="M64 111 L136 111" stroke="#F06A7A" stroke-width="5" stroke-linecap="round" fill="none"/>
+<path d="M150 88 Q160 78 172 80 M154 70 Q166 58 182 62" stroke="#F2B705" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+<path d="M50 88 Q40 78 28 80 M46 70 Q34 58 18 62" stroke="#F2B705" stroke-width="3.5" stroke-linecap="round" fill="none"/>`,
+
+ballot: `
+<path class="ink" d="M72 116 L82 56 L132 62 L124 120 Z" fill="#ffffff"/>
+<path d="M90 82 L100 96 L120 70" stroke="#2F9E44" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+<rect class="ink" x="44" y="110" width="112" height="114" rx="6" fill="#F4F1EA"/>
+<rect class="in" x="44" y="150" width="112" height="24" fill="#7B2FF7"/>
+<circle cx="64" cy="162" r="4" fill="#FFD23F"/><circle cx="82" cy="162" r="4" fill="#FFD23F"/><circle cx="100" cy="162" r="4" fill="#FFD23F"/><circle cx="118" cy="162" r="4" fill="#FFD23F"/><circle cx="136" cy="162" r="4" fill="#FFD23F"/>
+<rect class="ink" x="66" y="102" width="68" height="14" rx="3" fill="#d8d0bf"/>
+<rect x="78" y="106" width="44" height="5" rx="2" fill="#2a1f1a"/>
+<path d="M100 190 L102.9 198 L111.4 198.3 L104.8 203.5 L107.1 211.7 L100 207 L92.9 211.7 L95.2 203.5 L88.6 198.3 L97.1 198 Z" fill="#D7263D"/>`,
+
+nuke: `<defs><clipPath id="nk"><ellipse cx="100" cy="122" rx="60" ry="74"/></clipPath></defs>
+<path d="M28 60 Q28 70 38 70 Q28 70 28 80 Q28 70 18 70 Q28 70 28 60 Z" fill="#FF5DA2"/>
+<path d="M172 142 Q172 150 180 150 Q172 150 172 158 Q172 150 164 150 Q172 150 172 142 Z" fill="#4DB6FF"/>
+<path d="M170 37 Q170 44 177 44 Q170 44 170 51 Q170 44 163 44 Q170 44 170 37 Z" fill="#FFB800"/>
+<path class="ink" d="M66 58 L134 58 L148 16 L52 16 Z" fill="#E8384F"/>
+<path class="in" d="M78 50 L122 50 L132 24 L68 24 Z" fill="#B8213A"/>
+<path class="ln" d="M100 24 L100 50"/>
+<ellipse cx="100" cy="122" rx="60" ry="74" fill="#FFD23F"/>
+<g clip-path="url(#nk)"><rect x="30" y="158" width="140" height="16" fill="#FF5DA2"/><rect x="30" y="56" width="140" height="10" fill="#FF5DA2"/><rect x="30" y="182" width="140" height="20" fill="#F2B705"/></g>
+<circle cx="64" cy="166" r="2.5" fill="#ffffff"/><circle cx="82" cy="166" r="2.5" fill="#ffffff"/><circle cx="100" cy="166" r="2.5" fill="#ffffff"/><circle cx="118" cy="166" r="2.5" fill="#ffffff"/><circle cx="136" cy="166" r="2.5" fill="#ffffff"/>
+<ellipse class="ink" cx="100" cy="122" rx="60" ry="74" fill="none"/>
+${TREFOIL}
+<ellipse cx="68" cy="92" rx="8" ry="18" fill="#FFF1A8"/><circle cx="72" cy="124" r="4" fill="#FFF1A8"/>`,
+
+// Suitcase Nuke: a small briefcase with a trefoil sticker and a red countdown.
+mini: `<path d="M34 92 Q34 100 42 100 Q34 100 34 108 Q34 100 26 100 Q34 100 34 92 Z" fill="#4DB6FF"/>
+<path d="M166 168 Q166 175 173 175 Q166 175 166 182 Q166 175 159 175 Q166 175 166 168 Z" fill="#FF5DA2"/>
+<path d="M80 112 L80 96 Q80 86 90 86 L110 86 Q120 86 120 96 L120 112" fill="none" style="stroke:#2a1f1a;stroke-width:11;stroke-linecap:round"/>
+<path d="M80 112 L80 96 Q80 86 90 86 L110 86 Q120 86 120 96 L120 112" fill="none" style="stroke:#6E4520;stroke-width:5;stroke-linecap:round"/>
+<rect class="ink" x="44" y="108" width="112" height="86" rx="14" fill="#9C6430"/>
+<rect class="in" x="44" y="140" width="112" height="7" fill="#6E4520"/>
+<rect class="in" x="58" y="102" width="14" height="12" rx="3" fill="#FFD23F"/><rect class="in" x="128" y="102" width="14" height="12" rx="3" fill="#FFD23F"/>
+<circle class="in" cx="100" cy="160" r="24" fill="#FFD23F"/>
+<g transform="translate(100 160) scale(0.6) translate(-100 -112)">${TREFOIL}</g>
+<rect class="in" x="116" y="118" width="32" height="16" rx="3" fill="#1f1f1f"/>
+<text x="132" y="130.5" font-family="ui-monospace,Menlo,monospace" font-weight="700" font-size="11" text-anchor="middle" fill="#FF3B3B">0:01</text>
+<ellipse cx="60" cy="126" rx="5" ry="10" fill="#C48A52"/>`,
+
+// Tsar Bomba: a fatter crimson bomb with gold bands and a gold star.
+tsar: `<defs><clipPath id="tk"><ellipse cx="100" cy="126" rx="74" ry="80"/></clipPath></defs>
+<path d="M30 70 Q30 80 40 80 Q30 80 30 90 Q30 80 20 80 Q30 80 30 70 Z" fill="#FFD23F"/>
+<path d="M176 150 Q176 158 184 158 Q176 158 176 166 Q176 158 168 158 Q176 158 176 150 Z" fill="#FFD23F"/>
+<path class="ink" d="M62 56 L138 56 L156 10 L44 10 Z" fill="#3B3B4F"/>
+<path class="in" d="M76 48 L124 48 L136 18 L64 18 Z" fill="#26263A"/>
+<path class="ln" d="M100 18 L100 48"/>
+<ellipse cx="100" cy="126" rx="74" ry="80" fill="#D7263D"/>
+<g clip-path="url(#tk)"><rect x="20" y="54" width="160" height="12" fill="#FFD23F"/><rect x="20" y="168" width="160" height="12" fill="#FFD23F"/><rect x="20" y="188" width="160" height="22" fill="#A8182B"/></g>
+<ellipse class="ink" cx="100" cy="126" rx="74" ry="80" fill="none"/>
+<circle class="in" cx="100" cy="112" r="38" fill="#FFF4D6"/>
+${TREFOIL}
+<path class="in" d="M100 176 L103.5 185 L113 185.3 L105.5 191 L108.2 200 L100 194.6 L91.8 200 L94.5 191 L87 185.3 L96.5 185 Z" fill="#FFD23F"/>
+<ellipse cx="62" cy="96" rx="9" ry="20" fill="#FF8A9A"/>`,
+
+// Doomsday: a black-violet bomb with a green glow, green trefoil and a x2 stamp.
+doom: `<defs><clipPath id="dk"><ellipse cx="100" cy="122" rx="60" ry="74"/></clipPath>
+<radialGradient id="dg"><stop offset="0" stop-color="#5CFF6A" stop-opacity=".6"/><stop offset="1" stop-color="#5CFF6A" stop-opacity="0"/></radialGradient></defs>
+<circle cx="100" cy="122" r="98" fill="url(#dg)"/>
+<path class="ink" d="M66 58 L134 58 L148 16 L52 16 Z" fill="#1E1530"/>
+<path class="in" d="M78 50 L122 50 L132 24 L68 24 Z" fill="#3A2A5C"/>
+<path d="M100 24 L100 50" stroke="#5CFF6A" stroke-width="2"/>
+<ellipse cx="100" cy="122" rx="60" ry="74" fill="#2B1B4A"/>
+<g clip-path="url(#dk)"><rect x="30" y="56" width="140" height="8" fill="#5CFF6A"/><rect x="30" y="150" width="140" height="6" fill="#5CFF6A"/><rect x="30" y="190" width="140" height="14" fill="#1E1530"/></g>
+<ellipse class="ink" cx="100" cy="122" rx="60" ry="74" fill="none"/>
+<circle cx="100" cy="112" r="36" fill="#1E1530"/>
+${TREFOIL.replace(/#1f1f1f/g, '#5CFF6A')}
+<rect class="in" x="70" y="164" width="60" height="28" rx="14" fill="#5CFF6A"/>
+<text x="100" y="185" font-family="system-ui,-apple-system,sans-serif" font-weight="900" font-size="21" text-anchor="middle" fill="#1E1530">×2</text>
+<ellipse cx="70" cy="90" rx="7" ry="16" fill="#6B5A94"/>`,
+
+mush: `
+<path class="ink" d="M86 200 Q90 150 92 110 L108 110 Q110 150 114 200 Z" fill="#FFC2D4"/>
+<ellipse class="ink" cx="100" cy="156" rx="30" ry="8" fill="#FF8FB1"/>
+<circle class="ink" cx="66" cy="208" r="16" fill="#FFC2D4"/><circle class="ink" cx="134" cy="208" r="16" fill="#FFC2D4"/>
+<circle class="ink" cx="88" cy="214" r="18" fill="#FFC2D4"/><circle class="ink" cx="112" cy="214" r="18" fill="#FFC2D4"/>
+<circle class="ink" cx="52" cy="84" r="24" fill="#FF7A59"/><circle class="ink" cx="154" cy="92" r="20" fill="#FF7A59"/>
+<circle class="ink" cx="76" cy="58" r="26" fill="#FF7A59"/><circle class="ink" cx="140" cy="64" r="26" fill="#FF7A59"/>
+<circle class="ink" cx="108" cy="48" r="30" fill="#FF7A59"/>
+<ellipse cx="100" cy="88" rx="58" ry="32" fill="#FF7A59"/>
+<path class="ink" d="M44 100 Q100 136 156 100 Q160 112 146 118 Q100 136 54 118 Q40 112 44 100 Z" fill="#E8553A"/>
+<circle cx="98" cy="38" r="10" fill="#FFB199"/><circle cx="70" cy="52" r="7" fill="#FFB199"/><circle cx="136" cy="56" r="6" fill="#FFB199"/>`,
+};
+
+// Leaders, head-and-shoulders caricatures (full SVG documents, sources in art/sym_*.svg).
+// They replace the chibi placeholders in ART for these keys.
+const LEADER_ART = {
+obama: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 250" width="200" height="250">
+<style>.ol{stroke:#3b2a22;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}.il{fill:none;stroke:#3b2a22;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}</style>
+<circle class="ol" cx="100" cy="120" r="94" fill="#F2C94C"/>
+<ellipse cx="78" cy="62" rx="48" ry="26" fill="#FFE69A" opacity="0.45"/>
+<path class="ol" d="M4 250 Q8 212 44 200 Q72 192 100 194 Q132 192 158 200 Q194 212 196 250 Z" fill="#C9AE82"/>
+<path d="M140 196 Q178 206 192 232 L196 250 L160 250 Q164 222 136 206 Z" fill="#B0956A"/>
+<path d="M78 172 L78 198 L120 198 L122 172 Z" fill="#8C5E3D"/>
+<path class="ol" d="M76 196 L98 226 L122 194 L118 188 L98 210 L82 188 Z" fill="#FFFFFF" style="stroke-width:2.2"/>
+<path class="il" d="M76 196 L64 250 M122 194 L132 250" style="stroke:#8a6f45"/>
+<path class="ol" d="M92 208 L104 208 L102 218 L94 218 Z" fill="#2459B5" style="stroke-width:2"/>
+<path class="ol" d="M94 218 L102 218 L108 250 L88 250 Z" fill="#2F6FD6" style="stroke-width:2"/>
+<path class="ol" d="M60 104 Q36 90 32 114 Q31 140 58 140 Z" fill="#A8754F"/>
+<path class="il" d="M44 108 Q38 118 44 132" style="stroke:#6e4529"/>
+<path class="ol" d="M148 96 Q186 78 192 116 Q196 152 156 158 Z" fill="#A8754F"/>
+<path class="il" d="M162 104 Q178 116 168 144" style="stroke:#6e4529"/>
+<path d="M60 80 Q58 40 100 30 Q142 26 156 62 Q162 90 158 120 L156 142 Q152 168 132 182 Q116 192 98 190 Q78 188 68 172 L60 152 Q54 140 56 128 L58 114 Q56 96 60 80 Z" fill="#A8754F"/>
+<path d="M158 116 Q156 146 144 166 Q132 182 116 188 L114 178 Q132 166 140 146 Q148 128 148 110 Z" fill="#8C5E3D"/>
+<path d="M92 110 Q96 126 98 142 L92 144 Q92 126 90 110 Z" fill="#8C5E3D"/>
+<ellipse cx="78" cy="132" rx="10" ry="6" fill="#BE8A62" opacity="0.8"/>
+<ellipse cx="88" cy="68" rx="18" ry="5" fill="#BE8A62" opacity="0.7"/>
+<path class="ol" d="M60 80 Q58 40 100 30 Q142 26 156 62 Q162 90 158 120 L156 142 Q152 168 132 182 Q116 192 98 190 Q78 188 68 172 L60 152 Q54 140 56 128 L58 114 Q56 96 60 80" fill="none"/>
+<path class="ol" d="M60 84 Q56 42 100 30 Q142 26 156 62 Q158 72 156 84 Q150 64 132 58 Q110 52 90 56 Q72 62 64 78 Z" fill="#2E2A2A" style="stroke-width:2.4"/>
+<path d="M140 62 Q152 70 155 82 L150 80 Q146 70 138 66 Z M64 76 Q66 66 74 62 L76 66 Q70 70 68 78 Z" fill="#9A9A9E"/>
+<g fill="#5A5658"><circle cx="96" cy="40" r="1.6"/><circle cx="112" cy="38" r="1.6"/><circle cx="126" cy="42" r="1.6"/><circle cx="104" cy="48" r="1.6"/><circle cx="120" cy="50" r="1.6"/><circle cx="84" cy="48" r="1.6"/><circle cx="138" cy="50" r="1.6"/></g>
+<path d="M64 98 Q76 92 88 96 M104 96 Q118 90 132 95" stroke="#1F1A18" stroke-width="3.6" stroke-linecap="round" fill="none"/>
+<path d="M64 108 Q74 102 86 107 Q74 112 64 108 Z" fill="#F4EEE6"/>
+<circle cx="75" cy="107.5" r="3.2" fill="#2A1D16"/><circle cx="75.8" cy="106.7" r="0.9" fill="#ffffff"/>
+<path class="il" d="M62 107 Q74 99 88 106" style="stroke-width:2.4"/>
+<path class="il" d="M66 114 Q75 118 84 113"/>
+<path d="M102 108 Q115 101 130 106 Q116 113 102 108 Z" fill="#F4EEE6"/>
+<circle cx="116" cy="107.5" r="3.6" fill="#2A1D16"/><circle cx="117" cy="106.6" r="1" fill="#ffffff"/>
+<path class="il" d="M100 107 Q115 98 132 105" style="stroke-width:2.4"/>
+<path class="il" d="M104 115 Q116 120 128 113 M133 104 L139 101 M134 109 L139 110"/>
+<path class="il" d="M92 108 Q88 126 82 136 Q78 144 86 146 Q93 148 99 144 L103 144" style="stroke-width:2"/>
+<path class="il" d="M86 144 Q90 141 94 144"/>
+<path class="il" d="M66 146 Q62 158 68 168 M120 142 Q130 154 126 166"/>
+<path class="ol" d="M70 157 Q96 165 124 153 Q116 177 96 179 Q78 177 70 157 Z" fill="#6A2A22" style="stroke-width:2"/>
+<path d="M73 159 Q96 166 121 155 L119 162 Q96 171 76 165 Z" fill="#FBF7F0"/>
+<path class="il" d="M86 186 Q98 190 110 186" style="stroke:#6e4529"/>
+</svg>`,
+trump: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 250" width="200" height="250">
+<style>.ol{stroke:#3b2a22;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}.il{fill:none;stroke:#3b2a22;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}</style>
+<path class="ol" d="M100.0 16.0 L122.3 36.9 L152.0 29.9 L160.8 59.2 L190.1 68.0 L183.1 97.7 L204.0 120.0 L183.1 142.3 L190.1 172.0 L160.8 180.8 L152.0 210.1 L122.3 203.1 L100.0 224.0 L77.7 203.1 L48.0 210.1 L39.2 180.8 L9.9 172.0 L16.9 142.3 L-4.0 120.0 L16.9 97.7 L9.9 68.0 L39.2 59.2 L48.0 29.9 L77.7 36.9 Z" fill="#1FA7A0"/>
+<ellipse cx="78" cy="62" rx="48" ry="26" fill="#5FD3CC" opacity="0.45"/>
+<path class="ol" d="M4 250 Q8 212 44 200 Q70 192 100 194 Q134 192 160 200 Q194 212 196 250 Z" fill="#24407a"/>
+<path d="M140 196 Q178 206 192 232 L196 250 L160 250 Q164 222 136 206 Z" fill="#1A3062"/>
+<path d="M86 176 L86 200 L124 198 L126 172 Z" fill="#D67A34"/>
+<path class="ol" d="M82 196 L102 228 L126 194 L122 188 L102 210 L88 188 Z" fill="#FFFFFF" style="stroke-width:2.2"/>
+<path class="il" d="M82 196 L70 250 M126 194 L138 250" style="stroke:#16284f"/>
+<path class="ol" d="M96 210 L110 210 L108 220 L98 220 Z" fill="#B81D30" style="stroke-width:2"/>
+<path class="ol" d="M98 220 L108 220 L116 250 L90 250 Z" fill="#D7263D" style="stroke-width:2"/>
+<g transform="translate(18 2) scale(0.82)">
+<path class="ol" d="M158 136 Q176 124 183 144 Q186 168 168 182 Q160 182 158 172 Z" fill="#F39A4E"/>
+<path class="il" d="M167 143 Q177 146 174 160 Q171 168 166 162"/>
+<path d="M50 96 L46 118 L52 134 L45 152 L52 176 L58 198 L68 220 Q78 233 97 232 L124 226 Q146 214 156 192 L164 168 L166 120 Q160 96 150 88 Z" fill="#F39A4E"/>
+<path d="M166 122 Q164 150 156 176 Q146 206 124 224 L116 214 Q136 198 142 172 Q148 148 148 120 Z" fill="#D67A34"/>
+<path d="M48 112 Q100 104 162 112 L160 122 Q100 115 50 124 Z" fill="#D67A34"/>
+<path d="M70 222 Q80 232 97 232 L124 226 Q110 226 96 226 Q82 226 70 222 Z" fill="#D67A34"/>
+<path d="M92 140 Q97 160 99 176 L92 177 Q91 158 90 140 Z" fill="#D67A34"/>
+<ellipse cx="68" cy="137" rx="14" ry="10" fill="#FCE0BE"/>
+<ellipse cx="113" cy="136" rx="17" ry="11" fill="#FCE0BE"/>
+<path class="ol" d="M50 96 L46 118 L52 134 L45 152 L52 176 L58 198 L68 220 Q78 233 97 232 L124 226 Q146 214 156 192 L164 168 L166 120" fill="none"/>
+<path class="il" d="M50 125 L57 118 L83 126 L81 131 L57 126 Z" fill="#E6DAAE"/>
+<path class="il" d="M95 131 L97 125 L126 114 L139 118 L128 123 L99 133 Z" fill="#E6DAAE"/>
+<path class="il" d="M87 119 L90 131 M92 116 L96 128"/>
+<path d="M58 136 Q68 130 78 135 Q68 141 58 136 Z" fill="#F4EEE6"/>
+<circle cx="69" cy="135.5" r="3.5" fill="#6C7A86"/><circle cx="69" cy="135.5" r="1.5" fill="#22242a"/>
+<path class="il" d="M56 135 Q68 127 80 134" style="stroke-width:2.4"/>
+<path class="il" d="M60 143 Q68 147 76 142"/>
+<path d="M100 137 Q112 129 126 134 Q114 142 100 137 Z" fill="#F4EEE6"/>
+<circle cx="113" cy="135.5" r="4" fill="#6C7A86"/><circle cx="113" cy="135.5" r="1.8" fill="#22242a"/>
+<path class="il" d="M98 136 Q112 126 128 133" style="stroke-width:2.6"/>
+<path class="il" d="M102 144 Q114 150 126 142"/>
+<path class="il" d="M130 132 L137 129 M131 137 L137 139 M54 133 L49 131"/>
+<path class="il" d="M90 136 Q87 156 75 168 Q71 176 80 178 Q87 181 93 177 L99 177" style="stroke-width:2"/>
+<path class="il" d="M84 175 Q88 172 92 175"/>
+<path class="il" d="M99 172 Q110 186 113 201 M66 174 Q61 186 64 197 M122 158 Q132 166 140 163"/>
+<path d="M70 201 Q90 209 110 201 Q90 204 70 201 Z" fill="#C9704A"/>
+<path d="M65 199 Q88 193 115 199" stroke="#3b2a22" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+<path class="il" d="M65 199 L61 204 M115 199 L119 205"/>
+<path class="il" d="M72 215 Q88 222 104 216 M118 206 Q124 216 121 224"/>
+<path class="ol" d="M28 92 L42 86 L35 74 L52 70 Q60 40 100 28 Q150 18 176 44 Q190 62 188 100 Q186 126 180 146 L171 138 Q168 122 160 110 Q150 100 128 100 Q96 100 70 104 Q54 106 44 112 Z" fill="#E6D79E"/>
+<path d="M44 112 Q54 106 70 104 Q96 100 128 100 Q150 100 160 110 Q168 122 171 138 L166 132 Q160 120 148 115 Q128 108 100 110 Q72 112 52 117 Z" fill="#C9B676"/>
+<path d="M62 62 Q100 36 150 40" stroke="#F7EFC9" stroke-width="5" stroke-linecap="round" fill="none"/>
+<path d="M72 78 Q110 58 160 68 M168 72 Q178 96 176 128" stroke="#F7EFC9" stroke-width="3" stroke-linecap="round" fill="none"/>
+<path class="il" d="M54 80 Q90 60 140 58 M110 84 Q140 78 168 92 M150 30 Q176 46 182 80" style="stroke:#9C8C55"/>
+<path class="ol" d="M28 92 L42 86 L35 74 L52 70 Q60 40 100 28 Q150 18 176 44 Q190 62 188 100 Q186 126 180 146" fill="none"/>
+</g>
+</svg>`,
+putin: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 250" width="200" height="250">
+<style>.ol{stroke:#3b2a22;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}.il{fill:none;stroke:#3b2a22;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}</style>
+<path class="ol" d="M100.0 20.0 L190.1 72.0 L190.1 176.0 L100.0 228.0 L9.9 176.0 L9.9 72.0 Z" fill="#2F5FD0"/>
+<ellipse cx="78" cy="62" rx="48" ry="26" fill="#6E93EC" opacity="0.45"/>
+<path class="ol" d="M4 250 Q8 206 46 192 Q72 184 100 186 Q130 184 156 192 Q194 206 196 250 Z" fill="#EFC9A8"/>
+<path d="M130 188 Q170 196 190 226 L196 250 L150 250 Q156 220 128 200 Z" fill="#D6A884"/>
+<path class="il" d="M50 206 Q74 210 92 202 M108 202 Q128 210 152 206"/>
+<path class="il" d="M44 242 Q70 232 96 238 M104 238 Q130 232 158 242 M100 214 L100 234" style="stroke:#a87b5a"/>
+<path class="il" d="M26 222 Q34 208 50 204 M174 222 Q166 208 150 204" style="stroke:#a87b5a"/>
+<path d="M80 158 L78 194 Q100 204 126 194 L124 158 Z" fill="#E3B994"/>
+<path class="il" d="M78 160 L78 192 M124 158 L126 192"/>
+<path class="il" d="M88 168 L93 194 M114 168 L109 194" style="stroke:#a87b5a"/>
+<path class="ol" d="M58 104 L34 66 Q28 100 42 128 Q50 140 60 136 Z" fill="#EFC9A8"/>
+<path class="il" d="M50 92 Q40 106 46 124" style="stroke:#a87b5a"/>
+<path class="ol" d="M142 104 L166 66 Q172 100 158 128 Q150 140 140 136 Z" fill="#EFC9A8"/>
+<path class="il" d="M150 92 Q160 106 154 124" style="stroke:#a87b5a"/>
+<path d="M56 74 Q58 30 100 24 Q142 30 144 74 Q150 100 146 124 Q142 148 128 166 Q114 182 100 186 Q86 182 72 166 Q58 148 54 124 Q50 100 56 74 Z" fill="#F0C9A6"/>
+<path d="M54 124 Q60 150 76 168 L82 158 Q66 146 62 124 Z" fill="#D6A884"/>
+<path d="M146 124 Q140 150 124 168 L118 158 Q134 146 138 124 Z" fill="#D6A884"/>
+<path d="M98 112 Q97 130 94 142 L100 144 Q101 130 103 112 Z" fill="#D6A884"/>
+<ellipse cx="70" cy="132" rx="10" ry="7" fill="#F8DCC2" opacity="0.8"/><ellipse cx="130" cy="132" rx="10" ry="7" fill="#F8DCC2" opacity="0.8"/>
+<ellipse cx="100" cy="44" rx="22" ry="7" fill="#FBE6D3"/>
+<path class="ol" d="M56 74 Q58 30 100 24 Q142 30 144 74 Q150 100 146 124 Q142 148 128 166 Q114 182 100 186 Q86 182 72 166 Q58 148 54 124 Q50 100 56 74" fill="none"/>
+<path d="M58 74 Q58 36 98 26 Q138 28 144 70 Q138 50 120 44 Q100 38 82 46 Q66 54 58 74 Z" fill="#C7A77C" opacity="0.9"/>
+<path d="M62 62 Q84 40 132 40 M66 54 Q92 36 128 34 M120 44 Q136 50 142 64" stroke="#A88A60" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+<path class="il" d="M72 76 Q100 70 128 76 M78 84 Q100 80 122 84 M98 90 Q99 96 98 100" style="stroke:#c79c7a;stroke-width:1.4"/>
+<path d="M64 102 Q78 98 92 93 M108 93 Q122 98 136 102" stroke="#A88A60" stroke-width="3.4" stroke-linecap="round" fill="none"/>
+<path d="M68 112 Q80 106 92 111 Q80 117 68 112 Z" fill="#F4EEE6"/>
+<circle cx="81" cy="111.5" r="4.2" fill="#8FB3CF"/><circle cx="81" cy="111.5" r="1.7" fill="#22242a"/><circle cx="82.2" cy="110.3" r="0.9" fill="#ffffff"/>
+<path class="il" d="M64 115 Q70 104 82 104 Q91 105 94 111" style="stroke-width:3"/>
+<path d="M108 111 Q120 106 132 112 Q120 117 108 111 Z" fill="#F4EEE6"/>
+<circle cx="119" cy="111.5" r="4.2" fill="#8FB3CF"/><circle cx="119" cy="111.5" r="1.7" fill="#22242a"/><circle cx="120.2" cy="110.3" r="0.9" fill="#ffffff"/>
+<path class="il" d="M106 111 Q109 105 118 104 Q130 104 136 115" style="stroke-width:3"/>
+<path class="il" d="M68 120 Q80 126 92 119 M108 119 Q120 126 132 120" style="stroke:#b88b66"/>
+<path class="il" d="M98 110 Q97 128 92 140 Q90 148 98 150 Q104 151 108 146" style="stroke-width:2.1"/>
+<path class="il" d="M95 148 Q99 145 103 148"/>
+<circle cx="100" cy="143" r="3" fill="#FBE3CF"/>
+<path class="il" d="M88 146 Q78 156 80 170 M112 146 Q122 156 120 170" style="stroke-width:1.9"/>
+<path d="M86 163 Q100 172 114 163 Q100 166 86 163 Z" fill="#D99A88" stroke="#3b2a22" stroke-width="1.3"/>
+<path d="M84 162 Q92 158 100 160 Q108 158 116 162" stroke="#3b2a22" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+<path class="il" d="M84 162 L80 167 M116 162 L120 167 M94 178 Q100 181 106 178"/>
+</svg>`,
+xi: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 250" width="200" height="250">
+<style>.ol{stroke:#3b2a22;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}.il{fill:none;stroke:#3b2a22;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}</style>
+<path class="ol" d="M100.0 20.0 L190.1 72.0 L190.1 176.0 L100.0 228.0 L9.9 176.0 L9.9 72.0 Z" fill="#D7263D"/>
+<ellipse cx="78" cy="62" rx="48" ry="26" fill="#F0606F" opacity="0.45"/>
+<path class="ol" d="M4 250 Q8 210 44 198 Q72 190 100 192 Q128 190 156 198 Q192 210 196 250 Z" fill="#2B2D33"/>
+<path d="M150 196 Q186 208 194 234 L196 250 L166 250 Q166 222 144 206 Z" fill="#1F2025"/>
+<path class="ol" d="M80 194 L100 222 L120 194 L116 188 L100 208 L84 188 Z" fill="#FFFFFF" style="stroke-width:2.2"/>
+<path class="il" d="M80 194 L68 250 M120 194 L132 250" style="stroke:#141518"/>
+<path class="ol" d="M95 206 L105 206 L103 216 L97 216 Z" fill="#7E1F22" style="stroke-width:2"/>
+<path class="ol" d="M97 216 L103 216 L108 250 L92 250 Z" fill="#9E2A2B" style="stroke-width:2"/>
+<circle class="ol" cx="50" cy="62" r="20" fill="#E9B13B"/><circle cx="50" cy="62" r="10" fill="#D4962A"/>
+<circle class="ol" cx="150" cy="62" r="20" fill="#E9B13B"/><circle cx="150" cy="62" r="10" fill="#D4962A"/>
+<path d="M40 112 Q38 52 100 42 Q162 52 160 112 Q162 160 140 182 Q122 198 100 198 Q78 198 60 182 Q38 160 40 112 Z" fill="#F0BE48"/>
+<path d="M44 130 Q48 168 72 188 Q86 196 100 198 Q114 196 128 188 Q152 168 156 130 Q150 160 126 176 Q112 184 100 184 Q88 184 74 176 Q50 160 44 130 Z" fill="#DDA236"/>
+<path class="ol" d="M40 112 Q38 52 100 42 Q162 52 160 112 Q162 160 140 182 Q122 198 100 198 Q78 198 60 182 Q38 160 40 112 Z" fill="none"/>
+<path class="ol" d="M50 94 Q46 52 100 40 Q154 52 150 94 Q144 80 128 76 Q110 72 92 74 Q70 76 58 88 Z" fill="#141418"/>
+<path d="M78 48 Q73 64 71 82" stroke="#40404a" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+<path d="M90 52 Q118 46 142 60" stroke="#4E4E5A" stroke-width="4" stroke-linecap="round" fill="none"/>
+<path d="M86 64 Q114 58 144 70 M58 70 Q64 60 74 56" stroke="#2E2E36" stroke-width="2" stroke-linecap="round" fill="none"/>
+<path d="M66 100 Q80 95 94 100 M106 100 Q120 95 134 100" stroke="#1A1A1E" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+<path d="M70 113 Q81 107 92 112 Q81 117 70 113 Z" fill="#F7F1EA"/>
+<circle cx="81" cy="112.3" r="3.6" fill="#2A2018"/><circle cx="82" cy="111.4" r="0.9" fill="#ffffff"/>
+<path class="il" d="M68 112 Q81 104 94 111" style="stroke-width:2.4"/>
+<path class="il" d="M72 119 Q81 122 90 118"/>
+<path d="M108 112 Q119 107 130 113 Q119 117 108 112 Z" fill="#F7F1EA"/>
+<circle cx="119" cy="112.3" r="3.6" fill="#2A2018"/><circle cx="120" cy="111.4" r="0.9" fill="#ffffff"/>
+<path class="il" d="M106 111 Q119 104 132 112" style="stroke-width:2.4"/>
+<path class="il" d="M110 118 Q119 122 128 119"/>
+<ellipse cx="64" cy="142" rx="11" ry="7" fill="#EBA046" opacity="0.7"/>
+<ellipse cx="136" cy="142" rx="11" ry="7" fill="#EBA046" opacity="0.7"/>
+<ellipse class="il" cx="100" cy="150" rx="28" ry="20" fill="#F8DA8C"/>
+<ellipse cx="100" cy="137" rx="10" ry="7" fill="#3A2A1A"/>
+<ellipse cx="97" cy="135" rx="3" ry="1.6" fill="#7a6450"/>
+<path class="il" d="M100 144 L100 153 M86 153 Q100 162 114 153" style="stroke-width:2.2"/>
+<path class="il" d="M86 186 Q100 192 114 186" style="stroke:#a8741f"/>
+</svg>`,
+kim: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 250" width="200" height="250">
+<style>.ol{stroke:#3b2a22;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}.il{fill:none;stroke:#3b2a22;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}</style>
+<path class="ol" d="M100.0 20.0 L190.1 72.0 L190.1 176.0 L100.0 228.0 L9.9 176.0 L9.9 72.0 Z" fill="#7B3FD0"/>
+<ellipse cx="78" cy="62" rx="48" ry="26" fill="#A77BEA" opacity="0.45"/>
+<path class="ol" d="M6 250 Q10 214 40 202 Q70 192 100 194 Q140 192 166 204 Q192 216 196 250 Z" fill="#C8102E"/>
+<path d="M6 250 Q10 222 30 210 Q40 230 40 250 Z M196 250 Q192 222 172 210 Q162 230 162 250 Z" fill="#1D4C9C"/>
+<path d="M30 210 Q40 230 40 250 M172 210 Q162 230 162 250" stroke="#FFFFFF" stroke-width="2.8" stroke-linecap="round" fill="none"/>
+<path d="M113 208 L115 250" stroke="#FFFFFF" stroke-width="3.2" stroke-linecap="round" fill="none"/>
+<circle cx="114" cy="222" r="3.4" fill="#FFFFFF" stroke="#8E0B21" stroke-width="1.4"/><circle cx="115" cy="240" r="3.4" fill="#FFFFFF" stroke="#8E0B21" stroke-width="1.4"/>
+<path class="il" d="M40 214 Q50 230 48 250 M168 214 Q158 230 160 250" style="stroke:#8E0B21"/>
+<path d="M80 168 L80 196 Q110 206 142 192 L142 166 Z" fill="#D9AE88"/>
+<path class="ol" d="M72 188 Q108 204 146 186 L148 202 Q108 218 72 204 Z" fill="#1D4C9C"/>
+<path d="M74 203 Q108 216 146 201" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+<path class="ol" d="M56 112 Q38 106 38 128 Q38 150 58 154 Z" fill="#F0CDA9"/>
+<path class="il" d="M48 120 Q43 130 48 144"/>
+<path d="M58 92 Q50 64 74 44 Q100 28 132 34 Q164 44 170 80 Q174 98 174 120 Q182 148 170 172 Q156 198 120 204 Q84 206 64 182 Q48 160 52 130 Q52 108 58 92 Z" fill="#F0CDA9"/>
+<path d="M52 124 Q46 96 58 70 Q74 48 98 40 L102 66 Q82 70 72 86 Q64 102 64 124 Z" fill="#B3A69C"/>
+<path d="M171 104 Q174 82 162 60 L150 52 L148 74 Q160 84 162 104 Z" fill="#B3A69C"/>
+<path d="M53 132 Q52 160 66 182 Q76 196 92 202 L94 192 Q78 182 70 164 Q62 148 64 132 Z" fill="#D9AE88"/>
+<path d="M107 116 Q105 134 108 146 L114 148 Q111 134 113 116 Z" fill="#D9AE88"/>
+<ellipse cx="146" cy="146" rx="19" ry="12" fill="#F8DEC2"/>
+<ellipse cx="80" cy="146" rx="11" ry="8" fill="#F8DEC2" opacity="0.8"/>
+<ellipse cx="150" cy="152" rx="10" ry="5" fill="#EDB39C" opacity="0.6"/>
+<path class="ol" d="M58 92 Q50 64 74 44 Q100 28 132 34 Q164 44 170 80 Q174 98 174 120 Q182 148 170 172 Q156 198 120 204 Q84 206 64 182 Q48 160 52 130 Q52 108 58 92" fill="none"/>
+<path class="ol" d="M70 188 Q110 214 156 186 Q150 208 116 212 Q86 212 70 188 Z" fill="#E9C29D"/>
+<path d="M74 100 Q88 93 102 99 M120 97 Q134 91 148 97" stroke="#22222a" stroke-width="3.6" stroke-linecap="round" fill="none"/>
+<path d="M76 114 Q89 106 102 112 Q89 119 76 114 Z" fill="#F7F1EA"/>
+<circle cx="90" cy="112.5" r="3.8" fill="#3a2a22"/><circle cx="91" cy="111.5" r="1" fill="#ffffff"/>
+<path class="il" d="M74 113 Q89 102 104 111" style="stroke-width:2.4"/>
+<path class="il" d="M78 121 Q90 126 100 120"/>
+<path d="M122 111 Q134 104 146 109 Q135 116 122 111 Z" fill="#F7F1EA"/>
+<circle cx="135" cy="110.5" r="3.4" fill="#3a2a22"/><circle cx="136" cy="109.6" r="0.9" fill="#ffffff"/>
+<path class="il" d="M120 110 Q134 100 148 108" style="stroke-width:2.4"/>
+<path class="il" d="M124 118 Q135 122 145 116"/>
+<path class="il" d="M112 114 Q114 132 120 142 Q126 148 120 152 Q113 154 106 150" style="stroke-width:2"/>
+<path class="il" d="M110 150 Q114 147 118 150"/>
+<path class="ol" d="M90 165 Q118 176 150 161 Q141 187 118 189 Q98 187 90 165 Z" fill="#7A2A22" style="stroke-width:2"/>
+<path d="M93 167 Q118 177 147 163 L145 170 Q118 180 96 173 Z" fill="#FBF7F0"/>
+<path class="il" d="M84 151 Q79 165 87 176 M152 144 Q162 158 155 171"/>
+<path d="M74 74 Q110 68 160 72 L158 78 Q110 74 74 80 Z" fill="#D9AE88"/>
+<path class="ol" d="M72 74 Q68 46 90 30 Q120 16 152 26 Q172 34 170 54 Q170 66 162 74 Q148 68 132 72 Q116 68 100 72 Q86 70 72 74 Z" fill="#18181C"/>
+<path d="M90 36 Q120 24 152 32" stroke="#56565F" stroke-width="4" stroke-linecap="round" fill="none"/>
+<path d="M82 52 Q118 38 164 46 M78 66 Q118 54 166 62" stroke="#34343c" stroke-width="2" stroke-linecap="round" fill="none"/>
+</svg>`,
+biden: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 250" width="200" height="250">
+<style>.ol{stroke:#3b2a22;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}.il{fill:none;stroke:#3b2a22;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}</style>
+<rect class="ol" x="8" y="20" width="184" height="200" rx="28" fill="#24305A"/>
+<ellipse cx="78" cy="62" rx="48" ry="26" fill="#4A5C94" opacity="0.45"/>
+<g fill="#FFE9A8"><circle cx="28" cy="44" r="2.4"/><circle cx="52" cy="30" r="1.8"/><circle cx="34" cy="86" r="1.8"/><circle cx="176" cy="96" r="2"/><circle cx="24" cy="150" r="2.2"/><circle cx="182" cy="128" r="1.6"/></g>
+<path d="M40 60 Q32 70 40 80 Q30 78 30 70 Q30 62 40 60 Z" fill="#FFE9A8"/>
+<path d="M156 48 L165 48 L156 59 L165 59 M168 28 L180 28 L168 43 L180 43 M178 6 L194 6 L178 24 L194 24" stroke="#BFD3FF" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+<path class="ol" d="M4 250 Q8 212 44 200 Q72 192 100 194 Q132 192 158 200 Q194 212 196 250 Z" fill="#2E4468"/>
+<path d="M60 196 Q22 206 8 232 L4 250 L40 250 Q36 222 64 206 Z" fill="#22344F"/>
+<path d="M80 172 L80 198 L122 198 L124 172 Z" fill="#D7AE8E"/>
+<path class="ol" d="M78 196 L100 226 L124 194 L120 188 L100 210 L84 188 Z" fill="#FFFFFF" style="stroke-width:2.2"/>
+<path class="il" d="M78 196 L66 250 M124 194 L136 250" style="stroke:#18243a"/>
+<path class="ol" d="M94 208 L106 208 L104 218 L96 218 Z" fill="#5C93CC" style="stroke-width:2"/>
+<path class="ol" d="M96 218 L104 218 L110 250 L90 250 Z" fill="#7FB3E6" style="stroke-width:2"/>
+<path class="ol" d="M58 110 Q40 104 40 126 Q40 148 60 152 Z" fill="#F0CDB0"/>
+<path class="il" d="M50 118 Q45 128 50 142"/>
+<path d="M60 88 Q58 50 92 34 Q126 22 152 42 Q168 58 166 88 Q168 110 166 132 Q164 164 150 182 Q134 198 112 198 Q88 196 74 180 Q60 162 58 134 Q56 108 60 88 Z" fill="#F0CDB0"/>
+<path d="M58 128 Q60 160 74 180 Q86 192 100 196 L102 186 Q86 178 78 162 Q68 146 68 126 Z" fill="#D7AE8E"/>
+<path d="M132 136 Q146 142 158 136 Q154 150 138 152 Z" fill="#D7AE8E"/>
+<path d="M106 110 Q104 128 107 142 L112 144 Q109 128 111 110 Z" fill="#D7AE8E"/>
+<path class="ol" d="M60 88 Q58 50 92 34 Q126 22 152 42 Q168 58 166 88 Q168 110 166 132 Q164 164 150 182 Q134 198 112 198 Q88 196 74 180 Q60 162 58 134 Q56 108 60 88" fill="none"/>
+<path class="il" d="M86 82 Q110 78 140 82 M90 89 Q112 86 136 89" style="stroke:#c79c7a;stroke-width:1.3"/>
+<path class="ol" d="M62 98 Q56 60 80 40 Q108 22 140 28 Q164 36 168 62 Q168 72 162 78 Q154 62 136 56 Q118 52 102 56 Q84 60 74 72 Q68 82 68 98 Z" fill="#F3F1ED"/>
+<path class="il" d="M78 50 Q110 34 150 40 M72 64 Q100 46 140 46 M66 82 Q72 66 88 60" style="stroke:#B8B2A8"/>
+<path d="M76 98 Q88 94 100 97 M118 95 Q132 91 146 95" stroke="#B8B2A8" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+<path d="M72 103 L58 108" stroke="#C9A24A" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+<path d="M72 102 L104 102 Q106 125 88 127 Q72 123 72 102 Z" fill="#22303E" stroke="#C9A24A" stroke-width="2.8" stroke-linejoin="round"/>
+<path d="M116 100 L147 100 Q147 121 132 123 Q116 121 116 100 Z" fill="#22303E" stroke="#C9A24A" stroke-width="2.8" stroke-linejoin="round"/>
+<path d="M104 103 L116 101" stroke="#C9A24A" stroke-width="2.8" stroke-linecap="round" fill="none"/>
+<path d="M78 106 L90 120 M84 105 L96 118 M122 104 L133 117 M128 103 L139 115" stroke="#6F8BA8" stroke-width="2.4" stroke-linecap="round" fill="none" opacity="0.8"/>
+<path class="il" d="M112 108 Q114 128 122 138 Q127 145 120 148 Q113 150 107 146" style="stroke-width:2"/>
+<path class="il" d="M111 146 Q115 143 119 146"/>
+<path class="il" d="M100 150 Q95 162 100 173 M134 146 Q143 158 138 171"/>
+<path class="ol" d="M106 166 Q117 161 128 166 Q118 177 106 166 Z" fill="#7A3A2E" style="stroke-width:2"/>
+<path class="il" d="M106 186 Q118 190 130 184"/>
+<path class="ol" d="M168 176 L198 176 L183 222 Z" fill="#D9A35B"/>
+<path class="il" d="M173 182 L188 202 M181 180 L192 194 M193 182 L178 204 M186 180 L175 196" style="stroke:#a8743a;stroke-width:1.3"/>
+<circle class="ol" cx="183" cy="167" r="15" fill="#F7C6D9"/>
+<circle class="ol" cx="183" cy="145" r="13" fill="#FFF2C8"/>
+<circle cx="178" cy="163" r="1.6" fill="#6b3f2a"/><circle cx="188" cy="170" r="1.6" fill="#6b3f2a"/><circle cx="182" cy="174" r="1.6" fill="#6b3f2a"/>
+<path d="M176 140 Q180 136 186 138" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+<circle class="ol" cx="180" cy="216" r="9" fill="#F0CDB0"/>
+</svg>`,
+bibi: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 250" width="200" height="250">
+<style>.ol{stroke:#3b2a22;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}.il{fill:none;stroke:#3b2a22;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}</style>
+<rect class="ol" x="8" y="20" width="184" height="200" rx="28" fill="#A9B0BC"/>
+<ellipse cx="78" cy="62" rx="48" ry="26" fill="#D9DEE6" opacity="0.6"/>
+<path class="ol" d="M4 250 Q8 212 44 200 Q72 192 100 194 Q132 192 158 200 Q194 212 196 250 Z" fill="#36383E"/>
+<path d="M140 196 Q178 206 192 232 L196 250 L160 250 Q164 222 136 206 Z" fill="#26282C"/>
+<path d="M78 176 L78 198 L120 198 L122 176 Z" fill="#D49E7A"/>
+<path class="ol" d="M76 196 L98 226 L122 194 L118 188 L98 210 L82 188 Z" fill="#FFFFFF" style="stroke-width:2.2"/>
+<path class="il" d="M76 196 L64 250 M122 194 L132 250" style="stroke:#18243a"/>
+<path class="ol" d="M92 208 L104 208 L102 218 L94 218 Z" fill="#2459B5" style="stroke-width:2"/>
+<path class="ol" d="M94 218 L102 218 L108 250 L88 250 Z" fill="#2F6FD6" style="stroke-width:2"/>
+<path class="ol" d="M50 108 Q26 98 24 124 Q24 152 52 156 Z" fill="#EFC4A0"/>
+<path class="il" d="M40 114 Q32 126 40 144" style="stroke:#a87b5a"/>
+<path class="ol" d="M150 104 Q180 90 184 122 Q186 154 152 160 Z" fill="#EFC4A0"/>
+<path class="il" d="M162 112 Q174 124 165 146" style="stroke:#a87b5a"/>
+<path d="M48 96 Q44 36 100 28 Q156 32 158 92 Q162 122 156 144 Q150 174 128 188 Q110 198 92 196 Q68 192 56 176 Q44 158 46 136 Q44 116 48 96 Z" fill="#EFC4A0"/>
+<path d="M158 104 Q160 136 150 162 Q138 184 118 192 L118 182 Q136 170 142 148 Q148 126 146 102 Z" fill="#D49E7A"/>
+<path d="M52 150 Q56 176 76 188 Q86 194 96 196 L94 188 Q76 182 66 168 Q58 158 56 146 Z" fill="#D49E7A"/>
+<path d="M58 104 Q100 96 146 102 L146 110 Q100 104 58 112 Z" fill="#E2B08C"/>
+<path d="M96 110 Q100 128 101 144 L95 146 Q96 128 92 110 Z" fill="#D49E7A"/>
+<ellipse cx="70" cy="146" rx="12" ry="8" fill="#F7D4B6" opacity="0.8"/>
+<ellipse cx="88" cy="58" rx="22" ry="7" fill="#FBE3CF"/>
+<path class="ol" d="M48 96 Q44 36 100 28 Q156 32 158 92 Q162 122 156 144 Q150 174 128 188 Q110 198 92 196 Q68 192 56 176 Q44 158 46 136 Q44 116 48 96" fill="none"/>
+<path class="il" d="M70 74 Q100 68 134 74 M74 84 Q102 79 130 84" style="stroke:#c79c7a;stroke-width:1.5"/>
+<path class="ol" d="M46 112 Q36 74 52 50 Q62 38 76 36 Q60 58 60 84 Q58 100 60 114 Z" fill="#D6D8DC" style="stroke-width:2.4"/>
+<path class="ol" d="M152 110 Q164 76 154 50 Q144 34 124 30 Q142 52 144 80 Q146 96 142 110 Z" fill="#D6D8DC" style="stroke-width:2.4"/>
+<path class="ol" d="M62 46 Q98 20 140 34 Q120 30 100 34 Q80 36 62 46 Z" fill="#E4E6EA" style="stroke-width:2"/>
+<path d="M50 70 Q54 56 64 48 M150 70 Q148 54 138 44 M84 34 Q104 28 124 32" stroke="#A9AEB7" stroke-width="2" stroke-linecap="round" fill="none"/>
+<path d="M60 102 Q74 96 90 106 M108 106 Q124 96 140 100" stroke="#6E727A" stroke-width="6.5" stroke-linecap="round" fill="none"/>
+<path class="il" d="M94 100 L96 108 M100 99 L101 107" style="stroke:#c79c7a"/>
+<path d="M64 115 Q75 110 86 115 Q75 119 64 115 Z" fill="#F4EEE6"/>
+<circle cx="76" cy="115" r="3.3" fill="#3A2A20"/><circle cx="76.8" cy="114.2" r="0.9" fill="#ffffff"/>
+<path class="il" d="M60 114 Q74 106 89 113" style="stroke-width:3"/>
+<path d="M106 115 Q118 109 132 114 Q119 120 106 115 Z" fill="#F4EEE6"/>
+<circle cx="119" cy="114.8" r="3.6" fill="#3A2A20"/><circle cx="119.9" cy="113.9" r="1" fill="#ffffff"/>
+<path class="il" d="M103 114 Q118 104 135 112" style="stroke-width:3"/>
+<path d="M64 121 Q75 128 86 121 Q75 124 64 121 Z M106 121 Q119 129 132 120 Q119 125 106 121 Z" fill="#B98A6C" opacity="0.75"/>
+<path class="il" d="M65 127 Q75 132 85 127 M107 128 Q119 134 131 127" style="stroke:#b88b66"/>
+<path class="il" d="M97 112 Q95 130 88 140 Q85 148 93 150 Q100 152 105 148" style="stroke-width:2.2"/>
+<path class="il" d="M91 148 Q95 145 99 148"/>
+<path class="il" d="M84 146 Q74 160 79 174 M112 144 Q123 158 119 172" style="stroke-width:1.9"/>
+<path d="M86 169 Q100 180 114 168 Q100 173 86 169 Z" fill="#C88A72" stroke="#3b2a22" stroke-width="1.4"/>
+<path d="M83 166 Q99 161 117 164 Q120 162 122 158" stroke="#3b2a22" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+<path class="il" d="M84 186 Q100 192 116 186" style="stroke:#a87b5a"/>
+<g transform="rotate(-8 168 200)">
+<rect class="ol" x="138" y="150" width="62" height="86" rx="4" fill="#FFFFFF"/>
+<circle cx="169" cy="206" r="18" fill="#222222"/>
+<rect x="163" y="183" width="12" height="8" fill="#222222"/>
+<path d="M169 183 Q175 171 186 174" stroke="#D48A2A" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+<path d="M188 168 L190 173 L195 174 L191 177 L192 182 L188 179 L184 182 L185 176 L181 173 L186 173 Z" fill="#F2B705" stroke="#D48A2A" stroke-width="1"/>
+<path d="M143 194 L195 190" stroke="#D7263D" stroke-width="7" stroke-linecap="round" fill="none"/>
+</g>
+<path class="ol" d="M108 222 L132 216 L136 250 L104 250 Z" fill="#36383E"/>
+<path class="ol" d="M116 208 L134 190 L141 196 L123 214 Z" fill="#D7263D" style="stroke-width:2"/>
+<path d="M134 190 L138 186 L144 191 L141 196 Z" fill="#3b2a22"/>
+<circle class="ol" cx="121" cy="214" r="10" fill="#EFC4A0"/>
+<path class="il" d="M115 210 Q121 208 126 212 M114 216 Q120 215 125 219"/>
+</svg>`,
+ayat: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 250" width="200" height="250">
+<style>.ol{stroke:#3b2a22;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}.il{fill:none;stroke:#3b2a22;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}</style>
+<defs>
+  <clipPath id="ayatTile"><rect x="8" y="20" width="184" height="200" rx="28"/></clipPath>
+  <pattern id="ayatCheck" width="9" height="9" patternUnits="userSpaceOnUse">
+    <rect width="9" height="9" fill="#EDEDED"/><path d="M0 0 L9 9 M9 0 L0 9" stroke="#1E1A18" stroke-width="2"/>
+  </pattern>
+</defs>
+<g clip-path="url(#ayatTile)"><rect x="8" y="20" width="184" height="34" fill="#E40303"/><rect x="8" y="53.3" width="184" height="34" fill="#FF8C00"/><rect x="8" y="86.7" width="184" height="34" fill="#FFED00"/><rect x="8" y="120" width="184" height="34" fill="#008026"/><rect x="8" y="153.3" width="184" height="34" fill="#004DFF"/><rect x="8" y="186.7" width="184" height="34" fill="#750787"/></g>
+<rect class="ol" x="8" y="20" width="184" height="200" rx="28" fill="none"/>
+<path class="ol" d="M4 250 Q8 206 44 194 Q72 186 100 188 Q128 186 156 194 Q192 206 196 250 Z" fill="#1E1A18"/>
+<path class="ol" d="M40 198 Q58 190 72 196 L80 250 L44 250 Q48 222 40 198 Z" fill="url(#ayatCheck)" style="stroke-width:2.2"/>
+<path class="ol" d="M160 198 Q142 190 128 196 L120 250 L156 250 Q152 222 160 198 Z" fill="url(#ayatCheck)" style="stroke-width:2.2"/>
+<path class="ol" d="M60 112 Q44 108 44 126 Q44 144 62 146 Z" fill="#E3B892"/>
+<path class="ol" d="M140 112 Q156 108 156 126 Q156 144 138 146 Z" fill="#E3B892"/>
+<path d="M60 92 Q60 80 72 78 L128 78 Q140 80 140 92 Q144 120 140 142 Q136 168 122 182 Q110 192 100 192 Q90 192 78 182 Q64 168 60 142 Q56 120 60 92 Z" fill="#E3B892"/>
+<path d="M62 126 Q70 140 74 158 L68 160 Q62 148 60 132 Z M138 126 Q130 140 126 158 L132 160 Q138 148 140 132 Z" fill="#C9976F"/>
+<path d="M98 116 Q96 134 95 146 L101 148 Q101 134 103 116 Z" fill="#C9976F"/>
+<path class="ol" d="M60 92 Q60 80 72 78 L128 78 Q140 80 140 92 Q144 120 140 142 Q136 168 122 182 Q110 192 100 192 Q90 192 78 182 Q64 168 60 142 Q56 120 60 92" fill="none"/>
+<path class="il" d="M74 91 Q100 86 126 91 M78 98 Q100 94 122 98 M96 100 L95 106 M104 100 L105 106" style="stroke:#a87b5a"/>
+<path d="M72 114 Q81 109 90 113 Q81 117 72 114 Z" fill="#F4EEE6"/>
+<circle cx="82" cy="113" r="3.2" fill="#E8B92A"/><circle cx="82" cy="113" r="1.4" fill="#1A1410"/>
+<path class="il" d="M69 113 Q81 105 93 111" style="stroke-width:2.8"/>
+<path d="M110 113 Q119 109 128 114 Q119 117 110 113 Z" fill="#F4EEE6"/>
+<circle cx="118" cy="113" r="3.2" fill="#E8B92A"/><circle cx="118" cy="113" r="1.4" fill="#1A1410"/>
+<path class="il" d="M107 111 Q119 105 131 113" style="stroke-width:2.8"/>
+<path class="il" d="M73 121 Q81 125 89 121 M111 121 Q119 125 127 121" style="stroke:#a87b5a"/>
+<path class="ol" d="M50 104 Q62 94 80 98 Q92 100 98 108 Q88 105 78 107 Q64 109 52 120 Z" fill="#F2F0EC" style="stroke-width:2.2"/>
+<path class="ol" d="M150 104 Q138 94 120 98 Q108 100 102 108 Q112 105 122 107 Q136 109 148 120 Z" fill="#F2F0EC" style="stroke-width:2.2"/>
+<path d="M50 104 L42 110 M52 112 L44 120 M150 104 L158 110 M148 112 L156 120" stroke="#DCD8D0" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+<path class="il" d="M100 112 Q98 132 94 144 Q91 152 100 154 Q108 152 106 144" style="stroke-width:2.2"/>
+<path class="ol" d="M62 140 Q58 196 80 224 Q92 240 100 248 Q108 240 120 224 Q142 196 138 140 Q130 166 116 172 Q100 176 84 172 Q70 166 62 140 Z" fill="#EEECE8"/>
+<path class="il" d="M78 184 Q84 206 82 222 M92 186 Q94 212 96 234 M108 186 Q106 212 104 234 M122 184 Q116 206 118 222 M70 160 Q72 176 76 190 M130 160 Q128 176 124 190" style="stroke:#C2BDB4"/>
+<path class="ol" d="M80 162 Q100 150 120 162 Q110 172 100 166 Q90 172 80 162 Z" fill="#F4F2EE" style="stroke-width:2"/>
+<path class="il" d="M92 172 Q100 175 108 172" style="stroke:#7a5a48;stroke-width:2"/>
+<path class="ol" d="M28 88 Q16 30 70 10 Q100 0 130 10 Q184 30 172 88 Q150 76 100 76 Q50 76 28 88 Z" fill="#151515"/>
+<path d="M38 68 Q100 40 162 68 M34 52 Q100 22 166 52 M50 32 Q100 12 150 32" stroke="#3E3E44" stroke-width="3" stroke-linecap="round" fill="none"/>
+<path d="M60 20 Q100 8 140 20" stroke="#55555C" stroke-width="4" stroke-linecap="round" fill="none"/>
+<path class="ol" d="M28 88 Q100 72 172 88 L170 98 Q100 84 30 98 Z" fill="#222226"/>
+<g transform="rotate(12 34 176)">
+<path d="M52 168 L66 168 M50 176 L68 176 M52 184 L66 184" stroke="#FFFFFF" stroke-width="2.8" stroke-linecap="round" fill="none"/>
+<path class="ol" d="M8 176 L44 158 L37 176 L44 194 Z" fill="#A9B1BB" style="stroke-width:2.4"/>
+<path d="M8 176 L32 173 L32 179 Z" fill="#7E8792"/>
+<ellipse cx="41" cy="176" rx="2.6" ry="8" fill="#FFFFFF" opacity="0.65"/>
+</g>
+</svg>`,
+cookie: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 250" width="200" height="250">
+<style>.ol{stroke:#3b2a22;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}.il{fill:none;stroke:#3b2a22;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}.t{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-weight:800}</style>
+<path class="ol" d="M100 88 A74 74 0 1 0 172 144 Q160 142 155 132 Q146 134 141 124 Q132 122 131 110 Q120 106 119 94 Q110 90 100 88 Z" fill="#D9A15B"/>
+<path d="M40 190 Q60 228 104 234 Q150 230 168 196 Q150 218 104 222 Q62 220 40 190 Z" fill="#C08744"/>
+<g fill="#5A3520">
+  <ellipse cx="62" cy="168" rx="8" ry="6"/><ellipse cx="94" cy="196" rx="9" ry="7"/><ellipse cx="132" cy="186" rx="8" ry="6"/>
+  <ellipse cx="76" cy="212" rx="7" ry="5"/><ellipse cx="118" cy="214" rx="7" ry="5"/><ellipse cx="150" cy="164" rx="6" ry="5"/>
+  <ellipse cx="48" cy="140" rx="6" ry="5"/>
+</g>
+<g fill="#E8BD7E"><circle cx="80" cy="182" r="2.4"/><circle cx="110" cy="172" r="2.4"/><circle cx="142" cy="206" r="2.4"/><circle cx="58" cy="196" r="2.4"/></g>
+<rect class="ol" x="34" y="26" width="152" height="92" rx="12" fill="#ECE8F4"/>
+<path d="M34 46 L186 46" stroke="#3b2a22" stroke-width="2"/>
+<rect x="46" y="58" width="96" height="6" rx="3" fill="#CFC8DE"/><rect x="46" y="70" width="120" height="6" rx="3" fill="#CFC8DE"/>
+<rect class="ol" x="14" y="50" width="156" height="98" rx="12" fill="#FFFFFF"/>
+<path d="M14 72 L170 72" stroke="#3b2a22" stroke-width="2"/>
+<circle class="il" cx="29" cy="61" r="6" fill="#D9A15B"/>
+<circle cx="27" cy="60" r="1.4" fill="#5A3520"/><circle cx="31" cy="63" r="1.4" fill="#5A3520"/>
+<rect x="40" y="57" width="66" height="7" rx="3.5" fill="#3b2a22"/>
+<path d="M152 56 L161 65 M161 56 L152 65" stroke="#9AA0AC" stroke-width="2.4" stroke-linecap="round"/>
+<rect x="26" y="82" width="132" height="6" rx="3" fill="#C9CED8"/>
+<rect x="26" y="93" width="112" height="6" rx="3" fill="#C9CED8"/>
+<rect x="26" y="104" width="124" height="6" rx="3" fill="#C9CED8"/>
+<rect class="ol" x="24" y="118" width="80" height="22" rx="11" fill="#2F6FD6" style="stroke-width:2"/>
+<text class="t" x="64" y="133.5" font-size="11" fill="#FFFFFF" text-anchor="middle">Accept all</text>
+<rect class="ol" x="110" y="118" width="50" height="22" rx="11" fill="#E4E7EE" style="stroke-width:2"/>
+<text class="t" x="135" y="133" font-size="9" fill="#5A6070" text-anchor="middle">Manage</text>
+<path class="ol" d="M88 128 L88 154 L95 147 L100 158 L106 155 L101 145 L110 144 Z" fill="#FFFFFF" style="stroke-width:2.2"/>
+</svg>`,
+};
+
+// ===== Client =====
+const $ = (s) => document.querySelector(s);
+const canvas = $('#c'), ctx = canvas.getContext('2d');
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const NAMES = Object.assign({ nuke: 'Nuke', mini: 'Suitcase Nuke', tsar: 'Tsar Bomba', doom: 'Doomsday', mush: 'Mushroom cloud' }, Object.fromEntries(Object.entries(SPEC.symbols).map(([k, v]) => [k, v.name])));
+const fmt = (n) => n.toFixed(2);
+const IMG = {}, PRE = {};
+let W = 0, H = 0, CW = 0, CH = 0, DPR = 1;
+let sprites = [], particles = [], quiet = false;
+const anticCols = new Set(); // columns falling in slow motion because the trigger is still possible
+// Fallout squares on screen (the feature's grid, or a replayed spin's), and when each last flashed.
+let viewSpots = null; const spotFlash = new Map();
+
+function loadArt() {
+  // Every symbol: the finished leader art where there is one, else the placeholder drawing.
+  const keys = [...new Set([...Object.keys(ART), ...Object.keys(LEADER_ART)])];
+  return Promise.all(keys.map((k) => new Promise((res) => {
+    const img = new Image();
+    img.onload = () => res(); img.onerror = () => res();
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(LEADER_ART[k] || svgDoc(ART[k]));
+    IMG[k] = img;
+  })));
+}
+function prerender() {
+  for (const k in IMG) {
+    const oc = document.createElement('canvas');
+    oc.width = Math.max(1, Math.round(CW * DPR)); oc.height = Math.max(1, Math.round(CH * DPR));
+    const o = oc.getContext('2d'), pad = 0.03;
+    const s = Math.min(oc.width * (1 - 2 * pad) / 200, oc.height * (1 - 2 * pad) / 250);
+    o.drawImage(IMG[k], (oc.width - 200 * s) / 2, (oc.height - 250 * s) / 2, 200 * s, 250 * s);
+    PRE[k] = oc;
+  }
+}
+// Square cells. The board takes what the cabinet leaves: side panels in landscape, the stacked
+// controls in portrait.
+function setBoard(cell) {
+  const w = cell * SPEC.cols, h = cell * SPEC.rows;
+  canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
+  canvas.width = Math.round(w * DPR); canvas.height = Math.round(h * DPR);
+  W = w; H = h; CW = cell; CH = cell;
+}
+// Height the cabinet needs: the lowest of its parts above the control bar, plus the bar itself.
+function cabinetHeight() {
+  const cab = $('#cabinet'), bar = cab.querySelector('.bar'), top = cab.getBoundingClientRect().top;
+  let bottom = 0;
+  for (const el of cab.children) if (el !== bar && el.offsetParent !== null) bottom = Math.max(bottom, el.getBoundingClientRect().bottom - top);
+  return bottom + parseFloat(getComputedStyle(cab).rowGap) + parseFloat(getComputedStyle(bar).marginTop) + bar.offsetHeight;
+}
+function resize() {
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const land = vw > vh && vw >= 560;
+  let maxW, maxH;
+  if (land) { const side = Math.min(220, Math.max(150, vw * 0.18)); maxW = vw - 2 * side - 80; maxH = vh - (vh <= 560 ? 84 : 118); }
+  else { maxW = Math.min(vw - 24, 620); maxH = maxW; }
+  DPR = Math.min(2, window.devicePixelRatio || 1);
+  let cell = Math.max(30, Math.floor(Math.min(maxW / SPEC.cols, maxH / SPEC.rows)));
+  setBoard(cell);
+  // The whole cabinet, control bar included, must fit the window height (the lobby's phone window
+  // is short): shrink the board by whatever spills over.
+  const over = cabinetHeight() - vh;
+  if (over > 0) { cell = Math.max(30, Math.floor((cell * SPEC.rows - over) / SPEC.rows)); setBoard(cell); }
+  prerender();
+}
+function rr(x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+
+let effects = [], shakeUntil = 0;
+// Winning clusters on show: each gets one outline traced around its shape in the colours of the
+// leader's country (striped where there are several colours), and the rest of the board dims.
+let activeWins = [];
+const FLAGS = {
+  trump: ['#B22234', '#FFFFFF', '#3C3B6E'], biden: ['#B22234', '#FFFFFF', '#3C3B6E'], obama: ['#B22234', '#FFFFFF', '#3C3B6E'],
+  xi: ['#DE2910', '#FFDE00'], putin: ['#FFFFFF', '#0039A6', '#D52B1E'], kim: ['#024FA2', '#ED1C27', '#FFFFFF'],
+  bibi: ['#0038B8', '#FFFFFF'], ayat: ['#239F40', '#FFFFFF', '#DA0000'], cookie: ['#003399', '#FFCC00'],
+};
+function drawWinHighlight() {
+  if (!activeWins.length) return;
+  const on = new Set(); for (const w of activeWins) for (const [c, r] of w.cells) on.add(c * 10 + r);
+  ctx.fillStyle = 'rgba(14,10,32,.55)';
+  for (let c = 0; c < SPEC.cols; c++) for (let r = 0; r < SPEC.rows; r++) if (!on.has(c * 10 + r)) ctx.fillRect(c * CW, r * CH, CW, CH);
+  const lw = Math.max(4, Math.round(CW * 0.09));
+  for (const w of activeWins) {
+    const mine = new Set(w.cells.map(([c, r]) => c * 10 + r)), path = new Path2D();
+    for (const [c, r] of w.cells) {
+      const x = c * CW, y = r * CH;
+      if (!mine.has(c * 10 + r - 1)) { path.moveTo(x, y); path.lineTo(x + CW, y); }
+      if (!mine.has(c * 10 + r + 1)) { path.moveTo(x, y + CH); path.lineTo(x + CW, y + CH); }
+      if (!mine.has((c - 1) * 10 + r)) { path.moveTo(x, y); path.lineTo(x, y + CH); }
+      if (!mine.has((c + 1) * 10 + r)) { path.moveTo(x + CW, y); path.lineTo(x + CW, y + CH); }
+    }
+    const cols = FLAGS[w.s] || ['#FFD23F'], dash = Math.max(8, Math.round(CW * 0.22));
+    ctx.save(); ctx.lineCap = 'square';
+    ctx.lineWidth = lw + 4; ctx.strokeStyle = '#140d26'; ctx.setLineDash([]); ctx.stroke(path);
+    ctx.lineWidth = lw;
+    cols.forEach((col, i) => {
+      ctx.strokeStyle = col;
+      ctx.setLineDash(i === 0 ? [] : [dash, dash * (cols.length - 1)]); ctx.lineDashOffset = -i * dash;
+      ctx.stroke(path);
+    });
+    ctx.restore();
+  }
+}
+// Win amounts that rise from each cluster as it pops.
+const floaters = [];
+// A multiplied cluster plays out in order: its bet win and the fallout multiplier side by side,
+// then the two slide together and become the payout. Unmultiplied wins just show the payout.
+function outlinedText(text, x, y, fs, fill) {
+  ctx.font = `900 ${fs}px system-ui,sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.lineJoin = 'round'; ctx.lineWidth = Math.max(3, fs * 0.18); ctx.strokeStyle = '#2a1f3a'; ctx.strokeText(text, x, y);
+  ctx.fillStyle = fill; ctx.fillText(text, x, y);
+}
+function drawFloaters(t) {
+  const SPLIT = 0.3, MERGE = 0.14; // share of the floater's life spent showing "win ×mult", then merging
+  for (let i = floaters.length - 1; i >= 0; i--) {
+    const f = floaters[i], k = (t - f.t0) / f.dur;
+    if (k >= 1) { floaters.splice(i, 1); continue; }
+    if (k < 0) continue;
+    const fs = Math.max(14, Math.round(CH * 0.42));
+    if (f.mult > 1 && k < SPLIT + MERGE) {
+      const a = fmt(f.base), b = `×${f.mult}`;
+      ctx.font = `900 ${fs}px system-ui,sans-serif`;
+      const wa = ctx.measureText(a).width, wb = ctx.measureText(b).width, gap = fs * 0.4, total = wa + gap + wb;
+      const xa = f.x - total / 2 + wa / 2, xb = f.x + total / 2 - wb / 2;
+      const m = k < SPLIT ? 0 : ease.inCubic((k - SPLIT) / MERGE);
+      ctx.globalAlpha = 1 - 0.5 * m;
+      outlinedText(a, xa + (f.x - xa) * m, f.y, fs, '#fff');
+      outlinedText(b, xb + (f.x - xb) * m, f.y, fs, '#ff9b5a');
+    } else {
+      const start = f.mult > 1 ? SPLIT + MERGE : 0, k2 = (k - start) / (1 - start);
+      const pop = f.mult > 1 && k2 < 0.15 ? 1.35 - 0.35 * (k2 / 0.15) : 1;
+      ctx.globalAlpha = k2 < 0.7 ? 1 : (1 - k2) / 0.3;
+      outlinedText(fmt(f.pay), f.x, f.y - CH * 0.8 * ease.outCubic(k2), Math.round(fs * (f.mult > 1 ? 1.2 : 1) * pop), f.mult > 1 ? '#FFD23F' : '#fff');
+    }
+    ctx.globalAlpha = 1;
+  }
+}
+function render(t) {
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.clearRect(0, 0, W, H);
+  ctx.save(); rr(0, 0, W, H, 18); ctx.clip();
+  if (!reduceMotion && t < shakeUntil) { const a = 10 * (shakeUntil - t) / 450; ctx.translate(Math.sin(t / 17) * a, Math.cos(t / 23) * a); }
+  // Fallout squares: an orange-to-red glow that deepens with the multiplier.
+  if (viewSpots) for (let c = 0; c < SPEC.cols; c++) for (let r = 0; r < SPEC.rows; r++) {
+    const v = viewSpots[c][r]; if (!v) continue;
+    const heat = Math.min(1, (Math.log2(v) - 1) / 6), fl = spotFlash.get(c * 10 + r), flash = fl ? Math.max(0, 1 - (t - fl) / 600) : 0;
+    // Kept quiet: a light warm tint and a thin frame, a little stronger as the multiplier grows.
+    ctx.fillStyle = `rgba(255,${Math.round(150 - 100 * heat)},${Math.round(60 - 40 * heat)},${0.1 + 0.14 * heat + 0.35 * flash})`;
+    rr(c * CW + 2, r * CH + 2, CW - 4, CH - 4, 10); ctx.fill();
+    ctx.lineWidth = 1.5; ctx.strokeStyle = `rgba(220,${Math.round(110 - 80 * heat)},40,${0.45 + 0.25 * heat})`; ctx.stroke();
+  }
+  for (const ac of anticCols) { ctx.fillStyle = `rgba(255,190,0,${0.28 + 0.14 * Math.sin(t / 110)})`; rr(ac * CW + 2, 2, CW - 4, H - 4, 12); ctx.fill(); }
+  for (const sp of sprites) {
+    const x = (sp.c + (sp.dx || 0)) * CW, y = (sp.row + (sp.dy || 0)) * CH;
+    if (y > H || y < -CH) continue;
+    if (sp.hl > 0) {
+      ctx.fillStyle = `rgba(255,255,255,${0.6 * sp.hl})`; rr(x + 3, y + 3, CW - 6, CH - 6, 12); ctx.fill();
+      ctx.strokeStyle = `rgba(232,48,111,${sp.hl})`; ctx.lineWidth = 3; ctx.stroke();
+    }
+    const img = PRE[sp.s]; if (!img) continue;
+    const sc = sp.scale * ((sp.hl > 0 || sp.win) && !quiet && !reduceMotion ? 1 + 0.06 * Math.sin(t / 90) : 1);
+    ctx.globalAlpha = sp.alpha;
+    ctx.drawImage(img, x + CW * (1 - sc) / 2, y + CH * (1 - sc) / 2, CW * sc, CH * sc);
+    ctx.globalAlpha = 1;
+  }
+  // Multiplier labels sit on top of the symbols, in each square's bottom-left corner.
+  if (viewSpots) {
+    const fs = Math.max(10, Math.round(CH * 0.16)); ctx.font = `800 ${fs}px system-ui,sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    for (let c = 0; c < SPEC.cols; c++) for (let r = 0; r < SPEC.rows; r++) {
+      const v = viewSpots[c][r]; if (!v) continue;
+      const label = '×' + v, bw = ctx.measureText(label).width + fs * 0.6, bh = fs * 1.25, bx = c * CW + 3, by = (r + 1) * CH - bh - 3;
+      ctx.fillStyle = v >= 32 ? 'rgba(150,25,40,.75)' : 'rgba(20,13,38,.6)'; rr(bx, by, bw, bh, bh / 2); ctx.fill();
+      ctx.fillStyle = '#FFE2B0'; ctx.fillText(label, bx + bw / 2, by + bh / 2 + 1);
+    }
+  }
+  drawWinHighlight();
+  // Explosions: a flash ring and a mushroom cloud rising from each Nuke.
+  for (let i = effects.length - 1; i >= 0; i--) {
+    const e = effects[i], k = (t - e.t0) / e.dur;
+    if (k >= 1) { effects.splice(i, 1); continue; }
+    if (k < 0) continue;
+    // Bigger blasts: a fireball core, a wide shock ring and a tall mushroom cloud (larger still for
+    // the Nukes that trigger the bonus).
+    // A Tsar Bomba blast is wider; a Doomsday sends a green shock wave across the whole board.
+    const doom = e.kind === 'doom', big = e.big ? 1.5 : e.kind === 'tsar' ? 2.1 : e.kind === 'mini' ? 0.55 : doom ? 1.3 : 1, g = ease.outCubic(k);
+    const r = doom ? Math.max(W, H) * (0.2 + 1.1 * g) : Math.max(CW, CH) * (0.5 + 2.4 * g) * big;
+    ctx.globalAlpha = 1 - k;
+    ctx.fillStyle = doom ? 'rgba(140,255,130,0.32)' : 'rgba(255,190,110,0.45)'; ctx.beginPath(); ctx.arc(e.x, e.y, r, 0, Math.PI * 2); ctx.fill();
+    ctx.lineWidth = (10 * (1 - k) + 2) * big; ctx.strokeStyle = doom ? '#4dff6a' : '#ff6a2a'; ctx.stroke();
+    ctx.fillStyle = `rgba(255,250,220,${0.9 * (1 - k)})`; ctx.beginPath(); ctx.arc(e.x, e.y, r * 0.35 * (1 - 0.5 * k), 0, Math.PI * 2); ctx.fill();
+    const m = PRE.mush;
+    if (m) { const s = (1.1 + 2.1 * g) * big; ctx.drawImage(m, e.x - CW * s / 2, e.y - CH * s * 0.85, CW * s, CH * s); }
+    ctx.globalAlpha = 1;
+  }
+  drawFloaters(t);
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i]; p.x += p.vx; p.y += p.vy; p.vy += 0.18; p.life -= 1; p.rot += p.vr;
+    if (p.life <= 0 || p.y > H + 20) { particles.splice(i, 1); continue; }
+    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.fillStyle = p.col; ctx.fillRect(-p.sz / 2, -p.sz / 4, p.sz, p.sz / 2); ctx.restore();
+  }
+  ctx.restore();
+  requestAnimationFrame(render);
+}
+function confetti(n) {
+  if (reduceMotion) return;
+  const cols = ['#FF5DA2', '#FFD23F', '#4DB6FF', '#7B2FF7', '#FF7A59', '#2F9E44'];
+  for (let i = 0; i < n; i++) particles.push({ x: W / 2 + (CryptoRNG.int(200) - 100), y: H * 0.45, vx: (CryptoRNG.int(1000) / 1000 - 0.5) * 9, vy: -3 - CryptoRNG.int(1000) / 1000 * 7, sz: 7 + CryptoRNG.int(6), col: cols[CryptoRNG.int(cols.length)], life: 120, rot: 0, vr: (CryptoRNG.int(100) - 50) / 300 });
+}
+
+// ===== Animation helpers =====
+// PACE stretches every animation and pause; raise it to slow the whole game down.
+const PACE = 1.6;
+const SPEED = PACE * (reduceMotion ? 0.6 : 1);
+const ease = { outCubic: (k) => 1 - Math.pow(1 - k, 3), inCubic: (k) => k * k * k, outBack: (k) => { const c1 = 1.4, c3 = c1 + 1; return 1 + c3 * Math.pow(k - 1, 3) + c1 * Math.pow(k - 1, 2); } };
+const wait = (ms) => new Promise((r) => setTimeout(r, ms * SPEED));
+// Animation frames drive tweens; a slow timer backs them up so play never stalls when frames pause
+// (a hidden tab or panel).
+function tween(dur, fn) {
+  dur *= SPEED;
+  return new Promise((res) => {
+    const s = performance.now(); let done = false;
+    const tick = () => { const k = Math.min(1, (performance.now() - s) / dur); fn(k); if (k >= 1) { done = true; res(); } };
+    const frame = () => { if (done) return; tick(); if (!done) requestAnimationFrame(frame); };
+    const timer = () => { if (done) return; tick(); if (!done) setTimeout(timer, 120); };
+    requestAnimationFrame(frame); setTimeout(timer, 120);
+  });
+}
+const mkSprite = (c, row, cell) => ({ c, row, s: cell.s, m: cell.m, scale: 1, alpha: 1, hl: 0 });
+
+async function animateDrop(grid, mode, celebrateNukes) {
+  // The old symbols fall away while the new columns are already dropping in behind them, so a
+  // spin flows as one movement instead of empty-then-fill.
+  const old = sprites.map((sp) => ({ sp, r0: sp.row })), leaving = new Set(sprites);
+  const out = tween(260, (k) => { for (const o of old) o.sp.row = o.r0 + ease.inCubic(k) * (SPEC.rows + 1.2); })
+    .then(() => { sprites = sprites.filter((sp) => !leaving.has(sp)); });
+  await wait(110);
+  // Anticipation only in the base game, when the trigger is still possible: once one Nuke short
+  // (3 landed), the remaining columns set off without a pause but fall in slow motion, glowing,
+  // so they land one after another.
+  const need = mode === 'base' ? SPEC.fsTrigger : Infinity;
+  let seen = 0; const drops = [];
+  for (let c = 0; c < SPEC.cols; c++) {
+    const antic = seen >= need - 1 && c > 0;
+    if (c > 0) await wait(antic ? 240 : 100);
+    if (antic) { anticCols.add(c); SFX.tease(); }
+    const col = grid[c].map((cell, r) => Object.assign(mkSprite(c, r - SPEC.rows - 0.3, cell), { target: r }));
+    sprites.push(...col);
+    const colN = grid[c].filter((x) => x.s === SPEC.scatter).length;
+    const dur = antic ? 1150 : 320, curve = antic ? ease.outCubic : ease.outBack;
+    drops.push(tween(dur, (k) => { const e = curve(k); for (const sp of col) sp.row = sp.target - (1 - e) * (SPEC.rows + 0.3); })
+      .then(() => { anticCols.delete(c); SFX.thud(); if (colN && celebrateNukes) SFX.clank(); }));
+    seen += colN;
+  }
+  await Promise.all([...drops, out]);
+  anticCols.clear();
+}
+
+// Pop the given cells and drop new symbols in: shared by winning clusters and exploding Nukes.
+async function popAndRefill(rm, nextGrid, sound) {
+  const popping = sprites.filter((sp) => rm.has(sp.c * 10 + Math.round(sp.row)));
+  if (sound) sound();
+  await tween(200, (k) => { for (const sp of popping) { sp.scale = 1 - k * 0.9; sp.alpha = 1 - k; } });
+  sprites = sprites.filter((sp) => !popping.includes(sp));
+  const moves = [];
+  for (let c = 0; c < SPEC.cols; c++) {
+    const col = sprites.filter((sp) => sp.c === c).sort((a, b) => a.row - b.row), k = SPEC.rows - col.length;
+    col.forEach((sp, i) => moves.push({ sp, from: sp.row, to: k + i }));
+    for (let i = 0; i < k; i++) { const sp = mkSprite(c, i - k - 0.2, nextGrid[c][i]); sprites.push(sp); moves.push({ sp, from: sp.row, to: i }); }
+  }
+  await tween(320, (k) => { const e = ease.outCubic(k); for (const mv of moves) mv.sp.row = mv.from + (mv.to - mv.from) * e; });
+  for (const mv of moves) { const cell = nextGrid[mv.sp.c][mv.to]; mv.sp.row = mv.to; mv.sp.s = cell.s; mv.sp.m = cell.m; mv.sp.hl = 0; }
+  SFX.thud();
+}
+async function animateTumble(step, nextGrid) {
+  const rm = new Set(step.removed.map(([c, r]) => c * 10 + r));
+  for (const sp of sprites) { sp.hl = 0; sp.win = rm.has(sp.c * 10 + Math.round(sp.row)); }
+  activeWins = step.wins;
+  await wait(quiet ? 380 : 600);
+  // Each cluster's pay rises from its middle as it pops (with its fallout multiplier, if any).
+  const now = performance.now();
+  for (const w of step.wins) {
+    const cx = w.cells.reduce((a, [c]) => a + c, 0) / w.cells.length, cy = w.cells.reduce((a, [, r]) => a + r, 0) / w.cells.length;
+    floaters.push({ x: Math.min(W - 1.5 * CW, Math.max(1.5 * CW, (cx + 0.5) * CW)), y: (cy + 0.5) * CH, base: w.base, mult: w.mult, pay: w.pay, t0: now, dur: (w.mult > 1 ? 1300 : 800) * SPEED });
+  }
+  activeWins = [];
+  for (const sp of sprites) sp.win = false;
+  await popAndRefill(rm, nextGrid, quiet ? null : SFX.pop);
+}
+// Nukes explode: a flash and mushroom cloud each, the squares they hit light up with their new
+// fallout multipliers, then the Nukes leave and new symbols tumble in.
+// A Doomsday also flashes the board green and every fallout square doubles at once.
+async function animateBlast(step, nextGrid) {
+  const nk = new Set(step.nukes.map(([c, r]) => c * 10 + r));
+  for (const sp of sprites) sp.hl = nk.has(sp.c * 10 + Math.round(sp.row)) ? 1 : 0;
+  await wait(180);
+  SFX.boom(); if (step.doom) SFX.doom();
+  const now = performance.now(); shakeUntil = now + (step.doom ? 900 : 450);
+  step.nukes.forEach(([c, r, s], i) => effects.push({ x: (c + 0.5) * CW, y: (r + 0.5) * CH, t0: now + i * 90 * SPEED, dur: (s === 'mini' ? 950 : s === 'nuke' ? 1250 : 1600) * SPEED, kind: s }));
+  if (step.doom) { const st = $('.stage'); st.classList.add('doom'); st.classList.remove('flash'); void st.offsetWidth; st.classList.add('flash'); setTimeout(() => st.classList.remove('flash', 'doom'), 1000); }
+  await wait(step.doom ? 450 : 200);
+  viewSpots = step.spots;
+  const flashAt = performance.now(); for (const [c, r] of step.cells) spotFlash.set(c * 10 + r, flashAt);
+  await wait(step.doom ? 800 : 300);
+  await popAndRefill(nk, nextGrid, null);
+}
+function highlight(pred) { for (const sp of sprites) sp.hl = pred(sp) ? 1 : 0; }
+function clearHl() { for (const sp of sprites) sp.hl = 0; }
+
+let ovTimer = 0;
+function overlay(big, sub, ms) {
+  $('#ovBig').textContent = big; $('#ovSub').textContent = sub || ''; $('#ovSub').style.display = sub ? '' : 'none';
+  $('#ov').classList.add('show'); clearTimeout(ovTimer);
+  return new Promise((res) => { ovTimer = setTimeout(() => { $('#ov').classList.remove('show'); res(); }, ms * SPEED); });
+}
+
+// ===== Sound (synthesised, no files) =====
+let AC = null, master = null, muted = false, vol = 0.6;
+function audioInit() {
+  if (AC) { if (AC.state === 'suspended') AC.resume(); return; }
+  try { AC = new (window.AudioContext || window.webkitAudioContext)(); master = AC.createGain(); master.gain.value = muted ? 0 : vol; master.connect(AC.destination); } catch (e) { AC = null; }
+}
+function tone(f, dur, type = 'sine', g = 0.2, when = 0, slide) {
+  if (!AC) return; const t = AC.currentTime + when, o = AC.createOscillator(), gn = AC.createGain();
+  o.type = type; o.frequency.setValueAtTime(f, t); if (slide) o.frequency.exponentialRampToValueAtTime(slide, t + dur);
+  gn.gain.setValueAtTime(0.0001, t); gn.gain.exponentialRampToValueAtTime(g, t + 0.01); gn.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(gn); gn.connect(master); o.start(t); o.stop(t + dur + 0.05);
+}
+function noise(dur, g, cutoff) {
+  if (!AC) return; const len = Math.floor(AC.sampleRate * dur), buf = AC.createBuffer(1, len, AC.sampleRate), d = buf.getChannelData(0);
+  const r = new Uint32Array(len); crypto.getRandomValues(r.subarray(0, Math.min(len, 16384)));
+  for (let i = 0; i < len; i++) d[i] = ((r[i % 16384] / 4294967296) * 2 - 1) * (1 - i / len);
+  const src = AC.createBufferSource(), lp = AC.createBiquadFilter(), gn = AC.createGain();
+  src.buffer = buf; lp.type = 'lowpass'; lp.frequency.value = cutoff; gn.gain.value = g;
+  src.connect(lp); lp.connect(gn); gn.connect(master); src.start();
+}
+const SFX = {
+  click: () => tone(520, 0.06, 'square', 0.06),
+  thud: () => tone(170, 0.09, 'sine', 0.2, 0, 70),
+  clank: () => tone(880, 0.12, 'triangle', 0.12, 0, 440),
+  pop: () => tone(700, 0.08, 'triangle', 0.14, 0, 1300),
+  tease: () => tone(260, 0.6, 'sawtooth', 0.04, 0, 620),
+  chime: () => [0, 4, 7, 12].forEach((s, i) => tone(523 * 2 ** (s / 12), 0.3, 'sine', 0.14, i * 0.07)),
+  boom: () => { noise(0.8, 0.6, 500); tone(90, 0.6, 'sine', 0.35, 0, 35); },
+  doom: () => { noise(1.4, 0.5, 260); tone(60, 1.3, 'sine', 0.4, 0.1, 24); tone(900, 0.9, 'sawtooth', 0.05, 0.15, 110); },
+  fanfare: () => [0, 4, 7, 12, 7, 12, 16].forEach((s, i) => tone(392 * 2 ** (s / 12), 0.24, 'triangle', 0.14, i * 0.11)),
+  siren: () => { tone(480, 0.45, 'sawtooth', 0.05, 0, 900); tone(900, 0.45, 'sawtooth', 0.05, 0.45, 480); },
+  // Air-raid siren for the bonus trigger: two slow rise-and-fall wails with a detuned second voice.
+  airRaid: () => {
+    for (let i = 0; i < 2; i++) {
+      const t = i * 1.1;
+      tone(260, 0.55, 'sawtooth', 0.05, t, 720); tone(720, 0.55, 'sawtooth', 0.05, t + 0.55, 260);
+      tone(266, 0.55, 'square', 0.025, t, 735); tone(735, 0.55, 'square', 0.025, t + 0.55, 266);
+    }
+  },
+};
+
+// ===== Game state =====
+const G = { balance: MARKET.startCredits, start: MARKET.startCredits, betIdx: 1, mode: 'base', fsLeft: 0, fsPlayed: 0, fsTotal: 0, featureBet: 0, roundWin: 0, lastWin: 0, busy: false, state: 'idle', spinNo: 0, spots: null, boughtFor: 0 };
+// Game Lobby: inside the lobby this game plays from the lobby's shared wallet (nothing changes when the game is opened on its own)
+const LOBBY = (() => { try { return window.parent !== window && window.parent.LobbyWallet || null; } catch (e) { return null; } })();
+if (LOBBY) G.balance = G.start = LOBBY.attach(() => G.balance);
+const sessionStart = Date.now();
+const LOG = [];
+const setState = (s) => { G.state = s; $('#state').textContent = '· state: ' + s; };
+const msg = (t) => { $('#msg').textContent = t; };
+
+function updateUI() {
+  const bet = MARKET.betLadder[G.betIdx];
+  $('#bal').textContent = fmt(G.balance);
+  if (!winCounting) { $('#win').textContent = fmt(G.lastWin); winShown = G.lastWin; }
+  const net = G.balance - G.start; $('#net').textContent = (net >= 0 ? '+' : '−') + fmt(Math.abs(net));
+  $('#bet').textContent = fmt(G.mode === 'free' ? G.featureBet : bet);
+  const free = G.mode === 'free';
+  $('#betDown').disabled = G.busy || free || G.betIdx === 0;
+  $('#betUp').disabled = G.busy || free || G.betIdx === MARKET.betLadder.length - 1;
+  // Free spins play themselves, so the button only shows how many are left during the feature.
+  const sb = $('#spin');
+  sb.disabled = G.busy || free; sb.classList.toggle('free', free);
+  sb.setAttribute('aria-label', free ? `Free spins playing, ${G.fsLeft} left` : 'Spin');
+  sb.querySelector('svg').style.visibility = free ? 'hidden' : '';
+  $('#spinCount').hidden = !free; $('#spinCount').textContent = G.fsLeft;
+  $('#spinHint').textContent = free ? 'Free spins' : 'Spin';
+  document.body.classList.toggle('fs', free); // bunker background during free spins
+  // Free-spins box: the rule in the base game, the live count during the feature.
+  const fb = $('#feature'); fb.classList.toggle('on', free);
+  if (free) {
+    $('#fbK1').textContent = 'Free spins left'; $('#fbV1').textContent = G.fsLeft;
+    $('#fbK2').textContent = 'Feature win'; $('#fbV2').textContent = fmt(G.fsTotal);
+  } else {
+    $('#fbK1').textContent = 'Free spins'; $('#fbV1').textContent = `${SPEC.fsTrigger}+ Nukes`;
+  }
+  $('#fbK2').hidden = !free; $('#fbV2').hidden = !free; // feature win shows only during free spins
+  const bb = $('#buy'), cost = round2(bet * SPEC.buyCostX);
+  bb.hidden = !MARKET.allowBuy;
+  $('#buyCost').textContent = fmt(cost);
+  bb.disabled = G.busy || free || G.balance + 1e-9 < cost;
+  $('#buyRule').textContent = SPEC.buyCostX;
+  $('#spotFirst').textContent = SPEC.spotFirst; $('#spotCap').textContent = SPEC.spotCap;
+  $('#fsTrigN').textContent = SPEC.fsTrigger; $('#fsTrigN2').textContent = SPEC.fsTrigger; $('#buySpinsRule').textContent = SPEC.buySpins;
+  $('#retrigN').textContent = SPEC.fsRetrigger; $('#retrigRule').textContent = SPEC.fsRetriggerAward;
+  $('#buildUpN').textContent = SPEC.buildUpSpins;
+  $('#reset').disabled = G.busy || free;
+}
+function tick() { const s = Math.floor((Date.now() - sessionStart) / 1000); $('#time').textContent = Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+// Resolves when the last floating win amount has finished (timed, so it also works when
+// animation frames pause).
+function floatersDone() {
+  const end = floaters.reduce((m, f) => Math.max(m, f.t0 + f.dur), 0);
+  const left = end - performance.now();
+  return new Promise((r) => setTimeout(r, Math.max(0, left)));
+}
+// The WIN display rolls up to each new total instead of jumping.
+let winCounting = 0, winShown = 0;
+function countWin(to) {
+  const from = winShown, id = ++winCounting;
+  tween(450, (k) => { if (id !== winCounting) return; winShown = from + (to - from) * ease.outCubic(k); $('#win').textContent = fmt(winShown); })
+    .then(() => { if (id === winCounting) { winCounting = 0; winShown = to; $('#win').textContent = fmt(to); } });
+}
+
+function winText(wins) { return wins.map((w) => `${NAMES[w.s]} ×${w.count} pays ${fmt(w.pay)}${w.mult > 1 ? ` (fallout ×${w.mult})` : ''}`).join(' · '); }
+
+// replay: a logged spin to show again (no credits move). buy: { bet, cost, force } from the feature buy.
+async function play(replay, buy) {
+  if (G.busy) return;
+  audioInit();
+  const free = replay ? replay.mode === 'free' : G.mode === 'free';
+  const bet = replay ? replay.bet : free ? G.featureBet : buy ? buy.bet : MARKET.betLadder[G.betIdx];
+  if (!replay && !free && !buy && G.balance + 1e-9 < bet) { msg('Not enough credits. Lower the bet.'); return; }
+  G.busy = true; const t0 = performance.now(); SFX.click();
+  if (!replay) {
+    if (free) { G.fsLeft--; G.fsPlayed++; }
+    else { G.balance = round2(G.balance - (buy ? buy.cost : bet)); G.lastWin = 0; }
+  }
+  updateUI(); setState('spinning');
+  msg(replay ? `Replay #${replay.n}` : free ? (G.fsPlayed === SPEC.buildUpSpins + 1 ? 'Doomsday armed' : 'Free spin') : buy ? 'Launch codes accepted' : 'Good luck');
+
+  // Outcome comes from the mock server first; everything after this only presents it.
+  const mode = free ? 'free' : 'base';
+  let o;
+  if (replay) { viewSpots = replay.spots; o = Server.spin({ bet, mode, force: replay.force, spots: replay.spots, bought: replay.bought, fsNo: replay.fsNo, rng: ReplayRNG(replay.tape) }); }
+  else {
+    let force = buy ? buy.force : ($('#force').value || null);
+    if (!buy) { if (force && ((/^fs/.test(force) && free) || (['n2', 'mini', 'tsar', 'doom'].includes(force) && !free))) force = null; $('#force').value = ''; }
+    const tape = [], spots = free ? G.spots : null, bought = free && G.boughtFor > 0, fsNo = free ? G.fsPlayed : 0;
+    o = Server.spin({ bet, mode, force, spots, bought, fsNo, rng: TapeRNG(CryptoRNG, tape) });
+    LOG.unshift({ n: ++G.spinNo, mode, bet, force, spots, bought, fsNo, tape, win: o.totalWin, cost: buy ? buy.cost : 0, nukes: o.nukes, tumbles: o.steps.filter((s) => s.kind === 'win').length });
+    if (LOG.length > 40) LOG.pop(); renderLog();
+  }
+
+  quiet = o.totalWin <= bet; // no celebration for a return at or below the bet
+  setState('stopping');
+  await animateDrop(o.steps[0].grid, mode, true);
+  setState('evaluating');
+  let running = 0;
+  for (let i = 0; i < o.steps.length - 1; i++) {
+    setState('presenting');
+    const st = o.steps[i], next = o.steps[i + 1].grid;
+    if (st.kind === 'win') {
+      running = round2(running + st.wins.reduce((a, w) => a + w.pay, 0));
+      await animateTumble(st, next);
+    } else {
+      msg(st.doom ? `Doomsday! Fallout ×${2 ** st.doom}` : st.nukes.some((n) => n[2] === 'tsar') ? 'Tsar Bomba!' : st.nukes.length > 1 ? `${st.nukes.length} Nukes!` : 'Nuke!');
+      await animateBlast(st, next);
+      if (free && !replay) { G.spots = st.spots; updateUI(); }
+    }
+  }
+
+  // The spin's win is shown only once every pop and floating amount has finished.
+  await floatersDone();
+  let win = o.totalWin;
+  if (!replay) {
+    if (free) G.spots = o.spotsAfter;
+    const cap = SPEC.maxWinX * bet;
+    let capped = false;
+    if (free) { if (G.roundWin + win >= cap) { win = round2(cap - G.roundWin); capped = true; } G.roundWin = round2(G.roundWin + win); G.fsTotal = round2(G.fsTotal + win); }
+    else { if (win >= cap) { win = cap; capped = true; } G.roundWin = win; }
+    G.balance = round2(G.balance + win);
+    G.lastWin = free ? G.fsTotal : win;
+    if (G.lastWin !== winShown) countWin(G.lastWin); // the WIN display rolls up to the new total
+    updateUI();
+    setState('presenting');
+    if (win > bet) {
+      SFX.chime();
+      const x = win / bet;
+      if (x >= 50) { confetti(160); await overlay('MEGA WIN', fmt(win), 1700); }
+      else if (x >= 15) { confetti(90); await overlay('BIG WIN', fmt(win), 1300); }
+      else confetti(25);
+    }
+    msg(win > 0 ? `Win ${fmt(win)}` : 'No win');
+    if (capped) { msg(`Max win ${fmt(SPEC.maxWinX * bet)}`); G.fsLeft = 0; }
+    else if (o.fsAwarded) {
+      setState('feature');
+      if (!free) {
+        await nukeTrigger();
+        const spins = buy ? buy.spins : o.fsAwarded;
+        startFeature(bet, spins, buy ? buy.cost : 0);
+        msg(`${spins} free spins!`);
+        await tapToStart(`${spins} FREE SPINS`);
+      } else { G.fsLeft += o.fsAwarded; updateUI(); SFX.fanfare(); await overlay(`+${o.fsAwarded} FREE SPINS`, `${o.detonations} Nukes in one spin`, 1600); msg(`+${o.fsAwarded} free spins!`); }
+    }
+    if (free && G.fsLeft <= 0) {
+      setState('feature');
+      updateUI();
+      await overlay('FEATURE WIN', `${fmt(G.fsTotal)} from ${G.fsPlayed} free spins`, 2400);
+      msg(`Free spins won ${fmt(G.fsTotal)}.`);
+      G.lastWin = G.fsTotal; G.mode = 'base'; G.fsLeft = 0; G.spots = null; viewSpots = null; G.boughtFor = 0;
+    }
+  } else {
+    viewSpots = G.mode === 'free' ? G.spots : null;
+    msg(`Replay #${replay.n}: win ${fmt(o.totalWin)}`);
+  }
+  // Minimum game cycle (market rule) applies to paid base spins; free spins are part of the
+  // feature that triggered them, so they run straight on.
+  const left = (free ? 0 : MARKET.minCycleMs) - (performance.now() - t0);
+  if (left > 0) await new Promise((r) => setTimeout(r, left));
+  setState('idle'); G.busy = false; updateUI();
+  if (!replay) autoFreeSpin();
+}
+// Free spins wait for the player: "10 FREE SPINS / Tap to start" stays up until they tap the board,
+// press Spin, or hit Space or Enter. Then they play automatically.
+function tapToStart(big) {
+  const ov = $('#ov'), sb = $('#spin');
+  $('#ovBig').textContent = big; $('#ovSub').style.display = '';
+  $('#ovSub').textContent = matchMedia('(pointer: coarse)').matches ? 'Tap to start' : 'Click to start';
+  clearTimeout(ovTimer); ov.classList.add('show', 'tap'); sb.disabled = false;
+  return new Promise((res) => {
+    const go = (e) => {
+      if (e.type === 'keydown') { if ((e.code !== 'Space' && e.key !== 'Enter') || !$('#settings').hidden) return; e.preventDefault(); }
+      ov.removeEventListener('click', go); sb.removeEventListener('click', go); document.removeEventListener('keydown', go);
+      ov.classList.remove('show', 'tap'); SFX.click(); updateUI(); res();
+    };
+    ov.addEventListener('click', go); sb.addEventListener('click', go); document.addEventListener('keydown', go);
+  });
+}
+// Free spins play automatically, back to back, until the feature ends.
+function autoFreeSpin() {
+  if (G.mode === 'free' && G.fsLeft > 0) setTimeout(() => { if (!G.busy && G.mode === 'free' && G.fsLeft > 0) play(); }, 350 * SPEED);
+}
+
+// Bonus trigger (4+ Nukes or a Launch codes buy): air-raid siren and red alert lights before the intro.
+// Bonus trigger (3+ Nukes or a Launch codes buy): red alert and siren while the Nukes glow, then each
+// Nuke explodes in turn, a blast wave flashes white and throws every symbol off the board, and the
+// bunker opens for the free spins.
+async function nukeTrigger() {
+  const st = $('#stage');
+  const nukes = sprites.filter((sp) => sp.s === SPEC.scatter).sort((a, b) => a.c - b.c || a.row - b.row);
+  for (const sp of nukes) sp.hl = 1;
+  SFX.airRaid(); st.classList.add('alert');
+  await overlay('RED ALERT', 'Nukes armed', 1100);
+  for (const sp of nukes) {
+    const now = performance.now();
+    effects.push({ x: (sp.c + 0.5) * CW, y: (sp.row + 0.5) * CH, t0: now, dur: 1500 * SPEED, big: true });
+    SFX.boom(); shakeUntil = now + 500;
+    sp.hl = 0; tween(220, (k) => { sp.scale = 1 + 0.6 * k; sp.alpha = 1 - k; });
+    await wait(300);
+  }
+  st.classList.remove('alert');
+  st.classList.remove('flash'); void st.offsetWidth; st.classList.add('flash');
+  SFX.boom(); shakeUntil = performance.now() + 700;
+  const cx = (SPEC.cols - 1) / 2, cy = (SPEC.rows - 1) / 2, flying = sprites.slice();
+  await tween(650, (k) => {
+    const e = ease.inCubic(k);
+    for (const sp of flying) {
+      const dx = sp.c - cx, dy = sp.row - cy, d = Math.hypot(dx, dy) || 1;
+      sp.dx = dx / d * e * 6; sp.dy = dy / d * e * 6; sp.alpha = 1 - k; sp.scale = 1 - 0.4 * k;
+    }
+  });
+  sprites = [];
+  await wait(250);
+  st.classList.remove('flash');
+}
+
+function startFeature(bet, spins, boughtFor) {
+  G.mode = 'free'; G.featureBet = bet; G.fsLeft = spins; G.fsPlayed = 0; G.fsTotal = 0;
+  G.spots = Server.emptySpots(); viewSpots = G.spots; spotFlash.clear();
+  G.boughtFor = boughtFor; SFX.fanfare(); updateUI();
+}
+
+// ===== Feature buy ("Launch codes") =====
+function confirmBuy(cost, bet) {
+  const m = $('#buyModal');
+  $('#buyText').textContent = `${SPEC.buySpins} spins for ${fmt(cost)}`;
+  m.hidden = false; $('#buyCancel').focus();
+  return new Promise((res) => {
+    const done = (v) => { m.hidden = true; $('#buyOk').onclick = $('#buyCancel').onclick = null; document.removeEventListener('keydown', esc); res(v); };
+    const esc = (e) => { if (e.key === 'Escape') done(false); };
+    $('#buyOk').onclick = () => done(true); $('#buyCancel').onclick = () => done(false);
+    document.addEventListener('keydown', esc);
+  });
+}
+async function buyFeature() {
+  if (G.busy || G.mode === 'free' || !MARKET.allowBuy) return;
+  const bet = MARKET.betLadder[G.betIdx], b = Server.buy({ bet });
+  if (G.balance + 1e-9 < b.cost) { msg('Not enough credits for launch codes.'); return; }
+  if (!(await confirmBuy(b.cost, bet))) return;
+  play(null, { bet, cost: b.cost, force: b.force, spins: b.spins });
+}
+
+function renderLog() {
+  const ul = $('#log'); ul.textContent = '';
+  for (const e of LOG) {
+    const li = document.createElement('li');
+    const span = document.createElement('span');
+    const hot = e.spots ? spotStats(e.spots) : null;
+    span.textContent = `#${e.n} ${e.cost ? 'buy ' + fmt(e.cost) : e.mode}${hot && hot.top ? ' hot×' + hot.top : ''} bet ${fmt(e.bet)} → ${fmt(e.win)} · ${e.tumbles} tumbles · ${e.nukes} nukes${e.force && !e.cost ? ' · forced ' + e.force : ''}`;
+    const b = document.createElement('button'); b.textContent = 'Replay';
+    b.onclick = () => { closeSettings(); play(e); };
+    li.append(span, b); ul.append(li);
+  }
+}
+function renderPaytable() {
+  const bet = G.mode === 'free' ? G.featureBet : MARKET.betLadder[G.betIdx], pt = $('#pt'); pt.textContent = '';
+  const tiers = SPEC.clusterTiers, bands = tiers.map((lo, i) => i === tiers.length - 1 ? `${lo}+` : tiers[i + 1] - 1 === lo ? `${lo}` : `${lo}-${tiers[i + 1] - 1}`);
+  const rows = Object.entries(SPEC.symbols).map(([k, v]) => [k, v.name, bands.map((b, i) => [b, fmt(v.pays[i] * bet)])]);
+  rows.push(['nuke', 'Nuke', `${SPEC.fsTrigger}+ anywhere trigger ${SPEC.fsAward} free spins. In free spins every Nuke explodes and lights its own square and the 4 touching it.`]);
+  rows.push(['mini', 'Suitcase Nuke', 'Free spins only. Lights just the square it lands on.']);
+  rows.push(['tsar', 'Tsar Bomba', 'Free spins only. Blasts every square up to 2 steps away.']);
+  rows.push(['doom', 'Doomsday', `Free spin ${SPEC.buildUpSpins + 1} on. Doubles every fallout square on the board.`]);
+  for (const [k, n, p] of rows) {
+    const d = document.createElement('div'); d.className = 's' + (typeof p === 'string' ? ' wide' : '');
+    const im = document.createElement('img'); im.src = IMG[k].src; im.alt = '';
+    const t = document.createElement('div'); t.innerHTML = '<div class="n"></div><div class="p"></div>';
+    t.firstChild.textContent = n;
+    if (typeof p === 'string') t.lastChild.textContent = p;
+    else for (const [b, v] of p) { const c = document.createElement('span'); c.className = 'band'; c.innerHTML = '<i></i>'; c.firstChild.textContent = b; c.append(v); t.lastChild.append(c); }
+    d.append(im, t); pt.append(d);
+  }
+}
+
+function runSim() {
+  const btn = $('#sim'), out = $('#simOut'), bet = 1, total = 200000, buys = 4000, st = newSim(), bs = newBuySim();
+  btn.disabled = true; out.textContent = 'Running…';
+  const step = () => {
+    if (st.spins < total) { simChunk(st, 4000, bet, CryptoRNG); out.textContent = `Spins ${st.spins.toLocaleString()} / ${total.toLocaleString()}…`; return setTimeout(step, 0); }
+    if (bs.buys < buys) { simBuyChunk(bs, 200, bet, CryptoRNG); out.textContent = `Bought features ${bs.buys.toLocaleString()} / ${buys.toLocaleString()}…`; return setTimeout(step, 0); }
+    const rtp = st.won / st.spent * 100, tr = st.triggers || 1;
+    out.textContent = `RTP ${rtp.toFixed(2)}%  (base ${(st.baseWon / st.spent * 100).toFixed(2)}% + free spins ${(st.fsWon / st.spent * 100).toFixed(2)}%)\n` +
+      `Hit rate 1 in ${(st.spins / st.hits).toFixed(2)} · Free spins 1 in ${st.triggers ? Math.round(st.spins / st.triggers) : '∞'} · Avg feature ${(st.fsWon / tr).toFixed(1)}× bet\n` +
+      `Per feature: ${(st.nukes / tr).toFixed(1)} Nukes, ${(st.hot / tr).toFixed(1)} fallout squares, hottest ×${(st.top / tr).toFixed(1)} · retriggers ${(st.retriggers / tr).toFixed(2)}\n` +
+      `Feature buy at ${SPEC.buyCostX}×: RTP ${(bs.won / bs.spent * 100).toFixed(1)}% · avg ${(bs.won / bs.buys).toFixed(1)}× bet · best ${bs.maxX.toFixed(0)}×\n` +
+      `Biggest round ${st.maxX.toFixed(1)}× bet · Placeholder math, single run, not a certified figure.`;
+    btn.disabled = false;
+  };
+  setTimeout(step, 0);
+}
+
+// ===== Wire up =====
+$('#spin').addEventListener('click', () => { if (G.mode !== 'free') play(); });
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Space' && !e.repeat && $('#buyModal').hidden && $('#settings').hidden && G.mode !== 'free' && !/INPUT|SELECT|BUTTON|TEXTAREA/.test(document.activeElement.tagName)) { e.preventDefault(); play(); }
+});
+$('#betDown').onclick = () => { if (G.betIdx > 0) { G.betIdx--; updateUI(); renderPaytable(); } };
+$('#betUp').onclick = () => { if (G.betIdx < MARKET.betLadder.length - 1) { G.betIdx++; updateUI(); renderPaytable(); } };
+$('#mute').onclick = () => { muted = !muted; $('#mute').textContent = muted ? '🔇' : '🔊'; $('#mute').setAttribute('aria-pressed', String(muted)); $('#mute').setAttribute('aria-label', muted ? 'Unmute sound' : 'Mute sound'); if (master) master.gain.value = muted ? 0 : vol; };
+$('#vol').oninput = (e) => { vol = +e.target.value; if (master && !muted) master.gain.value = vol; };
+// Settings sheet: opens from the gear, closes with the X, a tap outside it, or Escape.
+const settingsEl = $('#settings');
+function openSettings() { settingsEl.hidden = false; $('#setClose').focus(); }
+function closeSettings() { if (settingsEl.hidden) return; settingsEl.hidden = true; $('#info').focus(); }
+$('#info').onclick = openSettings;
+$('#setClose').onclick = closeSettings;
+settingsEl.addEventListener('click', (e) => { if (e.target === settingsEl) closeSettings(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSettings(); });
+$('#reset').onclick = () => { if (G.busy || G.mode === 'free') return; G.balance = MARKET.startCredits; G.start = MARKET.startCredits; G.lastWin = 0; msg('Credits reset to ' + fmt(MARKET.startCredits)); updateUI(); };
+$('#sim').onclick = runSim;
+$('#buy').onclick = buyFeature;
+// Refit on every size change, then once more a moment later: some browsers and embedding iframes
+// (the Game Lobby) report the final size slightly after the resize event.
+let refitTimer = 0;
+window.addEventListener('resize', () => { resize(); clearTimeout(refitTimer); refitTimer = setTimeout(resize, 200); });
+
+(async function init() {
+  await loadArt();
+  resize(); setTimeout(resize, 300); // second fit once an embedding page has settled its size
+  // Starting screen: a random, unevaluated view of the base strips.
+  const grid = Server.STRIPS.base.map((strip) => { const p = CryptoRNG.int(strip.length); return Array.from({ length: SPEC.rows }, (_, r) => ({ s: strip[(p + r) % strip.length] })); });
+  sprites = []; grid.forEach((col, c) => col.forEach((cell, r) => sprites.push(mkSprite(c, r, cell))));
+  renderPaytable(); updateUI(); setState('idle'); tick(); setInterval(tick, 1000);
+  requestAnimationFrame(render);
+})();
+</script>
+</body>
+</html>

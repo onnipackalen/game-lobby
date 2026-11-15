@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1F5132">
+  <meta name="description" content="A push-your-luck snakes and ladders game. Play money only.">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Climb">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <title>Canopy Climb</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <h1 class="logo"><img src="icons/icon-192.png" alt="" width="44" height="44">Canopy <span>Climb</span></h1>
+      <div class="stats">
+        <div class="stat"><span>Session</span><b id="sessionNet">0.00</b></div>
+        <div class="stat"><span>Time</span><b id="sessionTime">0:00</b></div>
+        <div class="stat balance"><span>Balance</span><b><span id="balance">1,000.00</span> chips</b></div>
+      </div>
+      <nav class="menu" aria-label="Game menu">
+        <button class="icon-btn" data-open="history" aria-label="History">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><polyline points="3 3 3 9 9 9"/><path d="M12 7v5l3 2"/></svg><span>History</span>
+        </button>
+        <button class="icon-btn" data-open="fair" aria-label="Provably fair">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><polyline points="8.5 12 11 14.5 15.5 9.5"/></svg><span>Fair</span>
+        </button>
+        <button class="icon-btn" data-open="rules" aria-label="Rules and odds">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .9-1 1.7"/><line x1="12" y1="17" x2="12" y2="17.01"/></svg><span>Rules</span>
+        </button>
+        <button class="icon-btn" data-open="settings" aria-label="Settings">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>Settings</span>
+        </button>
+      </nav>
+    </header>
+
+    <main class="layout">
+      <section class="board-area" aria-label="Board">
+        <div class="board" id="board">
+          <svg id="boardSvg" viewBox="0 0 1000 1000" role="img" aria-labelledby="boardDesc">
+            <defs id="boardDefs"></defs>
+            <g id="tileLayer"></g>
+            <g id="artLayer" pointer-events="none" filter="url(#artShadow)"></g>
+            <g id="labelLayer" pointer-events="none"></g>
+            <g id="reachLayer" pointer-events="none"></g>
+            <g id="token" pointer-events="none"></g>
+            <g id="fxLayer" pointer-events="none"></g>
+          </svg>
+          <p id="boardDesc" class="sr-only">Snakes and ladders board.</p>
+          <div id="tooltip" class="tooltip" role="status" hidden></div>
+          <div id="confetti" class="confetti" aria-hidden="true"></div>
+        </div>
+        <ul class="legend">
+          <li><span class="key key-ladder" aria-hidden="true"></span>Ladder: climb up</li>
+          <li><span class="key key-snake" aria-hidden="true"></span>Snake: slide down, keep playing</li>
+          <li><span class="key key-bust" aria-hidden="true"></span>Red pit: bust</li>
+          <li><span class="key key-nest" aria-hidden="true"></span>Serpent's Nest</li>
+        </ul>
+      </section>
+
+      <aside class="panel" aria-live="polite">
+        <!-- Before a round -->
+        <div id="setupView" class="view">
+          <div class="group">
+            <h2 class="label">Risk</h2>
+            <div class="segmented" id="riskButtons" role="radiogroup" aria-label="Risk level"></div>
+            <p class="hint" id="riskBlurb"></p>
+          </div>
+
+          <div class="group">
+            <h2 class="label" id="stakeLabel">Stake</h2>
+            <div class="stake-row">
+              <button class="round-btn" id="stakeDown" aria-label="Lower stake">−</button>
+              <output class="stake-value" id="stakeValue" aria-labelledby="stakeLabel">5.00</output>
+              <button class="round-btn" id="stakeUp" aria-label="Raise stake">+</button>
+            </div>
+            <div class="chips" id="stakeChips"></div>
+          </div>
+
+          <div class="group">
+            <div class="row-between">
+              <h2 class="label">Ladders</h2>
+              <span class="tag" id="layoutTag">Classic</span>
+            </div>
+            <div class="row-gap">
+              <button class="btn btn-blue" id="shuffleBtn">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+                Shuffle ladders
+              </button>
+              <button class="btn btn-ghost" id="classicBtn">Classic</button>
+            </div>
+            <p class="hint" id="layoutInfo"></p>
+          </div>
+
+          <div class="group auto-box">
+            <div class="row-between">
+              <label class="switch-label" for="autoToggle">
+                <b>Auto Cash-Out</b>
+                <span class="hint">Rolls this round until your target, a bust or 100.</span>
+              </label>
+              <input type="checkbox" role="switch" id="autoToggle" class="switch">
+            </div>
+            <div class="row-gap target-row" id="targetRow">
+              <label for="autoTarget">Target</label>
+              <input type="number" id="autoTarget" min="1.01" step="0.1" inputmode="decimal">
+              <span>×</span>
+            </div>
+          </div>
+
+          <button class="btn btn-yellow btn-big sticky-cta" id="betBtn"><span id="betLabel">Bet &amp; roll</span></button>
+          <p class="hint center" id="betHint"></p>
+          <button class="btn btn-ghost" id="refillBtn" hidden>Free refill to 1,000 chips</button>
+        </div>
+
+        <!-- During a round -->
+        <div id="roundView" class="view" hidden>
+          <div class="now">
+            <div>
+              <p class="hint" id="nowWhere">Square 1</p>
+              <p class="big-mult" id="nowMult">–</p>
+            </div>
+            <div class="now-right">
+              <p class="hint" id="nowStake">Stake 5.00</p>
+              <p class="worth" id="nowWorth">Worth –</p>
+            </div>
+            <div class="die" id="die" data-face="1" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          </div>
+          <p class="event" id="eventLine" role="status"></p>
+
+          <section class="next-roll" aria-labelledby="nextTitle">
+            <div class="row-between">
+              <h2 class="label" id="nextTitle">Next roll</h2>
+              <span class="hint" id="bustChance"></span>
+            </div>
+            <ol class="outcomes" id="outcomes"></ol>
+            <p class="hint" id="avgLine"></p>
+          </section>
+
+          <div class="auto-status" id="autoStatus" hidden>
+            <span id="autoText">Auto-rolling</span>
+            <button class="btn btn-ghost btn-small" id="stopAutoBtn">Stop auto</button>
+          </div>
+
+          <div class="actions sticky-cta">
+            <button class="btn btn-blue btn-big" id="rollBtn">Roll again</button>
+            <button class="btn btn-yellow btn-big" id="cashBtn">Cash out</button>
+            <button class="btn btn-super" id="superBtn" aria-describedby="superHint">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><polyline points="8.5 12 11 14.5 15.5 9.5"/></svg>
+              <span id="superLabel">Super Roll</span><span class="super-hint" id="superHint">red pits can't bust you</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- After a round -->
+        <div id="resultView" class="view" hidden>
+          <div class="result" id="resultCard">
+            <div class="res-badge" id="resBadge" aria-hidden="true"></div>
+            <p class="hint" id="resWhere"></p>
+            <p class="res-title" id="resTitle"></p>
+            <dl class="res-grid">
+              <div><dt>Stake</dt><dd id="resStake"></dd></div>
+              <div><dt id="resPaidLabel">Paid</dt><dd id="resPaid"></dd></div>
+              <div><dt>This round</dt><dd id="resNet"></dd></div>
+            </dl>
+            <p class="hint" id="resNote"></p>
+            <p class="hint" id="resPath"></p>
+          </div>
+          <div class="actions sticky-cta">
+            <button class="btn btn-ghost btn-big" id="changeBetBtn">Change bet</button>
+            <button class="btn btn-yellow btn-big" id="againBtn">Bet again</button>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <footer class="foot">
+      <span>Play money only: chips have no cash value.</span>
+      <span>Return to player up to 97% on every risk level.</span>
+      <span>Seed hash <code id="footHash">…</code></span>
+    </footer>
+  </div>
+
+  <dialog id="dialog" class="dialog" aria-labelledby="dialogTitle">
+    <div class="dialog-head">
+      <h2 id="dialogTitle"></h2>
+      <button class="icon-btn" id="dialogClose" aria-label="Close">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+      </button>
+    </div>
+    <div id="dialogBody" class="dialog-body"></div>
+  </dialog>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

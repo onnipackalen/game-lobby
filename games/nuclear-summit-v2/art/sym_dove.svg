@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 250" width="200" height="250">
+<style>.ol{stroke:#3b2a22;stroke-width:4;stroke-linejoin:round;stroke-linecap:round}.il{fill:none;stroke:#3b2a22;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}</style>
+<!-- The peace dove (lowest pay, v2: "peace pays least"): fleeing the summit with its olive branch,
+     sweating, its tail feathers singed and smoking. No tile, pale and low in saturation, so it sits at
+     the bottom of the pay order. Thicker outline so the white bird holds up on a light board. -->
+<g transform="translate(0 22)">
+<!-- smoke from the singed tail -->
+<circle cx="178" cy="104" r="11" fill="#B8B2AA" opacity=".85"/><circle cx="188" cy="84" r="8" fill="#CBC6BF" opacity=".75"/><circle cx="182" cy="66" r="6" fill="#DAD6D0" opacity=".65"/>
+<!-- far wing -->
+<path class="ol" d="M110 128 Q118 74 160 42 Q162 84 150 122 Z" fill="#D9D3CA" style="stroke-width:3"/>
+<!-- tail fan, singed tips -->
+<path class="ol" d="M136 148 L186 124 L194 148 L190 172 L144 172 Z" fill="#EFEBE5"/>
+<path d="M186 124 L194 148 L190 172 L180 171 L184 148 L177 129 Z" fill="#6B6158"/>
+<path class="il" d="M146 156 L184 136 M148 164 L186 160" style="stroke:#A9A196"/>
+<!-- body -->
+<path class="ol" d="M44 136 Q46 112 70 104 Q92 98 114 116 Q140 134 150 152 Q148 176 116 184 Q80 190 60 172 Q44 158 44 136 Z" fill="#F6F3EE"/>
+<path d="M62 168 Q84 186 116 182 Q140 176 148 158 Q130 172 104 172 Q80 172 62 160 Z" fill="#D9D3CA"/>
+<!-- tucked feet -->
+<path d="M94 184 L90 198 M106 184 L106 198" stroke="#C77A5A" stroke-width="4" stroke-linecap="round"/>
+<!-- near wing, raised in alarm -->
+<path class="ol" d="M80 132 Q60 84 72 30 Q92 52 104 58 Q112 40 128 26 Q138 70 124 120 Q108 138 80 132 Z" fill="#FBFAF7"/>
+<path class="il" d="M90 122 Q80 92 82 58 M106 120 Q104 90 114 50" style="stroke:#BDB5AA"/>
+<!-- head -->
+<circle class="ol" cx="58" cy="112" r="24" fill="#F6F3EE"/>
+<!-- olive branch, held in the beak -->
+<path d="M30 122 Q34 142 48 160" stroke="#3b2a22" stroke-width="6.5" fill="none" stroke-linecap="round"/>
+<path d="M30 122 Q34 142 48 160" stroke="#5E7A34" stroke-width="3" fill="none" stroke-linecap="round"/>
+<ellipse cx="26" cy="140" rx="5" ry="10" fill="#7A9A45" stroke="#3b2a22" stroke-width="1.8" transform="rotate(-35 26 140)"/>
+<ellipse cx="46" cy="140" rx="5" ry="10" fill="#7A9A45" stroke="#3b2a22" stroke-width="1.8" transform="rotate(35 46 140)"/>
+<ellipse cx="36" cy="160" rx="5" ry="10" fill="#7A9A45" stroke="#3b2a22" stroke-width="1.8" transform="rotate(-40 36 160)"/>
+<!-- beak -->
+<path class="ol" d="M36 110 L16 120 L37 124 Z" fill="#E8A35A" style="stroke-width:2.6"/>
+<!-- worried eye looking back, raised brow -->
+<ellipse cx="54" cy="108" rx="7" ry="8" fill="#FFFFFF" stroke="#3b2a22" stroke-width="1.8"/>
+<circle cx="57.5" cy="108.5" r="3.6" fill="#22242a"/>
+<path class="il" d="M45 95 Q54 90 63 97" style="stroke-width:2.6"/>
+<!-- sweat drop -->
+<path class="ol" d="M80 80 Q73 93 80 98 Q87 93 80 80 Z" fill="#9FD0F0" style="stroke-width:2"/>
+</g>
+</svg>

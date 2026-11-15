@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 250" width="200" height="250">
+<style>.ol{stroke:#3b2a22;stroke-width:4;stroke-linejoin:round;stroke-linecap:round}.il{fill:none;stroke:#3b2a22;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}</style>
+<!-- The hotline (low pay, v2): the red rotary phone between the capitals, ringing off the hook.
+     Low pays have no tile, so a phone with no tile reads as a lower tier than any leader. Thicker
+     outline than the leaders so the bare object holds up at phone size. -->
+<!-- ringing marks -->
+<path class="il" d="M22 64 L10 52 M30 54 L24 38 M178 64 L190 52 M170 54 L176 38" style="stroke-width:4"/>
+<!-- coiled cord -->
+<path d="M46 204 C30 206 26 216 34 222 C42 228 26 232 32 240 C38 246 26 248 24 250" stroke="#3b2a22" stroke-width="8" fill="none" stroke-linecap="round"/>
+<path d="M46 204 C30 206 26 216 34 222 C42 228 26 232 32 240 C38 246 26 248 24 250" stroke="#A3332B" stroke-width="4" fill="none" stroke-linecap="round"/>
+<!-- body -->
+<path d="M40 210 L54 140 Q58 126 74 126 L126 126 Q142 126 146 140 L160 210 Q162 222 150 222 L50 222 Q38 222 40 210 Z" fill="#C9443A"/>
+<path d="M120 126 L126 126 Q142 126 146 140 L160 210 Q162 222 150 222 L136 222 L132 142 Q130 130 120 126 Z" fill="#A3332B"/>
+<path d="M60 140 Q62 132 72 132 L84 132" stroke="#E57A6E" stroke-width="5" stroke-linecap="round" fill="none"/>
+<path class="ol" d="M40 210 L54 140 Q58 126 74 126 L126 126 Q142 126 146 140 L160 210 Q162 222 150 222 L50 222 Q38 222 40 210 Z" fill="none"/>
+<!-- rotary dial -->
+<circle class="ol" cx="100" cy="176" r="32" fill="#F3E8D8" style="stroke-width:3"/>
+<g fill="#8A2A22">
+  <circle cx="100" cy="154" r="5"/><circle cx="115.6" cy="160.4" r="5"/><circle cx="122" cy="176" r="5"/><circle cx="115.6" cy="191.6" r="5"/>
+  <circle cx="100" cy="198" r="5"/><circle cx="84.4" cy="191.6" r="5"/><circle cx="78" cy="176" r="5"/><circle cx="84.4" cy="160.4" r="5"/>
+</g>
+<circle class="ol" cx="100" cy="176" r="10" fill="#C9443A" style="stroke-width:2.4"/>
+<!-- cradle -->
+<rect class="ol" x="58" y="110" width="20" height="20" rx="5" fill="#A3332B" style="stroke-width:3"/>
+<rect class="ol" x="122" y="110" width="20" height="20" rx="5" fill="#A3332B" style="stroke-width:3"/>
+<!-- handset, lifted and tilted as it rings -->
+<g transform="rotate(-6 100 92)">
+  <path class="ol" d="M18 98 Q16 74 38 70 L62 68 Q74 68 76 80 L78 92 Q100 86 122 92 L124 80 Q126 68 138 68 L162 70 Q184 74 182 98 Q180 112 164 112 L140 112 Q130 112 128 102 Q100 96 72 102 Q70 112 60 112 L36 112 Q20 112 18 98 Z" fill="#D84E43"/>
+  <path d="M30 86 Q34 78 46 77 M84 90 Q100 87 116 90" stroke="#F09A90" stroke-width="4" stroke-linecap="round" fill="none"/>
+</g>
+</svg>

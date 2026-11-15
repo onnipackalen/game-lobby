@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 250" width="200" height="250">
+<style>.ol{stroke:#3b2a22;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}.il{fill:none;stroke:#3b2a22;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}</style>
+<!-- Rocket man. Head and shoulders, 3/4 view facing right, cel-shaded.
+     Identity: broad round face, full cheeks and double chin, big grin, sides shaved very high,
+     a short thick black pompadour on top, high-collar suit in North Korean blue, red and white
+     (colours only: no flag, star or emblem). -->
+<!-- tier tile -->
+<path class="ol" d="M100.0 20.0 L190.1 72.0 L190.1 176.0 L100.0 228.0 L9.9 176.0 L9.9 72.0 Z" fill="#7B3FD0"/>
+<ellipse cx="78" cy="62" rx="48" ry="26" fill="#A77BEA" opacity="0.45"/>
+<!-- shoulders: red high-collar suit with blue side panels, blue collar and white piping -->
+<path class="ol" d="M6 250 Q10 214 40 202 Q70 192 100 194 Q140 192 166 204 Q192 216 196 250 Z" fill="#C8102E"/>
+<path d="M6 250 Q10 222 30 210 Q40 230 40 250 Z M196 250 Q192 222 172 210 Q162 230 162 250 Z" fill="#1D4C9C"/>
+<path d="M30 210 Q40 230 40 250 M172 210 Q162 230 162 250" stroke="#FFFFFF" stroke-width="2.8" stroke-linecap="round" fill="none"/>
+<path d="M113 208 L115 250" stroke="#FFFFFF" stroke-width="3.2" stroke-linecap="round" fill="none"/>
+<circle cx="114" cy="222" r="3.4" fill="#FFFFFF" stroke="#8E0B21" stroke-width="1.4"/><circle cx="115" cy="240" r="3.4" fill="#FFFFFF" stroke="#8E0B21" stroke-width="1.4"/>
+<path class="il" d="M40 214 Q50 230 48 250 M168 214 Q158 230 160 250" style="stroke:#8E0B21"/>
+<!-- neck and standing collar -->
+<path d="M80 168 L80 196 Q110 206 142 192 L142 166 Z" fill="#D9AE88"/>
+<path class="ol" d="M72 188 Q108 204 146 186 L148 202 Q108 218 72 204 Z" fill="#1D4C9C"/>
+<path d="M74 203 Q108 216 146 201" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+<!-- ear -->
+<path class="ol" d="M56 112 Q38 106 38 128 Q38 150 58 154 Z" fill="#F0CDA9"/>
+<path class="il" d="M48 120 Q43 130 48 144"/>
+<!-- head -->
+<path d="M58 92 Q50 64 74 44 Q100 28 132 34 Q164 44 170 80 Q174 98 174 120 Q182 148 170 172 Q156 198 120 204 Q84 206 64 182 Q48 160 52 130 Q52 108 58 92 Z" fill="#F0CDA9"/>
+<!-- shaved sides, cropped almost to the skin -->
+<path d="M52 124 Q46 96 58 70 Q74 48 98 40 L102 66 Q82 70 72 86 Q64 102 64 124 Z" fill="#B3A69C"/>
+<path d="M171 104 Q174 82 162 60 L150 52 L148 74 Q160 84 162 104 Z" fill="#B3A69C"/>
+<!-- shadow planes -->
+<path d="M53 132 Q52 160 66 182 Q76 196 92 202 L94 192 Q78 182 70 164 Q62 148 64 132 Z" fill="#D9AE88"/>
+<path d="M107 116 Q105 134 108 146 L114 148 Q111 134 113 116 Z" fill="#D9AE88"/>
+<!-- full, raised cheeks -->
+<ellipse cx="146" cy="146" rx="19" ry="12" fill="#F8DEC2"/>
+<ellipse cx="80" cy="146" rx="11" ry="8" fill="#F8DEC2" opacity="0.8"/>
+<ellipse cx="150" cy="152" rx="10" ry="5" fill="#EDB39C" opacity="0.6"/>
+<!-- head outline over the shading -->
+<path class="ol" d="M58 92 Q50 64 74 44 Q100 28 132 34 Q164 44 170 80 Q174 98 174 120 Q182 148 170 172 Q156 198 120 204 Q84 206 64 182 Q48 160 52 130 Q52 108 58 92" fill="none"/>
+<!-- double chin -->
+<path class="ol" d="M70 188 Q110 214 156 186 Q150 208 116 212 Q86 212 70 188 Z" fill="#E9C29D"/>
+<!-- thin arched brows -->
+<path d="M74 100 Q88 93 102 99 M120 97 Q134 91 148 97" stroke="#22222a" stroke-width="3.6" stroke-linecap="round" fill="none"/>
+<!-- eyes squeezed by the grin, built like every other leader's -->
+<path d="M76 114 Q89 106 102 112 Q89 119 76 114 Z" fill="#F7F1EA"/>
+<circle cx="90" cy="112.5" r="3.8" fill="#3a2a22"/><circle cx="91" cy="111.5" r="1" fill="#ffffff"/>
+<path class="il" d="M74 113 Q89 102 104 111" style="stroke-width:2.4"/>
+<path class="il" d="M78 121 Q90 126 100 120"/>
+<path d="M122 111 Q134 104 146 109 Q135 116 122 111 Z" fill="#F7F1EA"/>
+<circle cx="135" cy="110.5" r="3.4" fill="#3a2a22"/><circle cx="136" cy="109.6" r="0.9" fill="#ffffff"/>
+<path class="il" d="M120 110 Q134 100 148 108" style="stroke-width:2.4"/>
+<path class="il" d="M124 118 Q135 122 145 116"/>
+<!-- short broad nose -->
+<path class="il" d="M112 114 Q114 132 120 142 Q126 148 120 152 Q113 154 106 150" style="stroke-width:2"/>
+<path class="il" d="M110 150 Q114 147 118 150"/>
+<!-- the big grin -->
+<path class="ol" d="M90 165 Q118 176 150 161 Q141 187 118 189 Q98 187 90 165 Z" fill="#7A2A22" style="stroke-width:2"/>
+<path d="M93 167 Q118 177 147 163 L145 170 Q118 180 96 173 Z" fill="#FBF7F0"/>
+<path class="il" d="M84 151 Q79 165 87 176 M152 144 Q162 158 155 171"/>
+<!-- hair: short thick black pompadour, flat on top, lifted at the front -->
+<path d="M74 74 Q110 68 160 72 L158 78 Q110 74 74 80 Z" fill="#D9AE88"/>
+<path class="ol" d="M72 74 Q68 46 90 30 Q120 16 152 26 Q172 34 170 54 Q170 66 162 74 Q148 68 132 72 Q116 68 100 72 Q86 70 72 74 Z" fill="#18181C"/>
+<path d="M90 36 Q120 24 152 32" stroke="#56565F" stroke-width="4" stroke-linecap="round" fill="none"/>
+<path d="M82 52 Q118 38 164 46 M78 66 Q118 54 166 62" stroke="#34343c" stroke-width="2" stroke-linecap="round" fill="none"/>
+</svg>

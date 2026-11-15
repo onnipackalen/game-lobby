@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1920" width="1080" height="1920" preserveAspectRatio="xMidYMid slice">
+<!-- Free-spins background, portrait: "The Bunker". A dark war room: steel walls, a radar screen glowing
+     behind the reels, red siren beacons in the top corners, a control desk with the big red button at the bottom.
+     Teal radar, not lime (lime belongs to the Nuke). Kept darker and calmer than the symbols. -->
+<defs>
+  <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#2B1B4D"/><stop offset="0.55" stop-color="#1D1336"/><stop offset="1" stop-color="#140D26"/>
+  </linearGradient>
+  <radialGradient id="glow" cx="540" cy="700" r="600" gradientUnits="userSpaceOnUse">
+    <stop offset="0" stop-color="#3FD1C9" stop-opacity="0.38"/><stop offset="0.6" stop-color="#3FD1C9" stop-opacity="0.08"/><stop offset="1" stop-color="#3FD1C9" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="sweep" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#3FD1C9" stop-opacity="0"/><stop offset="1" stop-color="#3FD1C9" stop-opacity="0.55"/>
+  </linearGradient>
+  <radialGradient id="beam" cx="0.5" cy="0" r="1">
+    <stop offset="0" stop-color="#FF4D6D" stop-opacity="0.45"/><stop offset="1" stop-color="#FF4D6D" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="desk" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#433A61"/><stop offset="1" stop-color="#2A2440"/>
+  </linearGradient>
+</defs>
+
+<rect width="1080" height="1920" fill="url(#wall)"/>
+<!-- riveted steel panels -->
+<g fill="none" stroke="#3A2A63" stroke-width="4">
+  <rect x="20" y="140" width="250" height="620" rx="10"/><rect x="20" y="780" width="250" height="620" rx="10"/>
+  <rect x="810" y="140" width="250" height="620" rx="10"/><rect x="810" y="780" width="250" height="620" rx="10"/>
+</g>
+<g fill="#47367A">
+  <circle cx="40" cy="160" r="5"/><circle cx="250" cy="160" r="5"/><circle cx="40" cy="740" r="5"/><circle cx="250" cy="740" r="5"/>
+  <circle cx="830" cy="160" r="5"/><circle cx="1040" cy="160" r="5"/><circle cx="830" cy="740" r="5"/><circle cx="1040" cy="740" r="5"/>
+  <circle cx="40" cy="800" r="5"/><circle cx="250" cy="800" r="5"/><circle cx="830" cy="800" r="5"/><circle cx="1040" cy="800" r="5"/>
+</g>
+
+<!-- ceiling pipes -->
+<g stroke-linecap="round">
+  <path d="M0 70 L1080 70" stroke="#3E2F66" stroke-width="26"/><path d="M0 70 L1080 70" stroke="#55448A" stroke-width="6"/>
+  <path d="M0 112 L1080 112" stroke="#34275A" stroke-width="16"/>
+</g>
+<g fill="#2A1F4A"><rect x="200" y="50" width="22" height="80" rx="4"/><rect x="540" y="50" width="22" height="80" rx="4"/><rect x="860" y="50" width="22" height="80" rx="4"/></g>
+
+<!-- teal glow behind the reels -->
+<rect width="1080" height="1920" fill="url(#glow)"/>
+
+<!-- radar screen -->
+<circle cx="540" cy="700" r="340" fill="#0E2F3A" stroke="#2C5560" stroke-width="14"/>
+<g fill="none" stroke="#3FD1C9" stroke-opacity="0.35" stroke-width="3">
+  <circle cx="540" cy="700" r="85"/><circle cx="540" cy="700" r="170"/><circle cx="540" cy="700" r="255"/>
+  <path d="M200 700 L880 700 M540 360 L540 1040"/>
+</g>
+<path d="M540 700 L860 590 A340 340 0 0 1 878 720 Z" fill="url(#sweep)"/>
+<g fill="#FF5DA2"><circle cx="660" cy="560" r="10"/><circle cx="430" cy="840" r="8"/><circle cx="720" cy="790" r="7"/><circle cx="410" cy="580" r="6"/></g>
+<g fill="#FF5DA2" opacity="0.25"><circle cx="660" cy="560" r="24"/><circle cx="430" cy="840" r="20"/></g>
+
+<!-- side displays -->
+<rect x="50" y="420" width="190" height="130" rx="10" fill="#0E2F3A" stroke="#2C5560" stroke-width="6"/>
+<g fill="#3FD1C9" opacity="0.6"><path d="M70 470 Q100 440 140 452 Q160 470 140 490 Q110 500 90 490 Z"/><path d="M160 500 Q190 480 220 496 Q210 520 180 524 Z"/></g>
+<circle cx="120" cy="470" r="6" fill="#FF5DA2"/>
+<rect x="840" y="420" width="190" height="130" rx="10" fill="#0E2F3A" stroke="#2C5560" stroke-width="6"/>
+<g fill="#3FD1C9" opacity="0.7"><rect x="865" y="500" width="22" height="34"/><rect x="897" y="480" width="22" height="54"/><rect x="929" y="460" width="22" height="74"/><rect x="961" y="440" width="22" height="94"/></g>
+<rect x="993" y="430" width="22" height="104" fill="#FF5DA2" opacity="0.85"/>
+<!-- status lights -->
+<g><circle cx="80" cy="610" r="10" fill="#F2B705"/><circle cx="115" cy="610" r="10" fill="#FF4D6D"/><circle cx="150" cy="610" r="10" fill="#3FD1C9"/>
+<circle cx="930" cy="610" r="10" fill="#FF4D6D"/><circle cx="965" cy="610" r="10" fill="#F2B705"/><circle cx="1000" cy="610" r="10" fill="#FF4D6D"/></g>
+
+<!-- red siren beacons with beams -->
+<path d="M110 200 L-60 640 L300 640 Z" fill="url(#beam)"/>
+<path d="M970 200 L780 640 L1140 640 Z" fill="url(#beam)"/>
+<g stroke="#2A1F4A" stroke-width="4">
+  <rect x="78" y="196" width="64" height="18" rx="4" fill="#4A3A78"/><path d="M84 196 Q84 150 110 146 Q136 150 136 196 Z" fill="#E8384F"/>
+  <rect x="938" y="196" width="64" height="18" rx="4" fill="#4A3A78"/><path d="M944 196 Q944 150 970 146 Q996 150 996 196 Z" fill="#E8384F"/>
+</g>
+<g fill="#FFB3BF" opacity="0.8"><ellipse cx="100" cy="166" rx="7" ry="12"/><ellipse cx="960" cy="166" rx="7" ry="12"/></g>
+
+<!-- hazard stripe above the desk -->
+<rect x="0" y="1440" width="1080" height="34" fill="#2A2440"/>
+<g fill="#C9A227" opacity="0.55">
+  <path d="M0 1440 L30 1440 L0 1474 Z M60 1440 L94 1440 L60 1474 L26 1474 Z M128 1440 L162 1440 L128 1474 L94 1474 Z M196 1440 L230 1440 L196 1474 L162 1474 Z M264 1440 L298 1440 L264 1474 L230 1474 Z M332 1440 L366 1440 L332 1474 L298 1474 Z M400 1440 L434 1440 L400 1474 L366 1474 Z M468 1440 L502 1440 L468 1474 L434 1474 Z M536 1440 L570 1440 L536 1474 L502 1474 Z M604 1440 L638 1440 L604 1474 L570 1474 Z M672 1440 L706 1440 L672 1474 L638 1474 Z M740 1440 L774 1440 L740 1474 L706 1474 Z M808 1440 L842 1440 L808 1474 L774 1474 Z M876 1440 L910 1440 L876 1474 L842 1474 Z M944 1440 L978 1440 L944 1474 L910 1474 Z M1012 1440 L1046 1440 L1012 1474 L978 1474 Z M1080 1440 L1080 1474 L1046 1474 Z"/>
+</g>
+
+<!-- control desk with the big red button -->
+<path d="M0 1474 L1080 1474 L1080 1600 L0 1600 Z" fill="#4A4068"/>
+<path d="M0 1600 L1080 1600 L1080 1920 L0 1920 Z" fill="url(#desk)"/>
+<g stroke="#2A2440" stroke-width="3">
+  <rect x="80" y="1510" width="60" height="34" rx="8" fill="#FF5DA2"/><rect x="160" y="1510" width="60" height="34" rx="8" fill="#4DB6FF"/>
+  <rect x="240" y="1510" width="60" height="34" rx="8" fill="#F2B705"/><rect x="780" y="1510" width="60" height="34" rx="8" fill="#4DB6FF"/>
+  <rect x="860" y="1510" width="60" height="34" rx="8" fill="#FF5DA2"/><rect x="940" y="1510" width="60" height="34" rx="8" fill="#F2B705"/>
+</g>
+<g stroke="#2A2440" stroke-width="3" fill="#9E95BF">
+  <rect x="96" y="1560" width="12" height="26" rx="4"/><rect x="176" y="1560" width="12" height="26" rx="4"/><rect x="256" y="1560" width="12" height="26" rx="4"/>
+  <rect x="796" y="1560" width="12" height="26" rx="4"/><rect x="876" y="1560" width="12" height="26" rx="4"/><rect x="956" y="1560" width="12" height="26" rx="4"/>
+</g>
+<ellipse cx="540" cy="1560" rx="120" ry="34" fill="#2A2440"/>
+<ellipse cx="540" cy="1548" rx="96" ry="26" fill="#5A5A66" stroke="#2A2440" stroke-width="4"/>
+<path d="M466 1546 Q466 1490 540 1486 Q614 1490 614 1546 Z" fill="#E8384F" stroke="#7A1426" stroke-width="5"/>
+<ellipse cx="520" cy="1506" rx="24" ry="9" fill="#FF8C9E" opacity="0.8"/>
+<path d="M444 1550 Q444 1440 540 1434 Q636 1440 636 1550" fill="none" stroke="#CFE8FF" stroke-width="5" opacity="0.55"/>
+</svg>

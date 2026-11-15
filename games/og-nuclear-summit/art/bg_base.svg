@@ -1,0 +1,172 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1920" width="1080" height="1920" preserveAspectRatio="xMidYMid slice">
+<!-- Base-game background: "The Summit Hall".
+     Built to sit behind the symbols the way the genre does it: softer, lighter and less saturated than the
+     symbols, thin low-contrast outlines, a glow behind the grid so the reels pull focus, and all the busy
+     decoration (curtains, table, chandelier) pushed to the edges of the screen. -->
+<defs>
+  <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#2A3758"/><stop offset="0.6" stop-color="#1F2A47"/><stop offset="1" stop-color="#161E35"/>
+  </linearGradient>
+  <radialGradient id="glow" cx="540" cy="700" r="560" gradientUnits="userSpaceOnUse">
+    <stop offset="0" stop-color="#F2A93B" stop-opacity="0.42"/><stop offset="0.55" stop-color="#F2A93B" stop-opacity="0.14"/><stop offset="1" stop-color="#F2A93B" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="screen" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#162746"/><stop offset="1" stop-color="#101C36"/>
+  </linearGradient>
+  <linearGradient id="curtainL" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#5E1626"/><stop offset="1" stop-color="#9C2F3F"/>
+  </linearGradient>
+  <linearGradient id="curtainR" x1="1" y1="0" x2="0" y2="0">
+    <stop offset="0" stop-color="#5E1626"/><stop offset="1" stop-color="#9C2F3F"/>
+  </linearGradient>
+  <linearGradient id="carpet" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#9C2F3F"/><stop offset="1" stop-color="#6E1F2E"/>
+  </linearGradient>
+  <linearGradient id="table" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#8A5A3A"/><stop offset="1" stop-color="#6B4128"/>
+  </linearGradient>
+</defs>
+
+<!-- back wall with soft panels -->
+<rect width="1080" height="1920" fill="url(#wall)"/>
+<g fill="#3A4A72" opacity="0.5">
+  <rect x="130" y="180" width="70" height="1300" rx="35"/><rect x="250" y="180" width="70" height="1300" rx="35"/>
+  <rect x="760" y="180" width="70" height="1300" rx="35"/><rect x="880" y="180" width="70" height="1300" rx="35"/>
+</g>
+
+<!-- glow behind the grid -->
+<rect width="1080" height="1920" fill="url(#glow)"/>
+
+<!-- the summit screen: a soft world map in an arch, centred behind the reels -->
+<path d="M270 1180 L270 560 Q270 270 540 270 Q810 270 810 560 L810 1180 Z" fill="url(#screen)" stroke="#B88A2E" stroke-width="10" opacity="0.85"/>
+<g fill="none" stroke="#2C4672" stroke-width="3" opacity="0.9">
+  <path d="M300 520 Q540 480 780 520 M290 680 Q540 650 790 680 M290 840 Q540 820 790 840 M290 1000 Q540 990 790 1000"/>
+  <path d="M400 330 Q380 760 410 1170 M540 280 L540 1180 M680 330 Q700 760 670 1170"/>
+</g>
+<g fill="#2E5A8A" opacity="0.95">
+  <path d="M330 520 Q360 450 440 460 Q500 470 480 540 Q470 600 420 610 Q400 680 360 660 Q330 620 345 580 Q320 560 330 520 Z"/>
+  <path d="M410 700 Q450 690 470 740 Q480 800 450 860 Q430 900 415 860 Q400 800 410 700 Z"/>
+  <path d="M560 470 Q610 440 690 460 Q760 480 750 540 Q740 590 690 590 Q660 640 620 620 Q590 600 600 560 Q560 540 560 470 Z"/>
+  <path d="M590 640 Q630 630 650 680 Q660 740 630 790 Q610 810 600 770 Q585 700 590 640 Z"/>
+  <path d="M690 780 Q740 770 760 810 Q760 850 720 850 Q690 840 690 780 Z"/>
+</g>
+
+<!-- bokeh and sparkles on the wall -->
+<g fill="#F2A93B" opacity="0.8">
+  <circle cx="170" cy="560" r="26" opacity="0.35"/><circle cx="930" cy="700" r="34" opacity="0.3"/>
+  <circle cx="900" cy="420" r="14" opacity="0.5"/><circle cx="190" cy="980" r="18" opacity="0.4"/>
+  <circle cx="880" cy="1120" r="22" opacity="0.35"/><circle cx="230" cy="1260" r="12" opacity="0.5"/>
+</g>
+<g fill="#FFC867" opacity="0.7">
+  <path d="M220 420 Q220 440 240 440 Q220 440 220 460 Q220 440 200 440 Q220 440 220 420 Z"/>
+  <path d="M860 560 Q860 584 884 584 Q860 584 860 608 Q860 584 836 584 Q860 584 860 560 Z"/>
+  <path d="M860 1300 Q860 1318 878 1318 Q860 1318 860 1336 Q860 1318 842 1318 Q860 1318 860 1300 Z"/>
+</g>
+
+<!-- nuclear: missile tracks across the summit map -->
+<g fill="none" stroke="#F2A93B" stroke-width="6" stroke-dasharray="12 9" stroke-linecap="round" opacity="0.65">
+<path d="M380 560 Q520 380 700 520"/>
+<path d="M720 600 Q600 760 440 830"/>
+<path d="M350 900 Q560 820 740 960"/>
+</g><g fill="none" stroke="#FF4D6D" stroke-width="4" opacity="0.7">
+<circle cx="700" cy="520" r="12"/><circle cx="700" cy="520" r="4" fill="#FF4D6D"/>
+<circle cx="440" cy="830" r="12"/><circle cx="440" cy="830" r="4" fill="#FF4D6D"/>
+<circle cx="740" cy="960" r="12"/><circle cx="740" cy="960" r="4" fill="#FF4D6D"/>
+</g>
+<!-- floor and pink carpet -->
+<path d="M0 1500 L1080 1500 L1080 1920 L0 1920 Z" fill="#18203A"/>
+<path d="M330 1500 L750 1500 L1000 1920 L80 1920 Z" fill="url(#carpet)"/>
+<path d="M420 1500 L660 1500 L760 1920 L320 1920 Z" fill="#FFFFFF" opacity="0.12"/>
+
+<!-- the summit table, seen across its far edge, with mics and blank name cards -->
+<ellipse cx="540" cy="1700" rx="560" ry="150" fill="#4A2C18"/>
+<ellipse cx="540" cy="1680" rx="560" ry="140" fill="url(#table)" stroke="#3A2212" stroke-width="6"/>
+<g stroke="#4B3A44" stroke-width="5" stroke-linecap="round" fill="none">
+  <path d="M220 1640 Q230 1600 260 1585 M440 1600 Q450 1560 480 1548 M640 1600 Q650 1560 680 1548 M860 1640 Q870 1600 900 1585"/>
+</g>
+<g fill="#3A2E36"><circle cx="262" cy="1584" r="9"/><circle cx="482" cy="1547" r="9"/><circle cx="682" cy="1547" r="9"/><circle cx="902" cy="1584" r="9"/></g>
+<g fill="#FFFFFF" stroke="#B88A2E" stroke-width="4">
+  <path d="M150 1680 L210 1680 L196 1650 L164 1650 Z"/><path d="M360 1640 L420 1640 L406 1610 L374 1610 Z"/>
+  <path d="M570 1640 L630 1640 L616 1610 L584 1610 Z"/><path d="M790 1680 L850 1680 L836 1650 L804 1650 Z"/>
+</g>
+<g fill="#CFE8FF" stroke="#9FC4EA" stroke-width="3" opacity="0.9">
+  <rect x="300" y="1625" width="18" height="30" rx="4"/><rect x="520" y="1605" width="18" height="30" rx="4"/>
+  <rect x="740" y="1625" width="18" height="30" rx="4"/>
+</g>
+
+<!-- nuclear: candy mushroom-cloud centrepieces on the summit table -->
+<g transform="translate(214 1500) scale(0.62)" stroke="#1C2742" stroke-width="5" stroke-linejoin="round">
+  <path d="M86 200 Q90 150 92 110 L108 110 Q110 150 114 200 Z" fill="#F6D38A"/>
+  <ellipse cx="100" cy="156" rx="30" ry="8" fill="#F2A93B"/>
+  <circle cx="66" cy="206" r="16" fill="#F6D38A"/><circle cx="134" cy="206" r="16" fill="#F6D38A"/>
+  <circle cx="88" cy="212" r="18" fill="#F6D38A"/><circle cx="112" cy="212" r="18" fill="#F6D38A"/>
+  <circle cx="52" cy="84" r="24" fill="#F08A4B"/><circle cx="154" cy="92" r="20" fill="#F08A4B"/>
+  <circle cx="76" cy="58" r="26" fill="#F08A4B"/><circle cx="140" cy="64" r="26" fill="#F08A4B"/><circle cx="108" cy="48" r="30" fill="#F08A4B"/>
+  <ellipse cx="100" cy="88" rx="58" ry="32" fill="#F08A4B" stroke="none"/>
+  <path d="M44 100 Q100 136 156 100 Q160 112 146 118 Q100 136 54 118 Q40 112 44 100 Z" fill="#D9622E"/>
+  <circle cx="98" cy="38" r="10" fill="#FFD9A8" stroke="none"/><circle cx="70" cy="52" r="7" fill="#FFD9A8" stroke="none"/>
+</g>
+<g transform="translate(742 1500) scale(0.62)" stroke="#1C2742" stroke-width="5" stroke-linejoin="round">
+  <path d="M86 200 Q90 150 92 110 L108 110 Q110 150 114 200 Z" fill="#F6D38A"/>
+  <ellipse cx="100" cy="156" rx="30" ry="8" fill="#F2A93B"/>
+  <circle cx="66" cy="206" r="16" fill="#F6D38A"/><circle cx="134" cy="206" r="16" fill="#F6D38A"/>
+  <circle cx="88" cy="212" r="18" fill="#F6D38A"/><circle cx="112" cy="212" r="18" fill="#F6D38A"/>
+  <circle cx="52" cy="84" r="24" fill="#F08A4B"/><circle cx="154" cy="92" r="20" fill="#F08A4B"/>
+  <circle cx="76" cy="58" r="26" fill="#F08A4B"/><circle cx="140" cy="64" r="26" fill="#F08A4B"/><circle cx="108" cy="48" r="30" fill="#F08A4B"/>
+  <ellipse cx="100" cy="88" rx="58" ry="32" fill="#F08A4B" stroke="none"/>
+  <path d="M44 100 Q100 136 156 100 Q160 112 146 118 Q100 136 54 118 Q40 112 44 100 Z" fill="#D9622E"/>
+  <circle cx="98" cy="38" r="10" fill="#FFD9A8" stroke="none"/><circle cx="70" cy="52" r="7" fill="#FFD9A8" stroke="none"/>
+</g>
+<!-- theatre curtains framing the hall -->
+<path d="M0 0 L210 0 Q190 420 176 760 Q166 900 130 990 Q80 1060 0 1080 Z" fill="url(#curtainL)"/>
+<path d="M0 1080 Q70 1060 124 1000 Q150 1320 190 1720 L0 1720 Z" fill="url(#curtainL)"/>
+<g fill="none" stroke="#3E0E18" stroke-width="5" opacity="0.5">
+  <path d="M60 0 Q70 500 50 1060 M130 0 Q140 520 100 1030 M180 0 Q172 480 160 900"/>
+  <path d="M60 1090 Q80 1400 70 1720 M130 1040 Q150 1380 160 1720"/>
+</g>
+<path d="M1080 0 L870 0 Q890 420 904 760 Q914 900 950 990 Q1000 1060 1080 1080 Z" fill="url(#curtainR)"/>
+<path d="M1080 1080 Q1010 1060 956 1000 Q930 1320 890 1720 L1080 1720 Z" fill="url(#curtainR)"/>
+<g fill="none" stroke="#3E0E18" stroke-width="5" opacity="0.5">
+  <path d="M1020 0 Q1010 500 1030 1060 M950 0 Q940 520 980 1030 M900 0 Q908 480 920 900"/>
+  <path d="M1020 1090 Q1000 1400 1010 1720 M950 1040 Q930 1380 920 1720"/>
+</g>
+<!-- candy-pink tiebacks with tassels -->
+<g fill="#F2C14E" stroke="#B88A2E" stroke-width="4">
+  <ellipse cx="130" cy="1000" rx="56" ry="20"/><ellipse cx="950" cy="1000" rx="56" ry="20"/>
+  <path d="M110 1018 L92 1100 L148 1100 L130 1018 Z"/><path d="M930 1018 L912 1100 L968 1100 L950 1018 Z"/>
+</g>
+
+<!-- nuclear: show missiles on pedestals and the Doomsday Clock at two minutes to midnight -->
+<g transform="translate(110 930) scale(1.25)">
+  <rect x="-14" y="292" width="108" height="30" rx="8" fill="#3A4A72" stroke="#1C2742" stroke-width="5"/>
+  <path d="M18 220 L-8 288 L22 282 Z M62 220 L88 288 L58 282 Z" fill="#8FA3BF" stroke="#1C2742" stroke-width="4" stroke-linejoin="round"/>
+  <rect x="18" y="70" width="44" height="214" rx="10" fill="#FFFFFF" stroke="#1C2742" stroke-width="5"/>
+  <g fill="#D7263D"><rect x="20" y="124" width="40" height="18"/><rect x="20" y="166" width="40" height="18"/><rect x="20" y="208" width="40" height="18"/><rect x="20" y="250" width="40" height="18"/></g>
+  <path d="M18 76 Q18 12 40 -12 Q62 12 62 76 Z" fill="#FF4D6D" stroke="#1C2742" stroke-width="5" stroke-linejoin="round"/>
+  <circle cx="40" cy="98" r="9" fill="#FFD23F" stroke="#1C2742" stroke-width="3"/>
+  <path d="M28 20 Q30 0 40 -6" stroke="#FFD0D6" stroke-width="5" stroke-linecap="round" fill="none"/>
+  <path d="M27 84 L27 276" stroke="#E3E8F0" stroke-width="5" stroke-linecap="round" fill="none"/>
+</g>
+<g transform="translate(840 930) scale(1.25)">
+  <rect x="-14" y="292" width="108" height="30" rx="8" fill="#3A4A72" stroke="#1C2742" stroke-width="5"/>
+  <path d="M18 220 L-8 288 L22 282 Z M62 220 L88 288 L58 282 Z" fill="#8FA3BF" stroke="#1C2742" stroke-width="4" stroke-linejoin="round"/>
+  <rect x="18" y="70" width="44" height="214" rx="10" fill="#FFFFFF" stroke="#1C2742" stroke-width="5"/>
+  <g fill="#D7263D"><rect x="20" y="124" width="40" height="18"/><rect x="20" y="166" width="40" height="18"/><rect x="20" y="208" width="40" height="18"/><rect x="20" y="250" width="40" height="18"/></g>
+  <path d="M18 76 Q18 12 40 -12 Q62 12 62 76 Z" fill="#FF4D6D" stroke="#1C2742" stroke-width="5" stroke-linejoin="round"/>
+  <circle cx="40" cy="98" r="9" fill="#FFD23F" stroke="#1C2742" stroke-width="3"/>
+  <path d="M28 20 Q30 0 40 -6" stroke="#FFD0D6" stroke-width="5" stroke-linecap="round" fill="none"/>
+  <path d="M27 84 L27 276" stroke="#E3E8F0" stroke-width="5" stroke-linecap="round" fill="none"/>
+</g>
+<g>
+  <circle cx="150" cy="250" r="80" fill="#7A2232" stroke="#1C2742" stroke-width="6"/>
+  <circle cx="150" cy="250" r="70" fill="#FFF6E8" stroke="#F2C14E" stroke-width="5"/>
+  <path d="M150 250 L150 184 A66 66 0 0 0 117.0 192.8 Z" fill="#FF4D6D" opacity="0.28"/>
+  <g stroke="#1C2742" stroke-width="5" stroke-linecap="round"><path d="M150 190 L150 206" transform="rotate(0 150 250)"/><path d="M150 190 L150 198" transform="rotate(30 150 250)"/><path d="M150 190 L150 198" transform="rotate(60 150 250)"/><path d="M150 190 L150 206" transform="rotate(90 150 250)"/><path d="M150 190 L150 198" transform="rotate(120 150 250)"/><path d="M150 190 L150 198" transform="rotate(150 150 250)"/><path d="M150 190 L150 206" transform="rotate(180 150 250)"/><path d="M150 190 L150 198" transform="rotate(210 150 250)"/><path d="M150 190 L150 198" transform="rotate(240 150 250)"/><path d="M150 190 L150 206" transform="rotate(270 150 250)"/><path d="M150 190 L150 198" transform="rotate(300 150 250)"/><path d="M150 190 L150 198" transform="rotate(330 150 250)"/></g>
+  <path d="M150 250 L150 211.5" stroke="#1C2742" stroke-width="9" stroke-linecap="round" transform="rotate(-4 150 250)"/>
+  <path d="M150 250 L150 189.8" stroke="#E8384F" stroke-width="6" stroke-linecap="round" transform="rotate(-14 150 250)"/>
+  <circle cx="150" cy="250" r="7" fill="#1C2742"/>
+</g>
+<!-- slim scalloped valance with gold fringe -->
+<path d="M0 0 L1080 0 L1080 56 Q1012 104 945 56 Q877 104 810 56 Q742 104 675 56 Q607 104 540 56 Q472 104 405 56 Q337 104 270 56 Q202 104 135 56 Q67 104 0 56 Z" fill="#7A2232"/>
+<path d="M0 56 Q67 104 135 56 Q202 104 270 56 Q337 104 405 56 Q472 104 540 56 Q607 104 675 56 Q742 104 810 56 Q877 104 945 56 Q1012 104 1080 56" fill="none" stroke="#F2C14E" stroke-width="8" stroke-dasharray="3 9" stroke-linecap="round"/>
+</svg>

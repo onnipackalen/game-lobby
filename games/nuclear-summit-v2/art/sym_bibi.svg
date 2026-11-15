@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 250" width="200" height="250">
+<style>.ol{stroke:#3b2a22;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}.il{fill:none;stroke:#3b2a22;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}</style>
+<!-- Bibi. Head and shoulders, 3/4 view facing left, cel-shaded.
+     Identity from his public look: a broad head with a very high forehead, white-grey hair receding and
+     swept back with fuller sides, big ears, heavy hooded eyes with dark bags under a scowling brow,
+     fleshy cheeks and jowls, a pushed-out lower lip in a smirk. Charcoal suit, blue tie, and his
+     red-line bomb poster with the marker he drew it with.
+     The nose is drawn with the same proportions as every other leader's: no exaggerated nose. -->
+<!-- tier tile -->
+<rect class="ol" x="8" y="20" width="184" height="200" rx="28" fill="#BEC4CE"/>
+<ellipse cx="78" cy="62" rx="48" ry="26" fill="#E6E9EE" opacity="0.6"/>
+<!-- shoulders: charcoal suit, white collar, blue tie -->
+<path class="ol" d="M4 250 Q8 212 44 200 Q72 192 100 194 Q132 192 158 200 Q194 212 196 250 Z" fill="#36383E"/>
+<path d="M140 196 Q178 206 192 232 L196 250 L160 250 Q164 222 136 206 Z" fill="#26282C"/>
+<path d="M78 176 L78 198 L120 198 L122 176 Z" fill="#D49E7A"/>
+<path class="ol" d="M76 196 L98 226 L122 194 L118 188 L98 210 L82 188 Z" fill="#FFFFFF" style="stroke-width:2.2"/>
+<path class="il" d="M76 196 L64 250 M122 194 L132 250" style="stroke:#18243a"/>
+<path class="ol" d="M92 208 L104 208 L102 218 L94 218 Z" fill="#2459B5" style="stroke-width:2"/>
+<path class="ol" d="M94 218 L102 218 L108 250 L88 250 Z" fill="#2F6FD6" style="stroke-width:2"/>
+<!-- big ears -->
+<path class="ol" d="M50 108 Q26 98 24 124 Q24 152 52 156 Z" fill="#EFC4A0"/>
+<path class="il" d="M40 114 Q32 126 40 144" style="stroke:#a87b5a"/>
+<path class="ol" d="M150 104 Q180 90 184 122 Q186 154 152 160 Z" fill="#EFC4A0"/>
+<path class="il" d="M162 112 Q174 124 165 146" style="stroke:#a87b5a"/>
+<!-- broad head with a high forehead and heavy jowls -->
+<path d="M48 96 Q44 36 100 28 Q156 32 158 92 Q162 122 156 144 Q150 174 128 188 Q110 198 92 196 Q68 192 56 176 Q44 158 46 136 Q44 116 48 96 Z" fill="#EFC4A0"/>
+<!-- shadow planes: far cheek, jowls, under the brow -->
+<path d="M158 104 Q160 136 150 162 Q138 184 118 192 L118 182 Q136 170 142 148 Q148 126 146 102 Z" fill="#D49E7A"/>
+<path d="M52 150 Q56 176 76 188 Q86 194 96 196 L94 188 Q76 182 66 168 Q58 158 56 146 Z" fill="#D49E7A"/>
+<path d="M58 104 Q100 96 146 102 L146 110 Q100 104 58 112 Z" fill="#E2B08C"/>
+<path d="M96 110 Q100 128 101 144 L95 146 Q96 128 92 110 Z" fill="#D49E7A"/>
+<ellipse cx="70" cy="146" rx="12" ry="8" fill="#F7D4B6" opacity="0.8"/>
+<ellipse cx="88" cy="58" rx="22" ry="7" fill="#FBE3CF"/>
+<!-- head outline over the shading -->
+<path class="ol" d="M48 96 Q44 36 100 28 Q156 32 158 92 Q162 122 156 144 Q150 174 128 188 Q110 198 92 196 Q68 192 56 176 Q44 158 46 136 Q44 116 48 96" fill="none"/>
+<!-- forehead lines -->
+<path class="il" d="M70 74 Q100 68 134 74 M74 84 Q102 79 130 84" style="stroke:#c79c7a;stroke-width:1.5"/>
+<!-- receding white-grey hair: fuller at the sides, thin and swept back on top -->
+<path class="ol" d="M46 112 Q36 74 52 50 Q62 38 76 36 Q60 58 60 84 Q58 100 60 114 Z" fill="#D6D8DC" style="stroke-width:2.4"/>
+<path class="ol" d="M152 110 Q164 76 154 50 Q144 34 124 30 Q142 52 144 80 Q146 96 142 110 Z" fill="#D6D8DC" style="stroke-width:2.4"/>
+<path class="ol" d="M62 46 Q98 20 140 34 Q120 30 100 34 Q80 36 62 46 Z" fill="#E4E6EA" style="stroke-width:2"/>
+<path d="M50 70 Q54 56 64 48 M150 70 Q148 54 138 44 M84 34 Q104 28 124 32" stroke="#A9AEB7" stroke-width="2" stroke-linecap="round" fill="none"/>
+<!-- heavy scowling brows -->
+<path d="M60 102 Q74 96 90 106 M108 106 Q124 96 140 100" stroke="#6E727A" stroke-width="6.5" stroke-linecap="round" fill="none"/>
+<path class="il" d="M94 100 L96 108 M100 99 L101 107" style="stroke:#c79c7a"/>
+<!-- hooded, heavy-lidded eyes with dark bags -->
+<path d="M64 115 Q75 110 86 115 Q75 119 64 115 Z" fill="#F4EEE6"/>
+<circle cx="76" cy="115" r="3.3" fill="#3A2A20"/><circle cx="76.8" cy="114.2" r="0.9" fill="#ffffff"/>
+<path class="il" d="M60 114 Q74 106 89 113" style="stroke-width:3"/>
+<path d="M106 115 Q118 109 132 114 Q119 120 106 115 Z" fill="#F4EEE6"/>
+<circle cx="119" cy="114.8" r="3.6" fill="#3A2A20"/><circle cx="119.9" cy="113.9" r="1" fill="#ffffff"/>
+<path class="il" d="M103 114 Q118 104 135 112" style="stroke-width:3"/>
+<path d="M64 121 Q75 128 86 121 Q75 124 64 121 Z M106 121 Q119 129 132 120 Q119 125 106 121 Z" fill="#B98A6C" opacity="0.75"/>
+<path class="il" d="M65 127 Q75 132 85 127 M107 128 Q119 134 131 127" style="stroke:#b88b66"/>
+<!-- nose -->
+<path class="il" d="M97 112 Q95 130 88 140 Q85 148 93 150 Q100 152 105 148" style="stroke-width:2.2"/>
+<path class="il" d="M91 148 Q95 145 99 148"/>
+<!-- deep folds and a pushed-out lower lip in a smirk -->
+<path class="il" d="M84 146 Q74 160 79 174 M112 144 Q123 158 119 172" style="stroke-width:1.9"/>
+<path d="M86 169 Q100 180 114 168 Q100 173 86 169 Z" fill="#C88A72" stroke="#3b2a22" stroke-width="1.4"/>
+<path d="M83 166 Q99 161 117 164 Q120 162 122 158" stroke="#3b2a22" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+<path class="il" d="M84 186 Q100 192 116 186" style="stroke:#a87b5a"/>
+<!-- the red line poster, lower right, with the marker he drew it with -->
+<g transform="rotate(-8 168 200)">
+<rect class="ol" x="138" y="150" width="62" height="86" rx="4" fill="#FFFFFF"/>
+<circle cx="169" cy="206" r="18" fill="#222222"/>
+<rect x="163" y="183" width="12" height="8" fill="#222222"/>
+<path d="M169 183 Q175 171 186 174" stroke="#D48A2A" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+<path d="M188 168 L190 173 L195 174 L191 177 L192 182 L188 179 L184 182 L185 176 L181 173 L186 173 Z" fill="#F2B705" stroke="#D48A2A" stroke-width="1"/>
+<path d="M143 194 L195 190" stroke="#D7263D" stroke-width="7" stroke-linecap="round" fill="none"/>
+</g>
+<path class="ol" d="M108 222 L132 216 L136 250 L104 250 Z" fill="#36383E"/>
+<path class="ol" d="M116 208 L134 190 L141 196 L123 214 Z" fill="#D7263D" style="stroke-width:2"/>
+<path d="M134 190 L138 186 L144 191 L141 196 Z" fill="#3b2a22"/>
+<circle class="ol" cx="121" cy="214" r="10" fill="#EFC4A0"/>
+<path class="il" d="M115 210 Q121 208 126 212 M114 216 Q120 215 125 219"/>
+</svg>

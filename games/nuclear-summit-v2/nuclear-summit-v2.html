@@ -1,0 +1,2070 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nuclear Summit v2</title>
+<style>
+:root{--bg1:#ffd6ec;--bg2:#d9c8ff;--panel:rgba(255,255,255,.72);--text:#2a1f3a;--muted:#6b5a7a;--deep:#4b1d8f;--hot:#e8306f;--rim:#8A64D6}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--text);background:linear-gradient(160deg,var(--bg1),var(--bg2)) fixed;min-height:100vh;-webkit-tap-highlight-color:transparent}
+button{font:inherit;border:0;cursor:pointer;border-radius:14px;min-height:44px;min-width:44px;color:var(--text)}
+button:focus-visible{outline:3px solid var(--deep);outline-offset:2px}
+
+/* ===== Cabinet layout =====
+   Phone (portrait): logo, board, message, buy panel, a row with tools | spin | free-spins box, control bar.
+   Desktop / landscape: buy panel and tools on the left, board in the middle, logo, free-spins box and
+   spin on the right, control bar along the bottom. */
+.cabinet{min-height:100vh;min-height:100dvh;display:grid;grid-template-columns:1fr auto 1fr;
+  grid-template-areas:"logo logo logo" "board board board" "msg msg msg" "buy buy buy" "tools spin info" "bar bar bar";
+  justify-items:center;align-content:start;gap:8px 14px;padding-block:10px 0;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+.logo{grid-area:logo;text-align:center}
+h1{font-size:clamp(26px,7vw,40px);margin:0;font-weight:900;letter-spacing:.5px;color:var(--deep);line-height:1}
+.badges{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:6px}
+.badge{font-size:10px;font-weight:800;background:var(--text);color:#fff;padding:3px 7px;border-radius:999px;white-space:nowrap}
+.badge.warn{background:#f2b705;color:#3a2a00}
+.board{grid-area:board}
+.stage{position:relative}
+/* Red alert when the bonus triggers: a slow red pulse over the grid (about 1.4 flashes a second,
+   well under the 3-per-second photosensitivity limit); held steady for reduced motion. */
+.stage::after{content:'';position:absolute;inset:0;border-radius:18px;pointer-events:none;opacity:0;z-index:1;background:radial-gradient(circle at 50% 50%,rgba(255,40,40,.08),rgba(220,0,0,.6));box-shadow:inset 0 0 0 6px #ff2b2b}
+.stage.alert::after{opacity:.7} /* steady: no pulsing */
+@keyframes redalert{0%,100%{opacity:.15}50%{opacity:1}}
+@media (prefers-reduced-motion: reduce){.stage.alert::after{animation:none;opacity:.6}}
+.stage .overlay{z-index:2}
+/* Blast wave when the bonus triggers: one white flash over the grid (a single flash, not a strobe). */
+.stage::before{content:'';position:absolute;inset:0;border-radius:18px;pointer-events:none;opacity:0;z-index:3;background:radial-gradient(circle at 50% 50%,#fff 0%,#fff3d6 45%,rgba(255,170,80,.85) 100%)}
+.stage.flash::before{animation:blastflash .9s ease-out}
+@keyframes blastflash{0%{opacity:0}12%{opacity:.95}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.stage.flash::before{animation:none}}
+.stage.doom::before{background:radial-gradient(circle at 50% 50%,#f0ffe9 0%,#a8ff9e 45%,rgba(40,190,70,.85) 100%)}
+canvas{display:block;border-radius:18px;background:rgba(255,255,255,.4);box-shadow:inset 0 0 0 3px rgba(123,47,247,.25)}
+.overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;pointer-events:none;opacity:0;transition:opacity .25s;padding:16px}
+.overlay.show{opacity:1}
+.overlay.tap{pointer-events:auto;cursor:pointer}
+.overlay.tap .sub{animation:tapPulse 1.1s ease-in-out infinite}
+@keyframes tapPulse{50%{transform:scale(1.08)}}
+@media (prefers-reduced-motion: reduce){.overlay.tap .sub{animation:none}}
+.overlay .big{font-size:clamp(30px,9vw,56px);font-weight:900;color:#fff;-webkit-text-stroke:2px var(--deep);text-shadow:0 4px 0 var(--deep);line-height:1.05}
+.overlay .sub{font-size:16px;font-weight:800;color:var(--deep);background:rgba(255,255,255,.92);padding:4px 12px;border-radius:999px;margin-top:10px}
+.msg{grid-area:msg;min-height:24px;text-align:center;font-weight:900;font-size:16px;color:var(--deep);max-width:640px}
+
+/* Buy panel */
+.buycard{grid-area:buy;display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 22px;border-radius:18px;
+  background:linear-gradient(#ffe066,#f2b705);color:#3a2a00;box-shadow:0 0 0 3px #fff,0 0 0 6px #2a1f1a,0 6px 0 6px #b88700;line-height:1.1}
+.buycard .t{font-size:13px;font-weight:900;letter-spacing:1px}
+.buycard .s{font-size:18px;font-weight:900}
+.buycard b{font-size:20px;font-variant-numeric:tabular-nums;background:#2a1f1a;color:#FFD23F;border-radius:10px;padding:3px 10px;margin-top:4px}
+.buycard small{font-size:11px;font-weight:700}
+.buycard:disabled{filter:grayscale(.7);opacity:.6;cursor:default}
+.buycard[hidden]{display:none}
+
+/* Spin and round tool buttons */
+.spinbox{grid-area:spin;display:flex;flex-direction:column;align-items:center;gap:4px}
+#spin{width:96px;height:96px;border-radius:50%;padding:0;color:#fff;background:radial-gradient(circle at 50% 35%,#ff8ab8,#e8306f 70%);box-shadow:0 0 0 4px #fff,0 0 0 7px #2a1f1a,0 6px 0 7px #a3134a;display:grid;place-items:center;position:relative}
+#spin svg{width:52px;height:52px}
+#spin .count{position:absolute;inset:0;display:grid;place-items:center;font-size:30px;font-weight:900}
+#spin.free{background:radial-gradient(circle at 50% 35%,#b48bff,#7B2FF7 70%);box-shadow:0 0 0 4px #fff,0 0 0 7px #2a1f1a,0 6px 0 7px var(--deep)}
+#spin:disabled{filter:saturate(.7) brightness(.92);cursor:default}
+#spin:active:not(:disabled){transform:translateY(3px)}
+.spinbox .hint{font-size:11px;font-weight:800;color:#FFE9B8;text-shadow:0 1px 2px #140d26;text-transform:uppercase;letter-spacing:.5px}
+/* Settings (gear) and sound sit in the top-right corner on every layout, the gear in the corner. */
+.tools{position:absolute;top:max(8px, env(safe-area-inset-top, 0px));right:max(10px, env(safe-area-inset-right, 0px));z-index:4;display:flex;flex-direction:row-reverse;align-items:center;gap:6px}
+.round{width:40px;height:40px;min-width:40px;min-height:40px;border-radius:50%;background:rgba(42,31,58,.85);color:#fff;font-size:18px;font-weight:900;display:grid;place-items:center;padding:0}
+.tools input[type=range]{width:90px;accent-color:#7B2FF7}
+
+/* Free-spins box */
+.featurebox{grid-area:info;justify-self:start;min-width:132px;border-radius:16px;background:rgba(255,255,255,.85);border:3px solid var(--rim);text-align:center;padding:8px 10px;display:flex;flex-direction:column;gap:2px}
+.featurebox .k{font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.featurebox .v{font-size:20px;font-weight:900;color:var(--deep);font-variant-numeric:tabular-nums;line-height:1.1}
+.featurebox .v.sm{font-size:15px}
+.featurebox.on{background:#2a1f3a;border-color:#ff7a3a;box-shadow:0 0 18px rgba(255,122,58,.55)}
+.featurebox.on .k{color:#ffcf9e}.featurebox.on .v{color:#fff}
+
+/* Control bar: credit, bet, win, net position and session time stay visible (market rule). */
+.bar{grid-area:bar;position:sticky;bottom:0;justify-self:stretch;margin:4px calc(-1 * max(16px, env(safe-area-inset-right, 0px))) 0 calc(-1 * max(16px, env(safe-area-inset-left, 0px)));background:rgba(42,31,58,.94);color:#fff;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px 20px;padding-top:8px;padding-bottom:calc(8px + env(safe-area-inset-bottom, 0px));padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));z-index:5}
+.kv{display:flex;align-items:baseline;gap:6px;white-space:nowrap}
+.kv span{font-size:11px;font-weight:900;color:#FFD23F;letter-spacing:.5px}
+.kv b{font-size:16px;font-variant-numeric:tabular-nums}
+.betctl{display:flex;align-items:center;gap:8px}
+.betctl button{width:40px;height:40px;min-width:40px;min-height:40px;border-radius:50%;background:rgba(255,255,255,.16);color:#fff;font-size:22px;font-weight:900;padding:0}
+.betctl button:disabled{opacity:.35;cursor:default}
+
+@media (orientation:landscape) and (min-width:560px){
+  .cabinet{grid-template-columns:minmax(150px,220px) auto minmax(150px,220px);
+    grid-template-areas:"buy board logo" "buy board info" "tools board spin" ". msg ." "bar bar bar";
+    grid-template-rows:auto 1fr auto auto auto;justify-content:center;align-items:center;gap:8px 22px;padding-block:14px 0}
+  .logo,.featurebox,.spinbox,.buycard{justify-self:center}
+  .logo{padding-top:40px}
+  .buycard{padding:16px 18px}
+  .buycard .s{font-size:22px}
+  #spin{width:112px;height:112px}
+  #spin svg{width:60px;height:60px}
+  h1{font-size:clamp(26px,3vw,40px)}
+}
+/* Phones held upright: keep the spin row inside narrow screens. */
+@media (orientation:portrait){
+  .cabinet{column-gap:10px;grid-template-rows:auto auto auto auto auto 1fr}
+  .bar{align-self:end} /* spare height goes above the bar, so it sits at the bottom of the screen */
+  .featurebox{min-width:0;max-width:128px;padding:6px 8px}
+  h1{font-size:clamp(22px,6vw,40px)}
+}
+/* Short landscape screens (phones turned sideways, small windows): compact side panels. */
+@media (orientation:landscape) and (min-width:560px) and (max-height:560px){
+  .cabinet{padding-top:6px;gap:4px 16px}
+  h1{font-size:22px}
+  .badges{margin-top:3px;gap:3px}.badge{font-size:9px;padding:2px 5px}
+  .buycard{padding:8px 12px}.buycard .s{font-size:15px}.buycard b{font-size:16px}
+  #spin{width:76px;height:76px}#spin svg{width:42px;height:42px}#spin .count{font-size:24px}
+  .spinbox .hint{display:none}
+  .featurebox{padding:4px 8px;min-width:120px}.featurebox .v{font-size:16px}.featurebox .v.sm{font-size:13px}
+  .round{width:36px;height:36px;min-width:36px;min-height:36px;font-size:16px}
+  .msg{font-size:14px;min-height:18px}
+  .bar{padding-top:4px;padding-bottom:calc(4px + env(safe-area-inset-bottom, 0px))}.kv b{font-size:14px}
+  .betctl button{width:34px;height:34px;min-width:34px;min-height:34px}
+}
+
+/* Short portrait screens (the Game Lobby's phone window, phones in a browser, small windows): the
+   whole cabinet fits on one screen. Info and sound sit beside the title; the buy panel, spin button
+   and free-spins box share one row; the control bar is tighter. resize() then gives the board
+   whatever height is left. */
+@media (orientation:portrait) and (max-height:780px){
+  .cabinet{grid-template-areas:"logo logo logo" "board board board" "msg msg msg" "buy spin info" "bar bar bar";grid-template-rows:auto auto auto auto 1fr;gap:6px 8px;padding-top:4px}
+  h1{font-size:22px}
+  .tools{top:max(4px, env(safe-area-inset-top, 0px))}
+  .round{width:34px;height:34px;min-width:34px;min-height:34px;font-size:15px}
+  .msg{font-size:13px;min-height:17px}
+  .buycard{justify-self:end;align-self:center;padding:5px 10px;box-shadow:0 0 0 2px #fff,0 0 0 4px #2a1f1a,0 4px 0 4px #b88700}
+  .buycard .t{font-size:9px;letter-spacing:.5px}.buycard .s{font-size:12px}.buycard b{font-size:14px;padding:1px 8px;margin-top:2px}
+  #spin{width:66px;height:66px}#spin svg{width:36px;height:36px}#spin .count{font-size:22px}
+  .spinbox{align-self:center}.spinbox .hint{display:none}
+  .featurebox{justify-self:start;align-self:center;padding:4px 8px;border-width:2px;max-width:124px}
+  .featurebox .k{font-size:9px}.featurebox .v{font-size:15px}.featurebox .v.sm{font-size:12px}
+  .bar{gap:2px 14px;padding-top:4px;padding-bottom:calc(4px + env(safe-area-inset-bottom, 0px))}
+  .kv span{font-size:10px}.kv b{font-size:14px}
+  .betctl{gap:6px}.betctl button{width:36px;height:36px;min-width:36px;min-height:36px;font-size:19px}
+}
+
+/* Below the cabinet: paytable, settings and dev tools. */
+.below{max-width:900px;margin:0 auto;padding:12px 16px 28px;display:flex;flex-direction:column;gap:10px}
+/* Settings sheet (the gear button): sound, paytable and rules, dev tools and the parody notice. */
+.sheet{position:fixed;inset:0;z-index:15;background:rgba(20,13,38,.62);display:flex;justify-content:center;align-items:flex-start;padding:max(10px, env(safe-area-inset-top, 0px)) 10px 10px;overflow:auto;-webkit-overflow-scrolling:touch}
+.sheet[hidden]{display:none}
+.sheet .below{width:100%;margin:0 auto;background:rgba(246,241,255,.97);border-radius:18px;box-shadow:0 10px 40px rgba(0,0,0,.4);padding:10px 12px 16px}
+.sheethead{display:flex;align-items:center;justify-content:space-between}
+.sheethead h2{margin:0;font-size:18px;color:var(--deep)}
+#setClose{width:40px;height:40px;min-width:40px;min-height:40px;border-radius:50%;background:rgba(42,31,58,.1);font-size:18px;font-weight:900;padding:0}
+.volrow{display:flex;align-items:center;gap:10px;font-weight:800;font-size:14px;background:var(--panel);border-radius:12px;padding:8px 12px}
+.volrow input{flex:1;accent-color:#7B2FF7}
+.small-btn{background:var(--panel);font-size:13px;font-weight:700;padding:0 12px}
+details{background:var(--panel);border-radius:12px;padding:8px 12px;font-size:14px}
+summary{cursor:pointer;font-weight:800;min-height:28px;line-height:28px}
+.pt{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px;margin-top:8px}
+.pt .s.wide{grid-column:1/-1}
+.pt .p{display:flex;flex-wrap:wrap;gap:3px 4px}
+.pt .band{display:inline-flex;gap:3px;align-items:baseline;padding:1px 5px;border-radius:6px;background:rgba(0,0,0,.05);white-space:nowrap}
+.pt .band i{font-style:normal;font-size:11px;font-weight:700;opacity:.6}
+.pt .s{display:flex;gap:8px;align-items:center;background:rgba(255,255,255,.6);border-radius:10px;padding:6px}
+.pt img{width:44px;height:55px;flex:none}
+.pt .n{font-weight:800;font-size:13px}
+.pt .p{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.rules{margin:8px 0 0;padding-left:18px;line-height:1.5}
+.dev label{display:flex;gap:8px;align-items:center;margin:6px 0;flex-wrap:wrap}
+.dev select{font:inherit;min-height:36px;border-radius:8px}
+.dev .out{font-family:ui-monospace,Menlo,monospace;font-size:12px;white-space:pre-wrap;background:rgba(255,255,255,.7);border-radius:8px;padding:6px;margin-top:6px}
+.log{list-style:none;margin:6px 0 0;padding:0;max-height:220px;overflow:auto;font-family:ui-monospace,Menlo,monospace;font-size:12px}
+.log li{display:flex;justify-content:space-between;gap:6px;align-items:center;padding:3px 0;border-bottom:1px solid rgba(0,0,0,.06)}
+.log button{min-height:30px;min-width:30px;font-size:12px;padding:0 8px;background:#fff;border-radius:8px}
+.modal{position:fixed;inset:0;background:rgba(42,31,58,.55);display:flex;align-items:center;justify-content:center;z-index:20;padding:16px}
+.modal[hidden]{display:none}
+.modal .card{background:#fff;border-radius:18px;padding:18px;max-width:340px;width:100%;text-align:center}
+.modal h2{margin:0 0 8px;font-size:20px;color:var(--deep)}
+.modal p{margin:0 0 14px;line-height:1.45}
+.modal .row{display:flex;gap:10px;justify-content:center}
+.modal .row button{padding:0 18px;font-weight:800}
+#buyOk{background:var(--hot);color:#fff}
+#buyCancel{background:#eee}
+footer{font-size:12px;color:var(--muted);text-align:center;line-height:1.5}
+/* Summit Hall background (sources: art/bg_base_wide.svg, art/bg_base.svg). A fixed layer, so it also stays put on iOS. */
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1920 1080%22 width=%221920%22 height=%221080%22 preserveAspectRatio=%22xMidYMid slice%22%3E %3Cdefs%3E %3ClinearGradient id=%22wall%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%232A3758%22/%3E%3Cstop offset=%220.6%22 stop-color=%22%231F2A47%22/%3E%3Cstop offset=%221%22 stop-color=%22%23161E35%22/%3E %3C/linearGradient%3E %3CradialGradient id=%22glow%22 cx=%22960%22 cy=%22420%22 r=%22620%22 gradientUnits=%22userSpaceOnUse%22%3E %3Cstop offset=%220%22 stop-color=%22%23F2A93B%22 stop-opacity=%220.42%22/%3E%3Cstop offset=%220.55%22 stop-color=%22%23F2A93B%22 stop-opacity=%220.14%22/%3E%3Cstop offset=%221%22 stop-color=%22%23F2A93B%22 stop-opacity=%220%22/%3E %3C/radialGradient%3E %3ClinearGradient id=%22screen%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%23162746%22/%3E%3Cstop offset=%221%22 stop-color=%22%23101C36%22/%3E %3C/linearGradient%3E %3ClinearGradient id=%22curtainL%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%220%22%3E %3Cstop offset=%220%22 stop-color=%22%235E1626%22/%3E%3Cstop offset=%221%22 stop-color=%22%239C2F3F%22/%3E %3C/linearGradient%3E %3ClinearGradient id=%22curtainR%22 x1=%221%22 y1=%220%22 x2=%220%22 y2=%220%22%3E %3Cstop offset=%220%22 stop-color=%22%235E1626%22/%3E%3Cstop offset=%221%22 stop-color=%22%239C2F3F%22/%3E %3C/linearGradient%3E %3ClinearGradient id=%22carpet%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%239C2F3F%22/%3E%3Cstop offset=%221%22 stop-color=%22%236E1F2E%22/%3E %3C/linearGradient%3E %3ClinearGradient id=%22table%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%238A5A3A%22/%3E%3Cstop offset=%221%22 stop-color=%22%236B4128%22/%3E %3C/linearGradient%3E %3C/defs%3E %3Crect width=%221920%22 height=%221080%22 fill=%22url(%23wall)%22/%3E %3Cg fill=%22%233A4A72%22 opacity=%220.5%22%3E %3Crect x=%22400%22 y=%22110%22 width=%2270%22 height=%22760%22 rx=%2235%22/%3E%3Crect x=%22520%22 y=%22110%22 width=%2270%22 height=%22760%22 rx=%2235%22/%3E %3Crect x=%221330%22 y=%22110%22 width=%2270%22 height=%22760%22 rx=%2235%22/%3E%3Crect x=%221450%22 y=%22110%22 width=%2270%22 height=%22760%22 rx=%2235%22/%3E %3C/g%3E %3Crect width=%221920%22 height=%221080%22 fill=%22url(%23glow)%22/%3E %3Cpath d=%22M660 900 L660 330 Q660 90 960 90 Q1260 90 1260 330 L1260 900 Z%22 fill=%22url(%23screen)%22 stroke=%22%23B88A2E%22 stroke-width=%2210%22 opacity=%220.85%22/%3E %3Cg fill=%22none%22 stroke=%22%232C4672%22 stroke-width=%223%22 opacity=%220.9%22%3E %3Cpath d=%22M690 300 Q960 270 1230 300 M680 450 Q960 430 1240 450 M680 600 Q960 590 1240 600 M680 750 Q960 745 1240 750%22/%3E %3Cpath d=%22M810 130 Q790 500 820 890 M960 92 L960 900 M1110 130 Q1130 500 1100 890%22/%3E %3C/g%3E %3Cg fill=%22%232E5A8A%22 opacity=%220.95%22%3E %3Cpath d=%22M720 300 Q750 240 840 250 Q900 260 880 320 Q870 370 820 380 Q800 440 760 420 Q730 390 745 350 Q710 330 720 300 Z%22/%3E %3Cpath d=%22M810 460 Q850 450 870 500 Q880 560 850 610 Q830 640 815 610 Q800 550 810 460 Z%22/%3E %3Cpath d=%22M980 260 Q1030 230 1110 250 Q1190 270 1180 330 Q1170 380 1120 380 Q1090 430 1050 410 Q1020 390 1030 350 Q980 330 980 260 Z%22/%3E %3Cpath d=%22M1010 420 Q1050 410 1070 460 Q1080 520 1050 570 Q1030 590 1020 550 Q1005 480 1010 420 Z%22/%3E %3Cpath d=%22M1120 540 Q1170 530 1190 570 Q1190 610 1150 610 Q1120 600 1120 540 Z%22/%3E %3C/g%3E %3Cg fill=%22%23F2A93B%22 opacity=%220.8%22%3E %3Ccircle cx=%22460%22 cy=%22420%22 r=%2226%22 opacity=%220.35%22/%3E%3Ccircle cx=%221480%22 cy=%22520%22 r=%2234%22 opacity=%220.3%22/%3E %3Ccircle cx=%221420%22 cy=%22250%22 r=%2214%22 opacity=%220.5%22/%3E%3Ccircle cx=%22520%22 cy=%22760%22 r=%2218%22 opacity=%220.4%22/%3E %3C/g%3E %3Cg fill=%22%23FFC867%22 opacity=%220.7%22%3E %3Cpath d=%22M560 260 Q560 280 580 280 Q560 280 560 300 Q560 280 540 280 Q560 280 560 260 Z%22/%3E %3Cpath d=%22M1380 380 Q1380 404 1404 404 Q1380 404 1380 428 Q1380 404 1356 404 Q1380 404 1380 380 Z%22/%3E %3C/g%3E %3Cg fill=%22none%22 stroke=%22%23F2A93B%22 stroke-width=%226%22 stroke-dasharray=%2212 9%22 stroke-linecap=%22round%22 opacity=%220.65%22%3E %3Cpath d=%22M760 320 Q900 170 1080 300%22/%3E %3Cpath d=%22M1120 360 Q1000 520 830 560%22/%3E %3Cpath d=%22M760 640 Q960 560 1150 640%22/%3E %3C/g%3E%3Cg fill=%22none%22 stroke=%22%23FF4D6D%22 stroke-width=%224%22 opacity=%220.7%22%3E %3Ccircle cx=%221080%22 cy=%22300%22 r=%2212%22/%3E%3Ccircle cx=%221080%22 cy=%22300%22 r=%224%22 fill=%22%23FF4D6D%22/%3E %3Ccircle cx=%22830%22 cy=%22560%22 r=%2212%22/%3E%3Ccircle cx=%22830%22 cy=%22560%22 r=%224%22 fill=%22%23FF4D6D%22/%3E %3Ccircle cx=%221150%22 cy=%22640%22 r=%2212%22/%3E%3Ccircle cx=%221150%22 cy=%22640%22 r=%224%22 fill=%22%23FF4D6D%22/%3E %3C/g%3E %3Cpath d=%22M0 860 L1920 860 L1920 1080 L0 1080 Z%22 fill=%22%2318203A%22/%3E %3Cpath d=%22M760 860 L1160 860 L1360 1080 L560 1080 Z%22 fill=%22url(%23carpet)%22/%3E %3Cellipse cx=%22960%22 cy=%221010%22 rx=%22820%22 ry=%22110%22 fill=%22%234A2C18%22/%3E %3Cellipse cx=%22960%22 cy=%22992%22 rx=%22820%22 ry=%22100%22 fill=%22url(%23table)%22 stroke=%22%233A2212%22 stroke-width=%226%22/%3E %3Cg stroke=%22%234B3A44%22 stroke-width=%225%22 stroke-linecap=%22round%22 fill=%22none%22%3E %3Cpath d=%22M380 950 Q390 912 420 898 M620 925 Q630 888 660 876 M1260 925 Q1270 888 1300 876 M1500 950 Q1510 912 1540 898%22/%3E %3C/g%3E %3Cg fill=%22%233A2E36%22%3E%3Ccircle cx=%22422%22 cy=%22897%22 r=%229%22/%3E%3Ccircle cx=%22662%22 cy=%22875%22 r=%229%22/%3E%3Ccircle cx=%221302%22 cy=%22875%22 r=%229%22/%3E%3Ccircle cx=%221542%22 cy=%22897%22 r=%229%22/%3E%3C/g%3E %3Cg fill=%22%23FFFFFF%22 stroke=%22%23B88A2E%22 stroke-width=%224%22%3E %3Cpath d=%22M300 990 L360 990 L346 960 L314 960 Z%22/%3E%3Cpath d=%22M520 960 L580 960 L566 930 L534 930 Z%22/%3E %3Cpath d=%22M1340 960 L1400 960 L1386 930 L1354 930 Z%22/%3E%3Cpath d=%22M1560 990 L1620 990 L1606 960 L1574 960 Z%22/%3E %3C/g%3E %3Cg transform=%22translate(470 860) scale(0.6)%22 stroke=%22%231C2742%22 stroke-width=%225%22 stroke-linejoin=%22round%22%3E %3Cpath d=%22M86 200 Q90 150 92 110 L108 110 Q110 150 114 200 Z%22 fill=%22%23F6D38A%22/%3E %3Cellipse cx=%22100%22 cy=%22156%22 rx=%2230%22 ry=%228%22 fill=%22%23F2A93B%22/%3E %3Ccircle cx=%2266%22 cy=%22206%22 r=%2216%22 fill=%22%23F6D38A%22/%3E%3Ccircle cx=%22134%22 cy=%22206%22 r=%2216%22 fill=%22%23F6D38A%22/%3E %3Ccircle cx=%2288%22 cy=%22212%22 r=%2218%22 fill=%22%23F6D38A%22/%3E%3Ccircle cx=%22112%22 cy=%22212%22 r=%2218%22 fill=%22%23F6D38A%22/%3E %3Ccircle cx=%2252%22 cy=%2284%22 r=%2224%22 fill=%22%23F08A4B%22/%3E%3Ccircle cx=%22154%22 cy=%2292%22 r=%2220%22 fill=%22%23F08A4B%22/%3E %3Ccircle cx=%2276%22 cy=%2258%22 r=%2226%22 fill=%22%23F08A4B%22/%3E%3Ccircle cx=%22140%22 cy=%2264%22 r=%2226%22 fill=%22%23F08A4B%22/%3E%3Ccircle cx=%22108%22 cy=%2248%22 r=%2230%22 fill=%22%23F08A4B%22/%3E %3Cellipse cx=%22100%22 cy=%2288%22 rx=%2258%22 ry=%2232%22 fill=%22%23F08A4B%22 stroke=%22none%22/%3E %3Cpath d=%22M44 100 Q100 136 156 100 Q160 112 146 118 Q100 136 54 118 Q40 112 44 100 Z%22 fill=%22%23D9622E%22/%3E %3Ccircle cx=%2298%22 cy=%2238%22 r=%2210%22 fill=%22%23FFD9A8%22 stroke=%22none%22/%3E%3Ccircle cx=%2270%22 cy=%2252%22 r=%227%22 fill=%22%23FFD9A8%22 stroke=%22none%22/%3E %3C/g%3E %3Cg transform=%22translate(1330 860) scale(0.6)%22 stroke=%22%231C2742%22 stroke-width=%225%22 stroke-linejoin=%22round%22%3E %3Cpath d=%22M86 200 Q90 150 92 110 L108 110 Q110 150 114 200 Z%22 fill=%22%23F6D38A%22/%3E %3Cellipse cx=%22100%22 cy=%22156%22 rx=%2230%22 ry=%228%22 fill=%22%23F2A93B%22/%3E %3Ccircle cx=%2266%22 cy=%22206%22 r=%2216%22 fill=%22%23F6D38A%22/%3E%3Ccircle cx=%22134%22 cy=%22206%22 r=%2216%22 fill=%22%23F6D38A%22/%3E %3Ccircle cx=%2288%22 cy=%22212%22 r=%2218%22 fill=%22%23F6D38A%22/%3E%3Ccircle cx=%22112%22 cy=%22212%22 r=%2218%22 fill=%22%23F6D38A%22/%3E %3Ccircle cx=%2252%22 cy=%2284%22 r=%2224%22 fill=%22%23F08A4B%22/%3E%3Ccircle cx=%22154%22 cy=%2292%22 r=%2220%22 fill=%22%23F08A4B%22/%3E %3Ccircle cx=%2276%22 cy=%2258%22 r=%2226%22 fill=%22%23F08A4B%22/%3E%3Ccircle cx=%22140%22 cy=%2264%22 r=%2226%22 fill=%22%23F08A4B%22/%3E%3Ccircle cx=%22108%22 cy=%2248%22 r=%2230%22 fill=%22%23F08A4B%22/%3E %3Cellipse cx=%22100%22 cy=%2288%22 rx=%2258%22 ry=%2232%22 fill=%22%23F08A4B%22 stroke=%22none%22/%3E %3Cpath d=%22M44 100 Q100 136 156 100 Q160 112 146 118 Q100 136 54 118 Q40 112 44 100 Z%22 fill=%22%23D9622E%22/%3E %3Ccircle cx=%2298%22 cy=%2238%22 r=%2210%22 fill=%22%23FFD9A8%22 stroke=%22none%22/%3E%3Ccircle cx=%2270%22 cy=%2252%22 r=%227%22 fill=%22%23FFD9A8%22 stroke=%22none%22/%3E %3C/g%3E %3Cpath d=%22M0 0 L330 0 Q300 260 282 440 Q270 540 210 600 Q130 660 0 670 Z%22 fill=%22url(%23curtainL)%22/%3E %3Cpath d=%22M0 670 Q110 660 200 610 Q230 820 270 1080 L0 1080 Z%22 fill=%22url(%23curtainL)%22/%3E %3Cg fill=%22none%22 stroke=%22%233E0E18%22 stroke-width=%225%22 opacity=%220.5%22%3E %3Cpath d=%22M80 0 Q90 330 70 660 M170 0 Q180 340 140 640 M260 0 Q250 300 230 560 M70 680 Q90 880 80 1080 M150 650 Q170 860 180 1080%22/%3E %3C/g%3E %3Cpath d=%22M1920 0 L1590 0 Q1620 260 1638 440 Q1650 540 1710 600 Q1790 660 1920 670 Z%22 fill=%22url(%23curtainR)%22/%3E %3Cpath d=%22M1920 670 Q1810 660 1720 610 Q1690 820 1650 1080 L1920 1080 Z%22 fill=%22url(%23curtainR)%22/%3E %3Cg fill=%22none%22 stroke=%22%233E0E18%22 stroke-width=%225%22 opacity=%220.5%22%3E %3Cpath d=%22M1840 0 Q1830 330 1850 660 M1750 0 Q1740 340 1780 640 M1660 0 Q1670 300 1690 560 M1850 680 Q1830 880 1840 1080 M1770 650 Q1750 860 1740 1080%22/%3E %3C/g%3E %3Cg fill=%22%23F2C14E%22 stroke=%22%23B88A2E%22 stroke-width=%224%22%3E %3Cellipse cx=%22205%22 cy=%22610%22 rx=%2262%22 ry=%2222%22/%3E%3Cellipse cx=%221715%22 cy=%22610%22 rx=%2262%22 ry=%2222%22/%3E %3Cpath d=%22M185 628 L166 712 L224 712 L205 628 Z%22/%3E%3Cpath d=%22M1695 628 L1676 712 L1734 712 L1715 628 Z%22/%3E %3C/g%3E %3Cg transform=%22translate(316 500) scale(1.2)%22%3E %3Crect x=%22-14%22 y=%22292%22 width=%22108%22 height=%2230%22 rx=%228%22 fill=%22%233A4A72%22 stroke=%22%231C2742%22 stroke-width=%225%22/%3E %3Cpath d=%22M18 220 L-8 288 L22 282 Z M62 220 L88 288 L58 282 Z%22 fill=%22%238FA3BF%22 stroke=%22%231C2742%22 stroke-width=%224%22 stroke-linejoin=%22round%22/%3E %3Crect x=%2218%22 y=%2270%22 width=%2244%22 height=%22214%22 rx=%2210%22 fill=%22%23FFFFFF%22 stroke=%22%231C2742%22 stroke-width=%225%22/%3E %3Cg fill=%22%23D7263D%22%3E%3Crect x=%2220%22 y=%22124%22 width=%2240%22 height=%2218%22/%3E%3Crect x=%2220%22 y=%22166%22 width=%2240%22 height=%2218%22/%3E%3Crect x=%2220%22 y=%22208%22 width=%2240%22 height=%2218%22/%3E%3Crect x=%2220%22 y=%22250%22 width=%2240%22 height=%2218%22/%3E%3C/g%3E %3Cpath d=%22M18 76 Q18 12 40 -12 Q62 12 62 76 Z%22 fill=%22%23FF4D6D%22 stroke=%22%231C2742%22 stroke-width=%225%22 stroke-linejoin=%22round%22/%3E %3Ccircle cx=%2240%22 cy=%2298%22 r=%229%22 fill=%22%23FFD23F%22 stroke=%22%231C2742%22 stroke-width=%223%22/%3E %3Cpath d=%22M28 20 Q30 0 40 -6%22 stroke=%22%23FFD0D6%22 stroke-width=%225%22 stroke-linecap=%22round%22 fill=%22none%22/%3E %3Cpath d=%22M27 84 L27 276%22 stroke=%22%23E3E8F0%22 stroke-width=%225%22 stroke-linecap=%22round%22 fill=%22none%22/%3E %3C/g%3E %3Cg transform=%22translate(1508 500) scale(1.2)%22%3E %3Crect x=%22-14%22 y=%22292%22 width=%22108%22 height=%2230%22 rx=%228%22 fill=%22%233A4A72%22 stroke=%22%231C2742%22 stroke-width=%225%22/%3E %3Cpath d=%22M18 220 L-8 288 L22 282 Z M62 220 L88 288 L58 282 Z%22 fill=%22%238FA3BF%22 stroke=%22%231C2742%22 stroke-width=%224%22 stroke-linejoin=%22round%22/%3E %3Crect x=%2218%22 y=%2270%22 width=%2244%22 height=%22214%22 rx=%2210%22 fill=%22%23FFFFFF%22 stroke=%22%231C2742%22 stroke-width=%225%22/%3E %3Cg fill=%22%23D7263D%22%3E%3Crect x=%2220%22 y=%22124%22 width=%2240%22 height=%2218%22/%3E%3Crect x=%2220%22 y=%22166%22 width=%2240%22 height=%2218%22/%3E%3Crect x=%2220%22 y=%22208%22 width=%2240%22 height=%2218%22/%3E%3Crect x=%2220%22 y=%22250%22 width=%2240%22 height=%2218%22/%3E%3C/g%3E %3Cpath d=%22M18 76 Q18 12 40 -12 Q62 12 62 76 Z%22 fill=%22%23FF4D6D%22 stroke=%22%231C2742%22 stroke-width=%225%22 stroke-linejoin=%22round%22/%3E %3Ccircle cx=%2240%22 cy=%2298%22 r=%229%22 fill=%22%23FFD23F%22 stroke=%22%231C2742%22 stroke-width=%223%22/%3E %3Cpath d=%22M28 20 Q30 0 40 -6%22 stroke=%22%23FFD0D6%22 stroke-width=%225%22 stroke-linecap=%22round%22 fill=%22none%22/%3E %3Cpath d=%22M27 84 L27 276%22 stroke=%22%23E3E8F0%22 stroke-width=%225%22 stroke-linecap=%22round%22 fill=%22none%22/%3E %3C/g%3E %3Cg%3E %3Ccircle cx=%22360%22 cy=%22190%22 r=%2265%22 fill=%22%237A2232%22 stroke=%22%231C2742%22 stroke-width=%226%22/%3E %3Ccircle cx=%22360%22 cy=%22190%22 r=%2256%22 fill=%22%23FFF6E8%22 stroke=%22%23F2C14E%22 stroke-width=%225%22/%3E %3Cpath d=%22M360 190 L360 138 A52 52 0 0 0 334.0 145.0 Z%22 fill=%22%23FF4D6D%22 opacity=%220.28%22/%3E %3Cg stroke=%22%231C2742%22 stroke-width=%225%22 stroke-linecap=%22round%22%3E%3Cpath d=%22M360 144 L360 158%22 transform=%22rotate(0 360 190)%22/%3E%3Cpath d=%22M360 144 L360 151%22 transform=%22rotate(30 360 190)%22/%3E%3Cpath d=%22M360 144 L360 151%22 transform=%22rotate(60 360 190)%22/%3E%3Cpath d=%22M360 144 L360 158%22 transform=%22rotate(90 360 190)%22/%3E%3Cpath d=%22M360 144 L360 151%22 transform=%22rotate(120 360 190)%22/%3E%3Cpath d=%22M360 144 L360 151%22 transform=%22rotate(150 360 190)%22/%3E%3Cpath d=%22M360 144 L360 158%22 transform=%22rotate(180 360 190)%22/%3E%3Cpath d=%22M360 144 L360 151%22 transform=%22rotate(210 360 190)%22/%3E%3Cpath d=%22M360 144 L360 151%22 transform=%22rotate(240 360 190)%22/%3E%3Cpath d=%22M360 144 L360 158%22 transform=%22rotate(270 360 190)%22/%3E%3Cpath d=%22M360 144 L360 151%22 transform=%22rotate(300 360 190)%22/%3E%3Cpath d=%22M360 144 L360 151%22 transform=%22rotate(330 360 190)%22/%3E%3C/g%3E %3Cpath d=%22M360 190 L360 159.2%22 stroke=%22%231C2742%22 stroke-width=%228%22 stroke-linecap=%22round%22 transform=%22rotate(-4 360 190)%22/%3E %3Cpath d=%22M360 190 L360 141.8%22 stroke=%22%23E8384F%22 stroke-width=%225%22 stroke-linecap=%22round%22 transform=%22rotate(-14 360 190)%22/%3E %3Ccircle cx=%22360%22 cy=%22190%22 r=%226%22 fill=%22%231C2742%22/%3E %3C/g%3E %3Cpath d=%22M0 0 L1920 0 L1920 50 Q1840 96 1760 50 Q1680 96 1600 50 Q1520 96 1440 50 Q1360 96 1280 50 Q1200 96 1120 50 Q1040 96 960 50 Q880 96 800 50 Q720 96 640 50 Q560 96 480 50 Q400 96 320 50 Q240 96 160 50 Q80 96 0 50 Z%22 fill=%22%237A2232%22/%3E %3Cpath d=%22M0 50 Q80 96 160 50 Q240 96 320 50 Q400 96 480 50 Q560 96 640 50 Q720 96 800 50 Q880 96 960 50 Q1040 96 1120 50 Q1200 96 1280 50 Q1360 96 1440 50 Q1520 96 1600 50 Q1680 96 1760 50 Q1840 96 1920 50%22 fill=%22none%22 stroke=%22%23F2C14E%22 stroke-width=%228%22 stroke-dasharray=%223 9%22 stroke-linecap=%22round%22/%3E %3C/svg%3E") center top/cover no-repeat}
+@media (orientation:portrait){body::before{background-image:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1080 1920%22 width=%221080%22 height=%221920%22 preserveAspectRatio=%22xMidYMid slice%22%3E %3Cdefs%3E %3ClinearGradient id=%22wall%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%232A3758%22/%3E%3Cstop offset=%220.6%22 stop-color=%22%231F2A47%22/%3E%3Cstop offset=%221%22 stop-color=%22%23161E35%22/%3E %3C/linearGradient%3E %3CradialGradient id=%22glow%22 cx=%22540%22 cy=%22700%22 r=%22560%22 gradientUnits=%22userSpaceOnUse%22%3E %3Cstop offset=%220%22 stop-color=%22%23F2A93B%22 stop-opacity=%220.42%22/%3E%3Cstop offset=%220.55%22 stop-color=%22%23F2A93B%22 stop-opacity=%220.14%22/%3E%3Cstop offset=%221%22 stop-color=%22%23F2A93B%22 stop-opacity=%220%22/%3E %3C/radialGradient%3E %3ClinearGradient id=%22screen%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%23162746%22/%3E%3Cstop offset=%221%22 stop-color=%22%23101C36%22/%3E %3C/linearGradient%3E %3ClinearGradient id=%22curtainL%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%220%22%3E %3Cstop offset=%220%22 stop-color=%22%235E1626%22/%3E%3Cstop offset=%221%22 stop-color=%22%239C2F3F%22/%3E %3C/linearGradient%3E %3ClinearGradient id=%22curtainR%22 x1=%221%22 y1=%220%22 x2=%220%22 y2=%220%22%3E %3Cstop offset=%220%22 stop-color=%22%235E1626%22/%3E%3Cstop offset=%221%22 stop-color=%22%239C2F3F%22/%3E %3C/linearGradient%3E %3ClinearGradient id=%22carpet%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%239C2F3F%22/%3E%3Cstop offset=%221%22 stop-color=%22%236E1F2E%22/%3E %3C/linearGradient%3E %3ClinearGradient id=%22table%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%238A5A3A%22/%3E%3Cstop offset=%221%22 stop-color=%22%236B4128%22/%3E %3C/linearGradient%3E %3C/defs%3E %3Crect width=%221080%22 height=%221920%22 fill=%22url(%23wall)%22/%3E %3Cg fill=%22%233A4A72%22 opacity=%220.5%22%3E %3Crect x=%22130%22 y=%22180%22 width=%2270%22 height=%221300%22 rx=%2235%22/%3E%3Crect x=%22250%22 y=%22180%22 width=%2270%22 height=%221300%22 rx=%2235%22/%3E %3Crect x=%22760%22 y=%22180%22 width=%2270%22 height=%221300%22 rx=%2235%22/%3E%3Crect x=%22880%22 y=%22180%22 width=%2270%22 height=%221300%22 rx=%2235%22/%3E %3C/g%3E %3Crect width=%221080%22 height=%221920%22 fill=%22url(%23glow)%22/%3E %3Cpath d=%22M270 1180 L270 560 Q270 270 540 270 Q810 270 810 560 L810 1180 Z%22 fill=%22url(%23screen)%22 stroke=%22%23B88A2E%22 stroke-width=%2210%22 opacity=%220.85%22/%3E %3Cg fill=%22none%22 stroke=%22%232C4672%22 stroke-width=%223%22 opacity=%220.9%22%3E %3Cpath d=%22M300 520 Q540 480 780 520 M290 680 Q540 650 790 680 M290 840 Q540 820 790 840 M290 1000 Q540 990 790 1000%22/%3E %3Cpath d=%22M400 330 Q380 760 410 1170 M540 280 L540 1180 M680 330 Q700 760 670 1170%22/%3E %3C/g%3E %3Cg fill=%22%232E5A8A%22 opacity=%220.95%22%3E %3Cpath d=%22M330 520 Q360 450 440 460 Q500 470 480 540 Q470 600 420 610 Q400 680 360 660 Q330 620 345 580 Q320 560 330 520 Z%22/%3E %3Cpath d=%22M410 700 Q450 690 470 740 Q480 800 450 860 Q430 900 415 860 Q400 800 410 700 Z%22/%3E %3Cpath d=%22M560 470 Q610 440 690 460 Q760 480 750 540 Q740 590 690 590 Q660 640 620 620 Q590 600 600 560 Q560 540 560 470 Z%22/%3E %3Cpath d=%22M590 640 Q630 630 650 680 Q660 740 630 790 Q610 810 600 770 Q585 700 590 640 Z%22/%3E %3Cpath d=%22M690 780 Q740 770 760 810 Q760 850 720 850 Q690 840 690 780 Z%22/%3E %3C/g%3E %3Cg fill=%22%23F2A93B%22 opacity=%220.8%22%3E %3Ccircle cx=%22170%22 cy=%22560%22 r=%2226%22 opacity=%220.35%22/%3E%3Ccircle cx=%22930%22 cy=%22700%22 r=%2234%22 opacity=%220.3%22/%3E %3Ccircle cx=%22900%22 cy=%22420%22 r=%2214%22 opacity=%220.5%22/%3E%3Ccircle cx=%22190%22 cy=%22980%22 r=%2218%22 opacity=%220.4%22/%3E %3Ccircle cx=%22880%22 cy=%221120%22 r=%2222%22 opacity=%220.35%22/%3E%3Ccircle cx=%22230%22 cy=%221260%22 r=%2212%22 opacity=%220.5%22/%3E %3C/g%3E %3Cg fill=%22%23FFC867%22 opacity=%220.7%22%3E %3Cpath d=%22M220 420 Q220 440 240 440 Q220 440 220 460 Q220 440 200 440 Q220 440 220 420 Z%22/%3E %3Cpath d=%22M860 560 Q860 584 884 584 Q860 584 860 608 Q860 584 836 584 Q860 584 860 560 Z%22/%3E %3Cpath d=%22M860 1300 Q860 1318 878 1318 Q860 1318 860 1336 Q860 1318 842 1318 Q860 1318 860 1300 Z%22/%3E %3C/g%3E %3Cg fill=%22none%22 stroke=%22%23F2A93B%22 stroke-width=%226%22 stroke-dasharray=%2212 9%22 stroke-linecap=%22round%22 opacity=%220.65%22%3E %3Cpath d=%22M380 560 Q520 380 700 520%22/%3E %3Cpath d=%22M720 600 Q600 760 440 830%22/%3E %3Cpath d=%22M350 900 Q560 820 740 960%22/%3E %3C/g%3E%3Cg fill=%22none%22 stroke=%22%23FF4D6D%22 stroke-width=%224%22 opacity=%220.7%22%3E %3Ccircle cx=%22700%22 cy=%22520%22 r=%2212%22/%3E%3Ccircle cx=%22700%22 cy=%22520%22 r=%224%22 fill=%22%23FF4D6D%22/%3E %3Ccircle cx=%22440%22 cy=%22830%22 r=%2212%22/%3E%3Ccircle cx=%22440%22 cy=%22830%22 r=%224%22 fill=%22%23FF4D6D%22/%3E %3Ccircle cx=%22740%22 cy=%22960%22 r=%2212%22/%3E%3Ccircle cx=%22740%22 cy=%22960%22 r=%224%22 fill=%22%23FF4D6D%22/%3E %3C/g%3E %3Cpath d=%22M0 1500 L1080 1500 L1080 1920 L0 1920 Z%22 fill=%22%2318203A%22/%3E %3Cpath d=%22M330 1500 L750 1500 L1000 1920 L80 1920 Z%22 fill=%22url(%23carpet)%22/%3E %3Cpath d=%22M420 1500 L660 1500 L760 1920 L320 1920 Z%22 fill=%22%23FFFFFF%22 opacity=%220.12%22/%3E %3Cellipse cx=%22540%22 cy=%221700%22 rx=%22560%22 ry=%22150%22 fill=%22%234A2C18%22/%3E %3Cellipse cx=%22540%22 cy=%221680%22 rx=%22560%22 ry=%22140%22 fill=%22url(%23table)%22 stroke=%22%233A2212%22 stroke-width=%226%22/%3E %3Cg stroke=%22%234B3A44%22 stroke-width=%225%22 stroke-linecap=%22round%22 fill=%22none%22%3E %3Cpath d=%22M220 1640 Q230 1600 260 1585 M440 1600 Q450 1560 480 1548 M640 1600 Q650 1560 680 1548 M860 1640 Q870 1600 900 1585%22/%3E %3C/g%3E %3Cg fill=%22%233A2E36%22%3E%3Ccircle cx=%22262%22 cy=%221584%22 r=%229%22/%3E%3Ccircle cx=%22482%22 cy=%221547%22 r=%229%22/%3E%3Ccircle cx=%22682%22 cy=%221547%22 r=%229%22/%3E%3Ccircle cx=%22902%22 cy=%221584%22 r=%229%22/%3E%3C/g%3E %3Cg fill=%22%23FFFFFF%22 stroke=%22%23B88A2E%22 stroke-width=%224%22%3E %3Cpath d=%22M150 1680 L210 1680 L196 1650 L164 1650 Z%22/%3E%3Cpath d=%22M360 1640 L420 1640 L406 1610 L374 1610 Z%22/%3E %3Cpath d=%22M570 1640 L630 1640 L616 1610 L584 1610 Z%22/%3E%3Cpath d=%22M790 1680 L850 1680 L836 1650 L804 1650 Z%22/%3E %3C/g%3E %3Cg fill=%22%23CFE8FF%22 stroke=%22%239FC4EA%22 stroke-width=%223%22 opacity=%220.9%22%3E %3Crect x=%22300%22 y=%221625%22 width=%2218%22 height=%2230%22 rx=%224%22/%3E%3Crect x=%22520%22 y=%221605%22 width=%2218%22 height=%2230%22 rx=%224%22/%3E %3Crect x=%22740%22 y=%221625%22 width=%2218%22 height=%2230%22 rx=%224%22/%3E %3C/g%3E %3Cg transform=%22translate(214 1500) scale(0.62)%22 stroke=%22%231C2742%22 stroke-width=%225%22 stroke-linejoin=%22round%22%3E %3Cpath d=%22M86 200 Q90 150 92 110 L108 110 Q110 150 114 200 Z%22 fill=%22%23F6D38A%22/%3E %3Cellipse cx=%22100%22 cy=%22156%22 rx=%2230%22 ry=%228%22 fill=%22%23F2A93B%22/%3E %3Ccircle cx=%2266%22 cy=%22206%22 r=%2216%22 fill=%22%23F6D38A%22/%3E%3Ccircle cx=%22134%22 cy=%22206%22 r=%2216%22 fill=%22%23F6D38A%22/%3E %3Ccircle cx=%2288%22 cy=%22212%22 r=%2218%22 fill=%22%23F6D38A%22/%3E%3Ccircle cx=%22112%22 cy=%22212%22 r=%2218%22 fill=%22%23F6D38A%22/%3E %3Ccircle cx=%2252%22 cy=%2284%22 r=%2224%22 fill=%22%23F08A4B%22/%3E%3Ccircle cx=%22154%22 cy=%2292%22 r=%2220%22 fill=%22%23F08A4B%22/%3E %3Ccircle cx=%2276%22 cy=%2258%22 r=%2226%22 fill=%22%23F08A4B%22/%3E%3Ccircle cx=%22140%22 cy=%2264%22 r=%2226%22 fill=%22%23F08A4B%22/%3E%3Ccircle cx=%22108%22 cy=%2248%22 r=%2230%22 fill=%22%23F08A4B%22/%3E %3Cellipse cx=%22100%22 cy=%2288%22 rx=%2258%22 ry=%2232%22 fill=%22%23F08A4B%22 stroke=%22none%22/%3E %3Cpath d=%22M44 100 Q100 136 156 100 Q160 112 146 118 Q100 136 54 118 Q40 112 44 100 Z%22 fill=%22%23D9622E%22/%3E %3Ccircle cx=%2298%22 cy=%2238%22 r=%2210%22 fill=%22%23FFD9A8%22 stroke=%22none%22/%3E%3Ccircle cx=%2270%22 cy=%2252%22 r=%227%22 fill=%22%23FFD9A8%22 stroke=%22none%22/%3E %3C/g%3E %3Cg transform=%22translate(742 1500) scale(0.62)%22 stroke=%22%231C2742%22 stroke-width=%225%22 stroke-linejoin=%22round%22%3E %3Cpath d=%22M86 200 Q90 150 92 110 L108 110 Q110 150 114 200 Z%22 fill=%22%23F6D38A%22/%3E %3Cellipse cx=%22100%22 cy=%22156%22 rx=%2230%22 ry=%228%22 fill=%22%23F2A93B%22/%3E %3Ccircle cx=%2266%22 cy=%22206%22 r=%2216%22 fill=%22%23F6D38A%22/%3E%3Ccircle cx=%22134%22 cy=%22206%22 r=%2216%22 fill=%22%23F6D38A%22/%3E %3Ccircle cx=%2288%22 cy=%22212%22 r=%2218%22 fill=%22%23F6D38A%22/%3E%3Ccircle cx=%22112%22 cy=%22212%22 r=%2218%22 fill=%22%23F6D38A%22/%3E %3Ccircle cx=%2252%22 cy=%2284%22 r=%2224%22 fill=%22%23F08A4B%22/%3E%3Ccircle cx=%22154%22 cy=%2292%22 r=%2220%22 fill=%22%23F08A4B%22/%3E %3Ccircle cx=%2276%22 cy=%2258%22 r=%2226%22 fill=%22%23F08A4B%22/%3E%3Ccircle cx=%22140%22 cy=%2264%22 r=%2226%22 fill=%22%23F08A4B%22/%3E%3Ccircle cx=%22108%22 cy=%2248%22 r=%2230%22 fill=%22%23F08A4B%22/%3E %3Cellipse cx=%22100%22 cy=%2288%22 rx=%2258%22 ry=%2232%22 fill=%22%23F08A4B%22 stroke=%22none%22/%3E %3Cpath d=%22M44 100 Q100 136 156 100 Q160 112 146 118 Q100 136 54 118 Q40 112 44 100 Z%22 fill=%22%23D9622E%22/%3E %3Ccircle cx=%2298%22 cy=%2238%22 r=%2210%22 fill=%22%23FFD9A8%22 stroke=%22none%22/%3E%3Ccircle cx=%2270%22 cy=%2252%22 r=%227%22 fill=%22%23FFD9A8%22 stroke=%22none%22/%3E %3C/g%3E %3Cpath d=%22M0 0 L210 0 Q190 420 176 760 Q166 900 130 990 Q80 1060 0 1080 Z%22 fill=%22url(%23curtainL)%22/%3E %3Cpath d=%22M0 1080 Q70 1060 124 1000 Q150 1320 190 1720 L0 1720 Z%22 fill=%22url(%23curtainL)%22/%3E %3Cg fill=%22none%22 stroke=%22%233E0E18%22 stroke-width=%225%22 opacity=%220.5%22%3E %3Cpath d=%22M60 0 Q70 500 50 1060 M130 0 Q140 520 100 1030 M180 0 Q172 480 160 900%22/%3E %3Cpath d=%22M60 1090 Q80 1400 70 1720 M130 1040 Q150 1380 160 1720%22/%3E %3C/g%3E %3Cpath d=%22M1080 0 L870 0 Q890 420 904 760 Q914 900 950 990 Q1000 1060 1080 1080 Z%22 fill=%22url(%23curtainR)%22/%3E %3Cpath d=%22M1080 1080 Q1010 1060 956 1000 Q930 1320 890 1720 L1080 1720 Z%22 fill=%22url(%23curtainR)%22/%3E %3Cg fill=%22none%22 stroke=%22%233E0E18%22 stroke-width=%225%22 opacity=%220.5%22%3E %3Cpath d=%22M1020 0 Q1010 500 1030 1060 M950 0 Q940 520 980 1030 M900 0 Q908 480 920 900%22/%3E %3Cpath d=%22M1020 1090 Q1000 1400 1010 1720 M950 1040 Q930 1380 920 1720%22/%3E %3C/g%3E %3Cg fill=%22%23F2C14E%22 stroke=%22%23B88A2E%22 stroke-width=%224%22%3E %3Cellipse cx=%22130%22 cy=%221000%22 rx=%2256%22 ry=%2220%22/%3E%3Cellipse cx=%22950%22 cy=%221000%22 rx=%2256%22 ry=%2220%22/%3E %3Cpath d=%22M110 1018 L92 1100 L148 1100 L130 1018 Z%22/%3E%3Cpath d=%22M930 1018 L912 1100 L968 1100 L950 1018 Z%22/%3E %3C/g%3E %3Cg transform=%22translate(110 930) scale(1.25)%22%3E %3Crect x=%22-14%22 y=%22292%22 width=%22108%22 height=%2230%22 rx=%228%22 fill=%22%233A4A72%22 stroke=%22%231C2742%22 stroke-width=%225%22/%3E %3Cpath d=%22M18 220 L-8 288 L22 282 Z M62 220 L88 288 L58 282 Z%22 fill=%22%238FA3BF%22 stroke=%22%231C2742%22 stroke-width=%224%22 stroke-linejoin=%22round%22/%3E %3Crect x=%2218%22 y=%2270%22 width=%2244%22 height=%22214%22 rx=%2210%22 fill=%22%23FFFFFF%22 stroke=%22%231C2742%22 stroke-width=%225%22/%3E %3Cg fill=%22%23D7263D%22%3E%3Crect x=%2220%22 y=%22124%22 width=%2240%22 height=%2218%22/%3E%3Crect x=%2220%22 y=%22166%22 width=%2240%22 height=%2218%22/%3E%3Crect x=%2220%22 y=%22208%22 width=%2240%22 height=%2218%22/%3E%3Crect x=%2220%22 y=%22250%22 width=%2240%22 height=%2218%22/%3E%3C/g%3E %3Cpath d=%22M18 76 Q18 12 40 -12 Q62 12 62 76 Z%22 fill=%22%23FF4D6D%22 stroke=%22%231C2742%22 stroke-width=%225%22 stroke-linejoin=%22round%22/%3E %3Ccircle cx=%2240%22 cy=%2298%22 r=%229%22 fill=%22%23FFD23F%22 stroke=%22%231C2742%22 stroke-width=%223%22/%3E %3Cpath d=%22M28 20 Q30 0 40 -6%22 stroke=%22%23FFD0D6%22 stroke-width=%225%22 stroke-linecap=%22round%22 fill=%22none%22/%3E %3Cpath d=%22M27 84 L27 276%22 stroke=%22%23E3E8F0%22 stroke-width=%225%22 stroke-linecap=%22round%22 fill=%22none%22/%3E %3C/g%3E %3Cg transform=%22translate(840 930) scale(1.25)%22%3E %3Crect x=%22-14%22 y=%22292%22 width=%22108%22 height=%2230%22 rx=%228%22 fill=%22%233A4A72%22 stroke=%22%231C2742%22 stroke-width=%225%22/%3E %3Cpath d=%22M18 220 L-8 288 L22 282 Z M62 220 L88 288 L58 282 Z%22 fill=%22%238FA3BF%22 stroke=%22%231C2742%22 stroke-width=%224%22 stroke-linejoin=%22round%22/%3E %3Crect x=%2218%22 y=%2270%22 width=%2244%22 height=%22214%22 rx=%2210%22 fill=%22%23FFFFFF%22 stroke=%22%231C2742%22 stroke-width=%225%22/%3E %3Cg fill=%22%23D7263D%22%3E%3Crect x=%2220%22 y=%22124%22 width=%2240%22 height=%2218%22/%3E%3Crect x=%2220%22 y=%22166%22 width=%2240%22 height=%2218%22/%3E%3Crect x=%2220%22 y=%22208%22 width=%2240%22 height=%2218%22/%3E%3Crect x=%2220%22 y=%22250%22 width=%2240%22 height=%2218%22/%3E%3C/g%3E %3Cpath d=%22M18 76 Q18 12 40 -12 Q62 12 62 76 Z%22 fill=%22%23FF4D6D%22 stroke=%22%231C2742%22 stroke-width=%225%22 stroke-linejoin=%22round%22/%3E %3Ccircle cx=%2240%22 cy=%2298%22 r=%229%22 fill=%22%23FFD23F%22 stroke=%22%231C2742%22 stroke-width=%223%22/%3E %3Cpath d=%22M28 20 Q30 0 40 -6%22 stroke=%22%23FFD0D6%22 stroke-width=%225%22 stroke-linecap=%22round%22 fill=%22none%22/%3E %3Cpath d=%22M27 84 L27 276%22 stroke=%22%23E3E8F0%22 stroke-width=%225%22 stroke-linecap=%22round%22 fill=%22none%22/%3E %3C/g%3E %3Cg%3E %3Ccircle cx=%22150%22 cy=%22250%22 r=%2280%22 fill=%22%237A2232%22 stroke=%22%231C2742%22 stroke-width=%226%22/%3E %3Ccircle cx=%22150%22 cy=%22250%22 r=%2270%22 fill=%22%23FFF6E8%22 stroke=%22%23F2C14E%22 stroke-width=%225%22/%3E %3Cpath d=%22M150 250 L150 184 A66 66 0 0 0 117.0 192.8 Z%22 fill=%22%23FF4D6D%22 opacity=%220.28%22/%3E %3Cg stroke=%22%231C2742%22 stroke-width=%225%22 stroke-linecap=%22round%22%3E%3Cpath d=%22M150 190 L150 206%22 transform=%22rotate(0 150 250)%22/%3E%3Cpath d=%22M150 190 L150 198%22 transform=%22rotate(30 150 250)%22/%3E%3Cpath d=%22M150 190 L150 198%22 transform=%22rotate(60 150 250)%22/%3E%3Cpath d=%22M150 190 L150 206%22 transform=%22rotate(90 150 250)%22/%3E%3Cpath d=%22M150 190 L150 198%22 transform=%22rotate(120 150 250)%22/%3E%3Cpath d=%22M150 190 L150 198%22 transform=%22rotate(150 150 250)%22/%3E%3Cpath d=%22M150 190 L150 206%22 transform=%22rotate(180 150 250)%22/%3E%3Cpath d=%22M150 190 L150 198%22 transform=%22rotate(210 150 250)%22/%3E%3Cpath d=%22M150 190 L150 198%22 transform=%22rotate(240 150 250)%22/%3E%3Cpath d=%22M150 190 L150 206%22 transform=%22rotate(270 150 250)%22/%3E%3Cpath d=%22M150 190 L150 198%22 transform=%22rotate(300 150 250)%22/%3E%3Cpath d=%22M150 190 L150 198%22 transform=%22rotate(330 150 250)%22/%3E%3C/g%3E %3Cpath d=%22M150 250 L150 211.5%22 stroke=%22%231C2742%22 stroke-width=%229%22 stroke-linecap=%22round%22 transform=%22rotate(-4 150 250)%22/%3E %3Cpath d=%22M150 250 L150 189.8%22 stroke=%22%23E8384F%22 stroke-width=%226%22 stroke-linecap=%22round%22 transform=%22rotate(-14 150 250)%22/%3E %3Ccircle cx=%22150%22 cy=%22250%22 r=%227%22 fill=%22%231C2742%22/%3E %3C/g%3E %3Cpath d=%22M0 0 L1080 0 L1080 56 Q1012 104 945 56 Q877 104 810 56 Q742 104 675 56 Q607 104 540 56 Q472 104 405 56 Q337 104 270 56 Q202 104 135 56 Q67 104 0 56 Z%22 fill=%22%237A2232%22/%3E %3Cpath d=%22M0 56 Q67 104 135 56 Q202 104 270 56 Q337 104 405 56 Q472 104 540 56 Q607 104 675 56 Q742 104 810 56 Q877 104 945 56 Q1012 104 1080 56%22 fill=%22none%22 stroke=%22%23F2C14E%22 stroke-width=%228%22 stroke-dasharray=%223 9%22 stroke-linecap=%22round%22/%3E %3C/svg%3E")}}
+/* Reels sit on a near-solid panel with a purple rim so they pop off the hall; the title gets a soft white glow. */
+canvas{background:rgba(255,253,247,.92);box-shadow:0 0 0 4px rgba(255,255,255,.9),0 0 0 8px #C99A3A,0 12px 34px rgba(5,10,25,.55)}
+/* Text on the navy hall: warm cream title with an amber glow, light message line, steel badges. */
+h1{color:#FFE9B8;text-shadow:0 3px 0 #1C2742,0 0 12px rgba(242,169,59,.75)}
+.msg{color:#FFF4DC;text-shadow:0 1px 3px #0D1426}
+.badge:not(.warn){background:#3A4A72;box-shadow:0 0 0 1px #6F80A8}
+/* Free-spins background, "The Bunker" (sources: art/bg_free_wide.svg, art/bg_free.svg): fades in over the hall while body has .fs. */
+body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:0;transition:opacity .8s ease;background:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1920 1080%22 width=%221920%22 height=%221080%22 preserveAspectRatio=%22xMidYMid slice%22%3E %3Cdefs%3E %3ClinearGradient id=%22wall%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%232B1B4D%22/%3E%3Cstop offset=%220.6%22 stop-color=%22%231D1336%22/%3E%3Cstop offset=%221%22 stop-color=%22%23140D26%22/%3E %3C/linearGradient%3E %3CradialGradient id=%22glow%22 cx=%22960%22 cy=%22430%22 r=%22660%22 gradientUnits=%22userSpaceOnUse%22%3E %3Cstop offset=%220%22 stop-color=%22%233FD1C9%22 stop-opacity=%220.38%22/%3E%3Cstop offset=%220.6%22 stop-color=%22%233FD1C9%22 stop-opacity=%220.08%22/%3E%3Cstop offset=%221%22 stop-color=%22%233FD1C9%22 stop-opacity=%220%22/%3E %3C/radialGradient%3E %3ClinearGradient id=%22sweep%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%220%22%3E %3Cstop offset=%220%22 stop-color=%22%233FD1C9%22 stop-opacity=%220%22/%3E%3Cstop offset=%221%22 stop-color=%22%233FD1C9%22 stop-opacity=%220.55%22/%3E %3C/linearGradient%3E %3CradialGradient id=%22beam%22 cx=%220.5%22 cy=%220%22 r=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%23FF4D6D%22 stop-opacity=%220.45%22/%3E%3Cstop offset=%221%22 stop-color=%22%23FF4D6D%22 stop-opacity=%220%22/%3E %3C/radialGradient%3E %3ClinearGradient id=%22desk%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%23433A61%22/%3E%3Cstop offset=%221%22 stop-color=%22%232A2440%22/%3E %3C/linearGradient%3E %3C/defs%3E %3Crect width=%221920%22 height=%221080%22 fill=%22url(%23wall)%22/%3E %3Cg fill=%22none%22 stroke=%22%233A2A63%22 stroke-width=%224%22%3E %3Crect x=%2230%22 y=%22130%22 width=%22360%22 height=%22330%22 rx=%2210%22/%3E%3Crect x=%2230%22 y=%22480%22 width=%22360%22 height=%22330%22 rx=%2210%22/%3E %3Crect x=%221530%22 y=%22130%22 width=%22360%22 height=%22330%22 rx=%2210%22/%3E%3Crect x=%221530%22 y=%22480%22 width=%22360%22 height=%22330%22 rx=%2210%22/%3E %3C/g%3E %3Cg fill=%22%2347367A%22%3E %3Ccircle cx=%2250%22 cy=%22150%22 r=%225%22/%3E%3Ccircle cx=%22370%22 cy=%22150%22 r=%225%22/%3E%3Ccircle cx=%2250%22 cy=%22790%22 r=%225%22/%3E%3Ccircle cx=%22370%22 cy=%22790%22 r=%225%22/%3E %3Ccircle cx=%221550%22 cy=%22150%22 r=%225%22/%3E%3Ccircle cx=%221870%22 cy=%22150%22 r=%225%22/%3E%3Ccircle cx=%221550%22 cy=%22790%22 r=%225%22/%3E%3Ccircle cx=%221870%22 cy=%22790%22 r=%225%22/%3E %3C/g%3E %3Cg stroke-linecap=%22round%22%3E %3Cpath d=%22M0 60 L1920 60%22 stroke=%22%233E2F66%22 stroke-width=%2226%22/%3E%3Cpath d=%22M0 60 L1920 60%22 stroke=%22%2355448A%22 stroke-width=%226%22/%3E %3Cpath d=%22M0 100 L1920 100%22 stroke=%22%2334275A%22 stroke-width=%2216%22/%3E %3C/g%3E %3Cg fill=%22%232A1F4A%22%3E%3Crect x=%22420%22 y=%2240%22 width=%2222%22 height=%2280%22 rx=%224%22/%3E%3Crect x=%22960%22 y=%2240%22 width=%2222%22 height=%2280%22 rx=%224%22/%3E%3Crect x=%221480%22 y=%2240%22 width=%2222%22 height=%2280%22 rx=%224%22/%3E%3C/g%3E %3Crect width=%221920%22 height=%221080%22 fill=%22url(%23glow)%22/%3E %3Ccircle cx=%22960%22 cy=%22430%22 r=%22340%22 fill=%22%230E2F3A%22 stroke=%22%232C5560%22 stroke-width=%2214%22/%3E %3Cg fill=%22none%22 stroke=%22%233FD1C9%22 stroke-opacity=%220.35%22 stroke-width=%223%22%3E %3Ccircle cx=%22960%22 cy=%22430%22 r=%2285%22/%3E%3Ccircle cx=%22960%22 cy=%22430%22 r=%22170%22/%3E%3Ccircle cx=%22960%22 cy=%22430%22 r=%22255%22/%3E %3Cpath d=%22M620 430 L1300 430 M960 90 L960 770%22/%3E %3C/g%3E %3Cpath d=%22M960 430 L1280 320 A340 340 0 0 1 1298 450 Z%22 fill=%22url(%23sweep)%22/%3E %3Cg fill=%22%23FF5DA2%22%3E%3Ccircle cx=%221080%22 cy=%22290%22 r=%2210%22/%3E%3Ccircle cx=%22850%22 cy=%22570%22 r=%228%22/%3E%3Ccircle cx=%221140%22 cy=%22520%22 r=%227%22/%3E%3Ccircle cx=%22830%22 cy=%22310%22 r=%226%22/%3E%3C/g%3E %3Cg fill=%22%23FF5DA2%22 opacity=%220.25%22%3E%3Ccircle cx=%221080%22 cy=%22290%22 r=%2224%22/%3E%3Ccircle cx=%22850%22 cy=%22570%22 r=%2220%22/%3E%3C/g%3E %3Crect x=%22440%22 y=%22220%22 width=%22220%22 height=%22150%22 rx=%2210%22 fill=%22%230E2F3A%22 stroke=%22%232C5560%22 stroke-width=%226%22/%3E %3Cg fill=%22%233FD1C9%22 opacity=%220.6%22%3E%3Cpath d=%22M465 280 Q500 245 545 258 Q570 280 545 302 Q510 314 485 302 Z%22/%3E%3Cpath d=%22M575 312 Q610 290 640 308 Q630 334 598 338 Z%22/%3E%3C/g%3E %3Ccircle cx=%22520%22 cy=%22280%22 r=%226%22 fill=%22%23FF5DA2%22/%3E %3Crect x=%221260%22 y=%22220%22 width=%22220%22 height=%22150%22 rx=%2210%22 fill=%22%230E2F3A%22 stroke=%22%232C5560%22 stroke-width=%226%22/%3E %3Cg fill=%22%233FD1C9%22 opacity=%220.7%22%3E%3Crect x=%221285%22 y=%22310%22 width=%2224%22 height=%2240%22/%3E%3Crect x=%221320%22 y=%22286%22 width=%2224%22 height=%2264%22/%3E%3Crect x=%221355%22 y=%22262%22 width=%2224%22 height=%2288%22/%3E%3Crect x=%221390%22 y=%22240%22 width=%2224%22 height=%22110%22/%3E%3C/g%3E %3Crect x=%221425%22 y=%22232%22 width=%2224%22 height=%22118%22 fill=%22%23FF5DA2%22 opacity=%220.85%22/%3E %3Cg%3E%3Ccircle cx=%22480%22 cy=%22420%22 r=%2210%22 fill=%22%23F2B705%22/%3E%3Ccircle cx=%22515%22 cy=%22420%22 r=%2210%22 fill=%22%23FF4D6D%22/%3E%3Ccircle cx=%22550%22 cy=%22420%22 r=%2210%22 fill=%22%233FD1C9%22/%3E %3Ccircle cx=%221370%22 cy=%22420%22 r=%2210%22 fill=%22%23FF4D6D%22/%3E%3Ccircle cx=%221405%22 cy=%22420%22 r=%2210%22 fill=%22%23F2B705%22/%3E%3Ccircle cx=%221440%22 cy=%22420%22 r=%2210%22 fill=%22%23FF4D6D%22/%3E%3C/g%3E %3Cpath d=%22M170 170 L-40 640 L380 640 Z%22 fill=%22url(%23beam)%22/%3E %3Cpath d=%22M1750 170 L1540 640 L1960 640 Z%22 fill=%22url(%23beam)%22/%3E %3Cg stroke=%22%232A1F4A%22 stroke-width=%224%22%3E %3Crect x=%22138%22 y=%22166%22 width=%2264%22 height=%2218%22 rx=%224%22 fill=%22%234A3A78%22/%3E%3Cpath d=%22M144 166 Q144 120 170 116 Q196 120 196 166 Z%22 fill=%22%23E8384F%22/%3E %3Crect x=%221718%22 y=%22166%22 width=%2264%22 height=%2218%22 rx=%224%22 fill=%22%234A3A78%22/%3E%3Cpath d=%22M1724 166 Q1724 120 1750 116 Q1776 120 1776 166 Z%22 fill=%22%23E8384F%22/%3E %3C/g%3E %3Cg fill=%22%23FFB3BF%22 opacity=%220.8%22%3E%3Cellipse cx=%22160%22 cy=%22136%22 rx=%227%22 ry=%2212%22/%3E%3Cellipse cx=%221740%22 cy=%22136%22 rx=%227%22 ry=%2212%22/%3E%3C/g%3E %3Crect x=%220%22 y=%22830%22 width=%221920%22 height=%2230%22 fill=%22%232A2440%22/%3E %3Cg fill=%22%23C9A227%22 opacity=%220.55%22%3E %3Cpath d=%22M0 830 L26 830 L0 860 Z M60 830 L90 830 L60 860 L30 860 Z M120 830 L150 830 L120 860 L90 860 Z M180 830 L210 830 L180 860 L150 860 Z M240 830 L270 830 L240 860 L210 860 Z M300 830 L330 830 L300 860 L270 860 Z M360 830 L390 830 L360 860 L330 860 Z M1530 830 L1560 830 L1530 860 L1500 860 Z M1590 830 L1620 830 L1590 860 L1560 860 Z M1650 830 L1680 830 L1650 860 L1620 860 Z M1710 830 L1740 830 L1710 860 L1680 860 Z M1770 830 L1800 830 L1770 860 L1740 860 Z M1830 830 L1860 830 L1830 860 L1800 860 Z M1890 830 L1920 830 L1920 860 L1860 860 Z%22/%3E %3C/g%3E %3Cpath d=%22M0 860 L1920 860 L1920 950 L0 950 Z%22 fill=%22%234A4068%22/%3E %3Cpath d=%22M0 950 L1920 950 L1920 1080 L0 1080 Z%22 fill=%22url(%23desk)%22/%3E %3Cg stroke=%22%232A2440%22 stroke-width=%223%22%3E %3Crect x=%22120%22 y=%22884%22 width=%2260%22 height=%2234%22 rx=%228%22 fill=%22%23FF5DA2%22/%3E%3Crect x=%22200%22 y=%22884%22 width=%2260%22 height=%2234%22 rx=%228%22 fill=%22%234DB6FF%22/%3E %3Crect x=%22280%22 y=%22884%22 width=%2260%22 height=%2234%22 rx=%228%22 fill=%22%23F2B705%22/%3E%3Crect x=%221580%22 y=%22884%22 width=%2260%22 height=%2234%22 rx=%228%22 fill=%22%234DB6FF%22/%3E %3Crect x=%221660%22 y=%22884%22 width=%2260%22 height=%2234%22 rx=%228%22 fill=%22%23FF5DA2%22/%3E%3Crect x=%221740%22 y=%22884%22 width=%2260%22 height=%2234%22 rx=%228%22 fill=%22%23F2B705%22/%3E %3C/g%3E %3Cellipse cx=%221820%22 cy=%221000%22 rx=%2270%22 ry=%2222%22 fill=%22%232A2440%22/%3E %3Cellipse cx=%221820%22 cy=%22992%22 rx=%2256%22 ry=%2217%22 fill=%22%235A5A66%22 stroke=%22%232A2440%22 stroke-width=%224%22/%3E %3Cpath d=%22M1776 990 Q1776 954 1820 952 Q1864 954 1864 990 Z%22 fill=%22%23E8384F%22 stroke=%22%237A1426%22 stroke-width=%225%22/%3E %3Cellipse cx=%221806%22 cy=%22966%22 rx=%2214%22 ry=%226%22 fill=%22%23FF8C9E%22 opacity=%220.8%22/%3E %3C/svg%3E") center top/cover no-repeat}
+@media (orientation:portrait){body::after{background-image:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1080 1920%22 width=%221080%22 height=%221920%22 preserveAspectRatio=%22xMidYMid slice%22%3E %3Cdefs%3E %3ClinearGradient id=%22wall%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%232B1B4D%22/%3E%3Cstop offset=%220.55%22 stop-color=%22%231D1336%22/%3E%3Cstop offset=%221%22 stop-color=%22%23140D26%22/%3E %3C/linearGradient%3E %3CradialGradient id=%22glow%22 cx=%22540%22 cy=%22700%22 r=%22600%22 gradientUnits=%22userSpaceOnUse%22%3E %3Cstop offset=%220%22 stop-color=%22%233FD1C9%22 stop-opacity=%220.38%22/%3E%3Cstop offset=%220.6%22 stop-color=%22%233FD1C9%22 stop-opacity=%220.08%22/%3E%3Cstop offset=%221%22 stop-color=%22%233FD1C9%22 stop-opacity=%220%22/%3E %3C/radialGradient%3E %3ClinearGradient id=%22sweep%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%220%22%3E %3Cstop offset=%220%22 stop-color=%22%233FD1C9%22 stop-opacity=%220%22/%3E%3Cstop offset=%221%22 stop-color=%22%233FD1C9%22 stop-opacity=%220.55%22/%3E %3C/linearGradient%3E %3CradialGradient id=%22beam%22 cx=%220.5%22 cy=%220%22 r=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%23FF4D6D%22 stop-opacity=%220.45%22/%3E%3Cstop offset=%221%22 stop-color=%22%23FF4D6D%22 stop-opacity=%220%22/%3E %3C/radialGradient%3E %3ClinearGradient id=%22desk%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%23433A61%22/%3E%3Cstop offset=%221%22 stop-color=%22%232A2440%22/%3E %3C/linearGradient%3E %3C/defs%3E %3Crect width=%221080%22 height=%221920%22 fill=%22url(%23wall)%22/%3E %3Cg fill=%22none%22 stroke=%22%233A2A63%22 stroke-width=%224%22%3E %3Crect x=%2220%22 y=%22140%22 width=%22250%22 height=%22620%22 rx=%2210%22/%3E%3Crect x=%2220%22 y=%22780%22 width=%22250%22 height=%22620%22 rx=%2210%22/%3E %3Crect x=%22810%22 y=%22140%22 width=%22250%22 height=%22620%22 rx=%2210%22/%3E%3Crect x=%22810%22 y=%22780%22 width=%22250%22 height=%22620%22 rx=%2210%22/%3E %3C/g%3E %3Cg fill=%22%2347367A%22%3E %3Ccircle cx=%2240%22 cy=%22160%22 r=%225%22/%3E%3Ccircle cx=%22250%22 cy=%22160%22 r=%225%22/%3E%3Ccircle cx=%2240%22 cy=%22740%22 r=%225%22/%3E%3Ccircle cx=%22250%22 cy=%22740%22 r=%225%22/%3E %3Ccircle cx=%22830%22 cy=%22160%22 r=%225%22/%3E%3Ccircle cx=%221040%22 cy=%22160%22 r=%225%22/%3E%3Ccircle cx=%22830%22 cy=%22740%22 r=%225%22/%3E%3Ccircle cx=%221040%22 cy=%22740%22 r=%225%22/%3E %3Ccircle cx=%2240%22 cy=%22800%22 r=%225%22/%3E%3Ccircle cx=%22250%22 cy=%22800%22 r=%225%22/%3E%3Ccircle cx=%22830%22 cy=%22800%22 r=%225%22/%3E%3Ccircle cx=%221040%22 cy=%22800%22 r=%225%22/%3E %3C/g%3E %3Cg stroke-linecap=%22round%22%3E %3Cpath d=%22M0 70 L1080 70%22 stroke=%22%233E2F66%22 stroke-width=%2226%22/%3E%3Cpath d=%22M0 70 L1080 70%22 stroke=%22%2355448A%22 stroke-width=%226%22/%3E %3Cpath d=%22M0 112 L1080 112%22 stroke=%22%2334275A%22 stroke-width=%2216%22/%3E %3C/g%3E %3Cg fill=%22%232A1F4A%22%3E%3Crect x=%22200%22 y=%2250%22 width=%2222%22 height=%2280%22 rx=%224%22/%3E%3Crect x=%22540%22 y=%2250%22 width=%2222%22 height=%2280%22 rx=%224%22/%3E%3Crect x=%22860%22 y=%2250%22 width=%2222%22 height=%2280%22 rx=%224%22/%3E%3C/g%3E %3Crect width=%221080%22 height=%221920%22 fill=%22url(%23glow)%22/%3E %3Ccircle cx=%22540%22 cy=%22700%22 r=%22340%22 fill=%22%230E2F3A%22 stroke=%22%232C5560%22 stroke-width=%2214%22/%3E %3Cg fill=%22none%22 stroke=%22%233FD1C9%22 stroke-opacity=%220.35%22 stroke-width=%223%22%3E %3Ccircle cx=%22540%22 cy=%22700%22 r=%2285%22/%3E%3Ccircle cx=%22540%22 cy=%22700%22 r=%22170%22/%3E%3Ccircle cx=%22540%22 cy=%22700%22 r=%22255%22/%3E %3Cpath d=%22M200 700 L880 700 M540 360 L540 1040%22/%3E %3C/g%3E %3Cpath d=%22M540 700 L860 590 A340 340 0 0 1 878 720 Z%22 fill=%22url(%23sweep)%22/%3E %3Cg fill=%22%23FF5DA2%22%3E%3Ccircle cx=%22660%22 cy=%22560%22 r=%2210%22/%3E%3Ccircle cx=%22430%22 cy=%22840%22 r=%228%22/%3E%3Ccircle cx=%22720%22 cy=%22790%22 r=%227%22/%3E%3Ccircle cx=%22410%22 cy=%22580%22 r=%226%22/%3E%3C/g%3E %3Cg fill=%22%23FF5DA2%22 opacity=%220.25%22%3E%3Ccircle cx=%22660%22 cy=%22560%22 r=%2224%22/%3E%3Ccircle cx=%22430%22 cy=%22840%22 r=%2220%22/%3E%3C/g%3E %3Crect x=%2250%22 y=%22420%22 width=%22190%22 height=%22130%22 rx=%2210%22 fill=%22%230E2F3A%22 stroke=%22%232C5560%22 stroke-width=%226%22/%3E %3Cg fill=%22%233FD1C9%22 opacity=%220.6%22%3E%3Cpath d=%22M70 470 Q100 440 140 452 Q160 470 140 490 Q110 500 90 490 Z%22/%3E%3Cpath d=%22M160 500 Q190 480 220 496 Q210 520 180 524 Z%22/%3E%3C/g%3E %3Ccircle cx=%22120%22 cy=%22470%22 r=%226%22 fill=%22%23FF5DA2%22/%3E %3Crect x=%22840%22 y=%22420%22 width=%22190%22 height=%22130%22 rx=%2210%22 fill=%22%230E2F3A%22 stroke=%22%232C5560%22 stroke-width=%226%22/%3E %3Cg fill=%22%233FD1C9%22 opacity=%220.7%22%3E%3Crect x=%22865%22 y=%22500%22 width=%2222%22 height=%2234%22/%3E%3Crect x=%22897%22 y=%22480%22 width=%2222%22 height=%2254%22/%3E%3Crect x=%22929%22 y=%22460%22 width=%2222%22 height=%2274%22/%3E%3Crect x=%22961%22 y=%22440%22 width=%2222%22 height=%2294%22/%3E%3C/g%3E %3Crect x=%22993%22 y=%22430%22 width=%2222%22 height=%22104%22 fill=%22%23FF5DA2%22 opacity=%220.85%22/%3E %3Cg%3E%3Ccircle cx=%2280%22 cy=%22610%22 r=%2210%22 fill=%22%23F2B705%22/%3E%3Ccircle cx=%22115%22 cy=%22610%22 r=%2210%22 fill=%22%23FF4D6D%22/%3E%3Ccircle cx=%22150%22 cy=%22610%22 r=%2210%22 fill=%22%233FD1C9%22/%3E %3Ccircle cx=%22930%22 cy=%22610%22 r=%2210%22 fill=%22%23FF4D6D%22/%3E%3Ccircle cx=%22965%22 cy=%22610%22 r=%2210%22 fill=%22%23F2B705%22/%3E%3Ccircle cx=%221000%22 cy=%22610%22 r=%2210%22 fill=%22%23FF4D6D%22/%3E%3C/g%3E %3Cpath d=%22M110 200 L-60 640 L300 640 Z%22 fill=%22url(%23beam)%22/%3E %3Cpath d=%22M970 200 L780 640 L1140 640 Z%22 fill=%22url(%23beam)%22/%3E %3Cg stroke=%22%232A1F4A%22 stroke-width=%224%22%3E %3Crect x=%2278%22 y=%22196%22 width=%2264%22 height=%2218%22 rx=%224%22 fill=%22%234A3A78%22/%3E%3Cpath d=%22M84 196 Q84 150 110 146 Q136 150 136 196 Z%22 fill=%22%23E8384F%22/%3E %3Crect x=%22938%22 y=%22196%22 width=%2264%22 height=%2218%22 rx=%224%22 fill=%22%234A3A78%22/%3E%3Cpath d=%22M944 196 Q944 150 970 146 Q996 150 996 196 Z%22 fill=%22%23E8384F%22/%3E %3C/g%3E %3Cg fill=%22%23FFB3BF%22 opacity=%220.8%22%3E%3Cellipse cx=%22100%22 cy=%22166%22 rx=%227%22 ry=%2212%22/%3E%3Cellipse cx=%22960%22 cy=%22166%22 rx=%227%22 ry=%2212%22/%3E%3C/g%3E %3Crect x=%220%22 y=%221440%22 width=%221080%22 height=%2234%22 fill=%22%232A2440%22/%3E %3Cg fill=%22%23C9A227%22 opacity=%220.55%22%3E %3Cpath d=%22M0 1440 L30 1440 L0 1474 Z M60 1440 L94 1440 L60 1474 L26 1474 Z M128 1440 L162 1440 L128 1474 L94 1474 Z M196 1440 L230 1440 L196 1474 L162 1474 Z M264 1440 L298 1440 L264 1474 L230 1474 Z M332 1440 L366 1440 L332 1474 L298 1474 Z M400 1440 L434 1440 L400 1474 L366 1474 Z M468 1440 L502 1440 L468 1474 L434 1474 Z M536 1440 L570 1440 L536 1474 L502 1474 Z M604 1440 L638 1440 L604 1474 L570 1474 Z M672 1440 L706 1440 L672 1474 L638 1474 Z M740 1440 L774 1440 L740 1474 L706 1474 Z M808 1440 L842 1440 L808 1474 L774 1474 Z M876 1440 L910 1440 L876 1474 L842 1474 Z M944 1440 L978 1440 L944 1474 L910 1474 Z M1012 1440 L1046 1440 L1012 1474 L978 1474 Z M1080 1440 L1080 1474 L1046 1474 Z%22/%3E %3C/g%3E %3Cpath d=%22M0 1474 L1080 1474 L1080 1600 L0 1600 Z%22 fill=%22%234A4068%22/%3E %3Cpath d=%22M0 1600 L1080 1600 L1080 1920 L0 1920 Z%22 fill=%22url(%23desk)%22/%3E %3Cg stroke=%22%232A2440%22 stroke-width=%223%22%3E %3Crect x=%2280%22 y=%221510%22 width=%2260%22 height=%2234%22 rx=%228%22 fill=%22%23FF5DA2%22/%3E%3Crect x=%22160%22 y=%221510%22 width=%2260%22 height=%2234%22 rx=%228%22 fill=%22%234DB6FF%22/%3E %3Crect x=%22240%22 y=%221510%22 width=%2260%22 height=%2234%22 rx=%228%22 fill=%22%23F2B705%22/%3E%3Crect x=%22780%22 y=%221510%22 width=%2260%22 height=%2234%22 rx=%228%22 fill=%22%234DB6FF%22/%3E %3Crect x=%22860%22 y=%221510%22 width=%2260%22 height=%2234%22 rx=%228%22 fill=%22%23FF5DA2%22/%3E%3Crect x=%22940%22 y=%221510%22 width=%2260%22 height=%2234%22 rx=%228%22 fill=%22%23F2B705%22/%3E %3C/g%3E %3Cg stroke=%22%232A2440%22 stroke-width=%223%22 fill=%22%239E95BF%22%3E %3Crect x=%2296%22 y=%221560%22 width=%2212%22 height=%2226%22 rx=%224%22/%3E%3Crect x=%22176%22 y=%221560%22 width=%2212%22 height=%2226%22 rx=%224%22/%3E%3Crect x=%22256%22 y=%221560%22 width=%2212%22 height=%2226%22 rx=%224%22/%3E %3Crect x=%22796%22 y=%221560%22 width=%2212%22 height=%2226%22 rx=%224%22/%3E%3Crect x=%22876%22 y=%221560%22 width=%2212%22 height=%2226%22 rx=%224%22/%3E%3Crect x=%22956%22 y=%221560%22 width=%2212%22 height=%2226%22 rx=%224%22/%3E %3C/g%3E %3Cellipse cx=%22540%22 cy=%221560%22 rx=%22120%22 ry=%2234%22 fill=%22%232A2440%22/%3E %3Cellipse cx=%22540%22 cy=%221548%22 rx=%2296%22 ry=%2226%22 fill=%22%235A5A66%22 stroke=%22%232A2440%22 stroke-width=%224%22/%3E %3Cpath d=%22M466 1546 Q466 1490 540 1486 Q614 1490 614 1546 Z%22 fill=%22%23E8384F%22 stroke=%22%237A1426%22 stroke-width=%225%22/%3E %3Cellipse cx=%22520%22 cy=%221506%22 rx=%2224%22 ry=%229%22 fill=%22%23FF8C9E%22 opacity=%220.8%22/%3E %3Cpath d=%22M444 1550 Q444 1440 540 1434 Q636 1440 636 1550%22 fill=%22none%22 stroke=%22%23CFE8FF%22 stroke-width=%225%22 opacity=%220.55%22/%3E %3C/svg%3E")}}
+body.fs::after{opacity:1}
+body.fs h1{color:#fff;text-shadow:0 2px 0 #4b1d8f,0 0 10px #3FD1C9}
+body.fs .msg{color:#fff;text-shadow:0 1px 2px #140d26}
+body.fs .badge:not(.warn){background:#5A4A8C;box-shadow:0 0 0 1px #8F7FC8}
+@media (prefers-reduced-motion: reduce){body::after{transition:none}}
+/* ===== v2 ===== */
+.modebadge{margin-top:6px;min-height:26px;min-width:0;padding:3px 12px;border-radius:999px;font-size:10px;font-weight:900;letter-spacing:.5px;text-transform:uppercase;background:rgba(42,31,58,.85);color:#FFE9B8;box-shadow:0 0 0 1px #C99A3A}
+.modebadge:disabled{opacity:.75;cursor:default}
+.overlay .note{max-width:min(92%,420px);margin-top:10px;font-size:14px;font-weight:800;line-height:1.35;color:#fff;background:rgba(20,13,38,.88);padding:8px 12px;border-radius:12px}
+.overlay .note[hidden]{display:none}
+/* Launch codes: a secondary control, quieter than Spin */
+.buycard{padding:8px 14px;border-radius:14px;background:rgba(42,31,58,.9);color:#FFE9B8;box-shadow:0 0 0 2px #C99A3A;gap:1px}
+.buycard .t{font-size:10px;letter-spacing:1px;color:#FFD23F}
+.buycard .s{font-size:13px;font-weight:800}
+.buycard b{font-size:14px;background:transparent;color:#FFD23F;padding:0;margin-top:1px}
+/* Feature box: free spins only (spins left, feature win, hottest square, Doomsday Protocol tag) */
+.featurebox [hidden]{display:none}
+.featurebox[hidden]{display:none}
+.featurebox .tag{font-size:10px;font-weight:900;letter-spacing:.5px;text-transform:uppercase;color:#10240c;background:#5CFF6A;border-radius:999px;padding:2px 8px;align-self:center;margin-bottom:2px}
+/* Nuclear meter beside the board: fills from the bottom, blue to red; dims during free spins */
+.board{display:flex;align-items:stretch;gap:16px} /* clears the board's 8px gold ring */
+.nmeter{display:flex;flex-direction:column;align-items:center;gap:8px;width:28px;transition:opacity .3s}
+.nmeter .cap{width:28px;height:28px;flex:none;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
+.nmeter .track{flex:1;width:18px;border-radius:999px;position:relative;overflow:hidden;background:linear-gradient(to top,#3B7BE0,#2E9E6B 35%,#C99400 65%,#E23B3B);box-shadow:0 0 0 2px #C99A3A,0 0 0 4px rgba(42,31,58,.85)}
+.nmeter .track i{position:absolute;left:0;right:0;top:0;height:100%;background:rgba(24,17,44,.78);transition:height .45s ease-out} /* the empty part: the scale shows dimly through */
+.nmeter.hot .track{box-shadow:0 0 0 2px #E23B3B,0 0 0 4px rgba(42,31,58,.85),0 0 14px rgba(226,59,59,.6)}
+body.fs .nmeter{opacity:.4}
+@media (prefers-reduced-motion: reduce){.nmeter .track i{transition:none}}
+.featurebox.on{border-color:#C99A3A;box-shadow:0 0 18px rgba(201,154,58,.55)}
+/* The bunker: a dark board in free spins, so the fallout heat reads */
+body.fs canvas{background:rgba(26,19,46,.95)}
+/* Settings: game mode */
+.modes{border:0;margin:0;padding:8px 12px;background:var(--panel);border-radius:12px;display:flex;flex-direction:column;gap:6px}
+.modes legend{float:left;width:100%;padding:0;margin-bottom:2px;font-weight:800;font-size:14px}
+.modes .mode{display:flex;gap:10px;align-items:flex-start;padding:6px 8px;border-radius:10px;background:rgba(255,255,255,.6);cursor:pointer}
+.modes .mode input{margin-top:3px;accent-color:#7B2FF7;width:18px;height:18px;flex:none}
+.modes .mode b{display:block;font-size:14px}
+.modes .mode small{display:block;font-size:12px;color:var(--muted);line-height:1.35}
+/* Phones held upright: buy, spin and the feature box share one row; the title stays clear of the sound and settings buttons */
+@media (orientation:portrait){
+  .cabinet{grid-template-areas:"logo logo logo" "board board board" "msg msg msg" "buy spin info" "bar bar bar";grid-template-rows:auto auto auto auto 1fr}
+  .buycard{justify-self:end;align-self:center}
+  .featurebox{justify-self:start;align-self:center}
+  .spinbox{align-self:center}.spinbox .hint{display:none} /* the label sat behind the button's rim; the button is labelled for screen readers */
+  h1{font-size:clamp(20px,5.6vw,40px)}
+  /* Sound and settings split to opposite top corners (settings stays top right), so the centred
+     title has clear room on both sides at any phone width, 320 px included. The row spans the
+     width, so it lets taps through except on the buttons themselves. */
+  .tools{left:max(10px, env(safe-area-inset-left, 0px));justify-content:space-between;pointer-events:none}
+  .tools > *{pointer-events:auto}
+}
+@media (orientation:landscape) and (min-width:560px){
+  .buycard{padding:12px 16px}.buycard .s{font-size:15px}.buycard b{font-size:16px}
+}
+</style>
+</head>
+<body>
+<div class="cabinet" id="cabinet">
+  <div class="logo">
+    <h1>Nuclear Summit</h1>
+    <button class="modebadge" id="modeBadge" aria-label="Game mode, opens settings">Summit</button>
+  </div>
+
+  <div class="board">
+    <div class="stage" id="stage">
+      <canvas id="c" aria-label="Slot grid, 6 columns by 8 rows"></canvas>
+      <div class="overlay" id="ov"><div class="big" id="ovBig"></div><div class="sub" id="ovSub"></div><div class="note" id="ovNote" hidden></div></div>
+    </div>
+    <div class="nmeter" id="nmeter" role="meter" aria-label="Nuclear meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <svg class="cap" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#FFD23F" stroke="#2a1f3a" stroke-width="1.5"/><path d="M12 12 L8 5.07 A8 8 0 0 1 16 5.07 Z M12 12 L20 12 A8 8 0 0 1 16 18.93 Z M12 12 L8 18.93 A8 8 0 0 1 4 12 Z" fill="#2a1f3a"/><circle cx="12" cy="12" r="1.8" fill="#FFD23F" stroke="#2a1f3a" stroke-width="1.2"/></svg>
+      <div class="track"><i id="nmCover"></i></div>
+    </div>
+  </div>
+
+  <div class="msg" id="msg" aria-live="polite"></div>
+
+  <button class="buycard" id="buy"><span class="t">LAUNCH CODES</span><span class="s">Buy free spins</span><b id="buyCost">0.00</b></button>
+
+  <div class="tools">
+    <button class="round" id="info" aria-label="Settings, paytable and rules">⚙️</button>
+    <button class="round" id="mute" aria-pressed="false" aria-label="Mute sound">🔊</button>
+  </div>
+
+  <div class="spinbox">
+    <button id="spin" aria-label="Spin">
+      <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 30a19 19 0 0 1 34-11"/><path d="M38 18l10 2 1-10"/><path d="M51 34a19 19 0 0 1-34 11"/><path d="M26 46l-10-2-1 10"/></svg>
+      <span class="count" id="spinCount" hidden></span>
+    </button>
+    <div class="hint" id="spinHint">Spin</div>
+  </div>
+
+  <div class="featurebox" id="feature">
+    <div class="tag" id="fbTag" hidden>Doomsday Protocol</div>
+    <div class="k" id="fbK1">Free spins left</div><div class="v" id="fbV1" aria-live="polite"></div>
+    <div class="k" id="fbK2" hidden></div><div class="v sm" id="fbV2" hidden></div>
+    <div class="k" id="fbK3" hidden></div><div class="v sm" id="fbV3" hidden></div>
+  </div>
+
+  <div class="bar">
+    <div class="kv"><span>CREDIT</span><b id="bal">0</b></div>
+    <div class="betctl">
+      <button id="betDown" aria-label="Lower bet">−</button>
+      <div class="kv"><span>BET</span><b id="bet">0.40</b></div>
+      <button id="betUp" aria-label="Raise bet">+</button>
+    </div>
+    <div class="kv"><span>WIN</span><b id="win">0.00</b></div>
+    <div class="kv"><span>NET</span><b id="net">0.00</b></div>
+    <div class="kv"><span>TIME</span><b id="time">0:00</b></div>
+  </div>
+</div>
+
+<div class="sheet" id="settings" hidden role="dialog" aria-modal="true" aria-labelledby="setTitle">
+<div class="below">
+  <div class="sheethead"><h2 id="setTitle">Settings</h2><button id="setClose" aria-label="Close settings">✕</button></div>
+  <fieldset class="modes" id="modes"></fieldset>
+  <label class="volrow">Sound volume <input id="vol" type="range" min="0" max="1" step="0.05" value="0.6"></label>
+  <details id="ptDetails">
+    <summary>Paytable &amp; rules</summary>
+    <ul class="rules" id="rules"></ul>
+    <div class="pt" id="pt"></div>
+  </details>
+
+  <details class="dev" id="dev">
+    <summary>Dev tools (prototype only)</summary>
+    <label>Force next spin
+      <select id="force">
+        <option value="">Nothing (normal play)</option>
+        <option value="fs3">3 Nukes</option>
+        <option value="protocol">Meter almost full, plus 4 Nukes (Doomsday Protocol)</option>
+        <option value="gauge">Meter almost full, plus a Nuke</option>
+        <option value="big">Big win (block of 12 Trumps)</option>
+        <option value="n2">Free spin: 2 nukes explode</option>
+        <option value="mini">Free spin: Mini Nuke</option>
+        <option value="tsar">Free spin: Tsar Bomba</option>
+        <option value="doom">Free spin: Doomsday</option>
+      </select>
+    </label>
+    <label><button class="small-btn" id="sim">Estimate RTP of this mode (200,000 spins)</button> <button class="small-btn" id="reset">Reset play credits</button></label>
+    <div class="out" id="simOut">Not run yet.</div>
+    <div style="margin-top:8px;font-weight:800">Spin log <span id="state" style="font-weight:600;color:var(--muted)"></span></div>
+    <ul class="log" id="log"></ul>
+  </details>
+
+
+  <footer>Parody. Not affiliated with or endorsed by anyone depicted. Caricatures are satire of public figures.<br>Play money only: no deposits, no purchases, no cash-out. Placeholder math: return figures are rough simulation estimates, not certified.</footer>
+</div>
+</div>
+
+  <div class="modal" id="buyModal" hidden role="dialog" aria-modal="true" aria-labelledby="buyTitle">
+    <div class="card">
+      <h2 id="buyTitle">Buy launch codes?</h2>
+      <p id="buyText"></p>
+      <div class="row"><button id="buyCancel">Cancel</button><button id="buyOk">Buy</button></div>
+    </div>
+  </div>
+
+<script src="audio/summit-audio.js"></script>
+<script>
+'use strict';
+/*ENGINE-START*/
+// ===== Market / compliance config =====
+const MARKETS = {
+  // This build: play money only, with Ontario/UK-style play safeguards (2.5 s cycle, no autoplay or
+  // turbo, net position and session time on screen). The feature buy stays on because no real money is
+  // at stake; a real-money build for a market that bans buys switches it off.
+  playMoney: { name: 'Play-money parody (Ontario/UK-style play safeguards, feature buy on)', minCycleMs: 2500, betLadder: [0.2, 0.4, 1, 2, 5], startCredits: 1000, allowBuy: true },
+  // UK real money: no feature buy, and the stake per game cycle is capped at £5, or £2 for ages 18 to 24.
+  ukRealMoney: { name: 'UK real money', minCycleMs: 2500, betLadder: [0.2, 0.4, 1, 2, 5], stakeCapByAge: [{ maxAge: 24, cap: 2 }, { maxAge: Infinity, cap: 5 }], startCredits: 0, allowBuy: false },
+};
+const MARKET = MARKETS.playMoney;
+// The bets a player may use: the market's ladder, cut at that player's stake cap by age.
+function betLadderFor(market, age) {
+  const rule = market.stakeCapByAge && market.stakeCapByAge.find((r) => age <= r.maxAge);
+  return rule ? market.betLadder.filter((b) => b <= rule.cap) : market.betLadder.slice();
+}
+const PLAYER_AGE = 30; // placeholder: a real-money build takes the verified age from the player's account
+const LADDER = betLadderFor(MARKET, PLAYER_AGE);
+
+// ===== Game spec. PLACEHOLDER MATH: roughly tuned by simulation only, not certified. =====
+// 6 columns x 8 rows, 5 leaders and 2 low-pay props, cluster pays with tumbles. Nukes go off in the base game too.
+//  - Base game: every Nuke that lands explodes and lights a fallout area for the rest of that spin's
+//    tumbles, then the board clears. Free spins come only from the nuclear meter (below) or a buy.
+//  - Nuclear meter (0-100): every Nuke pushes it up a random amount (the mode's meterRise range); a base
+//    spin with no Nukes lets it fall (meterDecay). A full meter starts the free spins, with that spin's
+//    fallout, and empties; if 4+ Nukes went off in the spin that filled it, they are Doomsday Protocol
+//    (Doomsday can land from the first free spin). It is kept per mode and bet for the session, and a
+//    buy leaves it where it is.
+//  - Launch codes (buy): a fixed price (buyPrice) for the free spins at a fixed stake of buyPrice / buyCostX.
+//  - Fallout squares: every blast rolls a random yield (the mode's `yields` table) and adds it to each
+//    square it hits; an unlit square counts as x1, so a first hit makes it x2 or more. Up to the mode's
+//    cap. Only the rare Doomsday doubles. A cluster pays its normal amount times the HIGHEST fallout
+//    square under it (x1 if it covers none).
+// Mode figures (RTP split, feature frequency, average feature) are in MODES below; see SIM NOTES.
+const SPEC = {
+  cols: 6, rows: 8,
+  minCluster: 5, clusterTiers: [5, 6, 7, 8, 9, 10, 12, 15, 20], // bands 5, 6, 7, 8, 9, 10-11, 12-14, 15-19, 20+
+  // Pays per cluster band, times the bet, before the mode's payScale. Small clusters pay little;
+  // the curve gets steep, so a 20+ cluster pays about 60-120x its 5-cluster.
+  symbols: {
+    trump:   { name: 'The orange one', pays: [1.5, 2.1, 3.4, 6, 11, 21, 41, 84, 175] },
+    putin:   { name: 'Shirtless Vlad', pays: [1.2, 1.7, 2.7, 4.5, 8.1, 15, 29, 58, 115] },
+    xi:      { name: 'Winnie the Xi',  pays: [0.9, 1.2, 2, 3.4, 6.1, 11, 22, 43, 88] },
+    bibi:    { name: 'Bibi',           pays: [0.75, 1, 1.6, 2.7, 4.9, 8.9, 17, 33, 66] },
+    ayat:    { name: 'The ayatollah',  pays: [0.6, 0.8, 1.3, 2.1, 3.6, 6.5, 12, 23, 44] },
+    hotline: { name: 'The hotline',    pays: [0.45, 0.6, 0.95, 1.6, 2.8, 5, 9.4, 18, 35] },
+    dove:    { name: 'Peace dove',     pays: [0.35, 0.5, 0.75, 1.2, 2.1, 3.6, 6.4, 12, 22] },
+  },
+  premium: ['trump', 'putin', 'xi'], // the top three pays, drawn with a gold frame
+  scatter: 'nuke',
+  // Nuke types. `reach` is how many steps (up, down, left, right) a blast travels from its square.
+  // Only the plain Nuke lands in the base game.
+  nukeTypes: { mini: { reach: 0 }, nuke: { reach: 1 }, tsar: { reach: 2 }, doom: { reach: 0, doubleAll: true } },
+  protocolAt: 4, fsAward: 10, buyPrice: 20, // buyPrice: launch codes always cost 20 credits
+  fsRetrigger: 5, fsRetriggerAward: 5, // 5+ Nukes going off in one free spin add 5 free spins
+  buildUpSpins: 5, // free spins 1-5: more Nukes, no Doomsday (except in Doomsday Protocol)
+  meterMax: 100, // the nuclear meter is full at 100
+  nukeStack: [70, 22, 8], // free-spin Nukes land alone, 2 or 3 on top of each other (% chance)
+  stripSeed: 'nuclear-summit-v2-placeholder',
+};
+// Two modes on the same art: a volatility choice with the same return, not a price choice.
+// SIM NOTES (placeholder math: seeded placeholder strips run in Node, 2M spins a mode; not certified; 14 Nov 2026):
+//  Summit        RTP ~96% (base ~56, free spins ~40), hit 1 in 2.4, sd ~6x. Free spins only from the meter:
+//                1 in ~121 spins (Doomsday Protocol about 1 in 130,000), average feature ~48x, Doomsday in
+//                ~19% of features, hottest square ~x9. Best round seen ~380x (cap 1,000x).
+//                Buy: 20.00 at a 0.43 stake, ~97% back, about 64% of buys pay back less than 20.
+//  Brinkmanship  RTP ~96% (base ~54, free spins ~41), hit 1 in 2.2, sd ~9x. Free spins 1 in ~249 (Protocol
+//                about 1 in 300,000), average feature ~103x, Doomsday in ~22% of features, hottest ~x20.
+//                Best round seen ~800x (cap 2,500x). Buy: 20.00 at a 0.19 stake, ~96% back, about 66% under 20.
+const LATE2 = { dove: 720, hotline: 600, ayat: 500, bibi: 440, xi: 340, putin: 280, trump: 240 }; // late reels: symbols doubled so the single Doomsday is rare
+const MODES = {
+  summit: {
+    key: 'summit', name: 'Summit', vol: 'Medium volatility',
+    blurb: 'Free spins more often, smaller multipliers.',
+    yields: [[1, 60], [2, 30], [3, 10]], // a blast adds +1, +2 or +3 to each square it hits
+    payScale: 1.045, spotCap: 10, maxWinX: 1000, buyCostX: 47, fsAward: 15,
+    meterRise: [4, 10], meterDecay: 1,
+    baseStrip: { dove: 360, hotline: 300, ayat: 250, bibi: 220, xi: 170, putin: 140, trump: 120, nuke: 7 },
+    freeStrip: { dove: 360, hotline: 300, ayat: 250, bibi: 220, xi: 170, putin: 140, trump: 120, nuke: 38, mini: 12, tsar: 3 },
+    lateStrip: Object.assign({}, LATE2, { nuke: 40, mini: 12, tsar: 4, doom: 1 }),
+    rtp: { game: 96, buy: 97, buyUnder: 64 }, // shown on the rules screen (from SIM NOTES)
+  },
+  // Shown as "Brinkmanship" (Doomsday is already a symbol and the Protocol). The key stays 'doomsday'
+  // because it seeds the placeholder strips the SIM NOTES were measured on.
+  doomsday: {
+    key: 'doomsday', name: 'Brinkmanship', vol: 'High volatility',
+    blurb: 'Rarer free spins, bigger multipliers.',
+    yields: [[1, 35], [2, 30], [3, 20], [5, 15]], // a blast adds +1, +2, +3 or +5
+    payScale: 0.867, spotCap: 25, maxWinX: 2500, buyCostX: 103, fsAward: 15,
+    meterRise: [3, 9], meterDecay: 1,
+    baseStrip: { dove: 360, hotline: 300, ayat: 250, bibi: 220, xi: 170, putin: 140, trump: 120, nuke: 6 },
+    freeStrip: { dove: 360, hotline: 300, ayat: 250, bibi: 220, xi: 170, putin: 140, trump: 120, nuke: 44, mini: 14, tsar: 8 },
+    lateStrip: Object.assign({}, LATE2, { nuke: 50, mini: 14, tsar: 12, doom: 1 }),
+    rtp: { game: 96, buy: 96, buyUnder: 66 },
+  },
+};
+const SPECS = Object.fromEntries(Object.entries(MODES).map(([k, m]) => [k, Object.assign({}, SPEC, m)]));
+
+// ===== RNG =====
+// Live outcomes: crypto.getRandomValues with rejection sampling (no Math.random, no plain modulo bias).
+const CryptoRNG = (() => {
+  const buf = new Uint32Array(512); let i = buf.length;
+  const u32 = () => { if (i >= buf.length) { crypto.getRandomValues(buf); i = 0; } return buf[i++]; };
+  return { int(n) { const lim = 4294967296 - (4294967296 % n); let x; do { x = u32(); } while (x >= lim); return x % n; } };
+})();
+// Records every draw so a spin can be replayed exactly.
+const TapeRNG = (src, tape) => ({ int(n) { const v = src.int(n); tape.push(v); return v; } });
+const ReplayRNG = (tape) => { let k = 0; return { int() { if (k >= tape.length) throw new Error('replay tape ran out'); return tape[k++]; } }; };
+// Seeded PRNG, used only to build the fixed placeholder strips (and for repeatable test runs).
+function SeededRNG(str) {
+  let h = 1779033703 ^ str.length;
+  for (let i = 0; i < str.length; i++) { h = Math.imul(h ^ str.charCodeAt(i), 3432918353); h = h << 13 | h >>> 19; }
+  const s = () => { h = Math.imul(h ^ h >>> 16, 2246822507); h = Math.imul(h ^ h >>> 13, 3266489909); return (h ^= h >>> 16) >>> 0; };
+  let a = s(), b = s(), c = s(), d = s();
+  const next = () => { a |= 0; b |= 0; c |= 0; d |= 0; const t = (a + b | 0) + d | 0; d = d + 1 | 0; a = b ^ b >>> 9; b = c + (c << 3) | 0; c = c << 21 | c >>> 11; c = c + t | 0; return t >>> 0; };
+  return { int(n) { const lim = 4294967296 - (4294967296 % n); let x; do { x = next(); } while (x >= lim); return x % n; } };
+}
+const round2 = (x) => Math.round(x * 100) / 100;
+
+// ===== Mock game server: the client only animates what this returns. One per mode. =====
+function makeServer(spec) {
+  const C = spec.cols, R = spec.rows, NUKE = spec.scatter, NUKES = spec.nukeTypes;
+  // Placeholder reel strips, shuffled with a fixed seed. With `stack` (free spins) plain Nukes land
+  // alone, 2 or 3 on top of each other; every other symbol and Nuke type is single.
+  function buildStrips(counts, seed, stack) {
+    const rng = SeededRNG(seed), out = [];
+    for (let c = 0; c < C; c++) {
+      const chunks = [];
+      for (const [k, n] of Object.entries(counts)) {
+        for (let left = n; left > 0;) {
+          let size = 1;
+          if (k === NUKE && stack) { const roll = rng.int(100); size = Math.min(left, roll < stack[0] ? 1 : roll < stack[0] + stack[1] ? 2 : 3); }
+          chunks.push(Array(size).fill(k)); left -= size;
+        }
+      }
+      for (let i = chunks.length - 1; i > 0; i--) { const j = rng.int(i + 1); [chunks[i], chunks[j]] = [chunks[j], chunks[i]]; }
+      out.push(chunks.flat());
+    }
+    return out;
+  }
+  const seed = spec.stripSeed + '/' + spec.key;
+  const STRIPS = {
+    base: buildStrips(spec.baseStrip, seed + '/base'),
+    early: buildStrips(spec.freeStrip, seed + '/early', spec.nukeStack),
+    late: buildStrips(spec.lateStrip, seed + '/late', spec.nukeStack),
+    // Doomsday Protocol: the build-up reels plus the late reels' Doomsdays, from the first free spin.
+    protocol: buildStrips(Object.assign({}, spec.freeStrip, { doom: spec.lateStrip.doom || 0 }), seed + '/protocol', spec.nukeStack),
+  };
+  const freeStrips = (fsNo, protocol) => fsNo > spec.buildUpSpins ? STRIPS.late : protocol ? STRIPS.protocol : STRIPS.early;
+  const clone = (g) => g.map((col) => col.map((x) => ({ ...x })));
+  const emptySpots = () => Array.from({ length: C }, () => Array(R).fill(0));
+  const cloneSpots = (s) => s.map((col) => col.slice());
+  const hitSpot = (v, y) => Math.min(spec.spotCap, (v || 1) + y); // an unlit square counts as x1
+  // Each blast's yield: a weighted roll on the mode's yields table, e.g. [[1, 60], [2, 30], [3, 10]].
+  const yieldTotal = spec.yields.reduce((a, [, w]) => a + w, 0);
+  const rollYield = (rng) => { let r = rng.int(yieldTotal); for (const [y, w] of spec.yields) { if (r < w) return y; r -= w; } return spec.yields[0][0]; };
+  const doubleSpot = (v) => Math.min(spec.spotCap, v * 2);
+
+  // Cluster pays: flood-fill each symbol through touching cells (up, down, left, right). A cluster's
+  // multiplier is the highest fallout square under it (x1 if it covers none).
+  const NEIGHBOURS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+  function evaluate(g, bet, spots) {
+    const wins = [], tiers = spec.clusterTiers;
+    for (const s of Object.keys(spec.symbols)) {
+      const seen = new Set();
+      for (let c = 0; c < C; c++) for (let r = 0; r < R; r++) {
+        if (g[c][r].s !== s || seen.has(c * 10 + r)) continue;
+        const stack = [[c, r]], cells = [];
+        seen.add(c * 10 + r);
+        while (stack.length) {
+          const [x, y] = stack.pop(); cells.push([x, y]);
+          for (const [dx, dy] of NEIGHBOURS) {
+            const nx = x + dx, ny = y + dy, k = nx * 10 + ny;
+            if (nx < 0 || nx >= C || ny < 0 || ny >= R || seen.has(k) || g[nx][ny].s !== s) continue;
+            seen.add(k); stack.push([nx, ny]);
+          }
+        }
+        if (cells.length < spec.minCluster) continue;
+        let tier = 0; for (let i = 0; i < tiers.length; i++) if (cells.length >= tiers[i]) tier = i;
+        let mult = 0; for (const [x, y] of cells) mult = Math.max(mult, spots[x][y]);
+        mult = mult || 1;
+        const base = round2(bet * spec.symbols[s].pays[tier] * spec.payScale);
+        wins.push({ s, count: cells.length, base, mult, pay: round2(base * mult), cells });
+      }
+    }
+    return wins.sort((a, b) => b.pay - a.pay);
+  }
+
+  // Dev forcing (prototype only): plant symbols on the opening grid.
+  function atLeast(g, sym, n, rng) {
+    let have = 0; for (const col of g) for (const x of col) if (x.s === sym) have++;
+    let guard = 0;
+    while (have < n && guard++ < 500) {
+      const c = rng.int(C), r = rng.int(R), cur = g[c][r].s;
+      if (cur === sym || (!NUKES[sym] && NUKES[cur])) continue;
+      g[c][r] = { s: sym }; have++;
+    }
+  }
+  function applyForce(g, force, mode, rng) {
+    if (mode === 'base' && /^fs[1-6]$/.test(force)) atLeast(g, NUKE, +force[2], rng);
+    if (force === 'big') { const c0 = rng.int(C - 2), r0 = rng.int(R - 3); for (let dc = 0; dc < 3; dc++) for (let dr = 0; dr < 4; dr++) g[c0 + dc][r0 + dr] = { s: 'trump' }; }
+    if (mode === 'free' && force === 'n2') atLeast(g, NUKE, 2, rng);
+    if (mode === 'free' && ['mini', 'tsar', 'doom'].includes(force)) atLeast(g, force, 1, rng);
+  }
+  // Take cells out and drop new ones in from above, continuing up each reel strip.
+  function refill(g, removed, strips, pos) {
+    const rm = new Set(removed.map(([c, r]) => c * 10 + r)), next = [];
+    for (let c = 0; c < C; c++) {
+      const keep = g[c].filter((_, r) => !rm.has(c * 10 + r)), k = R - keep.length, L = strips[c].length;
+      pos[c] = ((pos[c] - k) % L + L) % L;
+      const fresh = []; for (let i = 0; i < k; i++) fresh.push({ s: strips[c][(pos[c] + i) % L] });
+      next.push(fresh.concat(keep));
+    }
+    return next;
+  }
+  // Every Nuke on the grid goes off with a random yield and hits every square within its reach
+  // (overlapping blasts hit a square once per Nuke). A Doomsday hits its own square; spin() then
+  // doubles every lit square.
+  function blast(g, rng) {
+    const nukes = [], hits = []; let doom = 0;
+    for (let c = 0; c < C; c++) for (let r = 0; r < R; r++) {
+      const s = g[c][r].s, type = NUKES[s]; if (!type) continue;
+      const y = rollYield(rng);
+      nukes.push([c, r, s, y]);
+      if (type.doubleAll) doom++;
+      const d = type.reach;
+      for (let dc = -d; dc <= d; dc++) for (let dr = -d; dr <= d; dr++) {
+        if (Math.abs(dc) + Math.abs(dr) > d) continue;
+        const cc = c + dc, rr = r + dr;
+        if (cc >= 0 && cc < C && rr >= 0 && rr < R) hits.push([cc, rr, y]);
+      }
+    }
+    return { nukes, hits, doom };
+  }
+
+  // One paid base spin or one free spin.
+  //  base: `gauge` is the nuclear meter carried in (0-100); the spin starts on a clear board.
+  //  free: `spots` is the feature's fallout grid carried in; fsNo and protocol pick the reels.
+  // Steps: 'blast' (Nukes explode, light squares, tumble), 'win' (clusters pay and tumble), then 'end'.
+  function spin({ bet, mode, force, rng, spots, fsNo = 1, protocol = false, gauge = 0 }) {
+    const free = mode === 'free', strips = free ? freeStrips(fsNo, protocol) : STRIPS.base, pos = [], grid = [];
+    for (let c = 0; c < C; c++) {
+      const L = strips[c].length, p = rng.int(L); pos.push(p);
+      grid.push(Array.from({ length: R }, (_, r) => ({ s: strips[c][(p + r) % L] })));
+    }
+    if (force) applyForce(grid, force, mode, rng);
+    const sp = free && spots ? cloneSpots(spots) : emptySpots();
+    let detonations = 0, win = 0, guard = 0;
+    const steps = []; let g = grid;
+    for (;;) {
+      if (++guard > 200) break;
+      const b = blast(g, rng);
+      if (b.nukes.length) {
+        detonations += b.nukes.length;
+        for (const [c, r, y] of b.hits) sp[c][r] = hitSpot(sp[c][r], y);
+        let cells = b.hits;
+        if (b.doom) { // Doomsday: every lit square on the board doubles (once per Doomsday)
+          cells = [];
+          for (let c = 0; c < C; c++) for (let r = 0; r < R; r++) {
+            if (!sp[c][r]) continue;
+            for (let d = 0; d < b.doom; d++) sp[c][r] = doubleSpot(sp[c][r]);
+            cells.push([c, r]);
+          }
+        }
+        steps.push({ kind: 'blast', grid: clone(g), nukes: b.nukes, cells, doom: b.doom, spots: cloneSpots(sp), detonations });
+        g = refill(g, b.nukes, strips, pos);
+        continue;
+      }
+      const wins = evaluate(g, bet, sp);
+      if (!wins.length) break;
+      const removed = []; for (const w of wins) for (const rc of w.cells) removed.push(rc);
+      steps.push({ kind: 'win', grid: clone(g), wins, removed });
+      for (const w of wins) win += w.pay;
+      g = refill(g, removed, strips, pos);
+    }
+    steps.push({ kind: 'end', grid: clone(g) });
+    const out = { mode, bet, steps, totalWin: round2(win), detonations, nukes: detonations, spotsAfter: sp, fsAwarded: 0, triggered: false, protocol: false, gaugeFull: false, gaugeAfter: gauge };
+    if (free) {
+      if (spec.fsRetrigger && detonations >= spec.fsRetrigger) out.fsAwarded = spec.fsRetriggerAward;
+    } else {
+      // The nuclear meter: each Nuke pushes it up a random amount; a spin with no Nukes lets it fall.
+      let m = gauge;
+      if (detonations) for (let i = 0; i < detonations; i++) m += spec.meterRise[0] + rng.int(spec.meterRise[1] - spec.meterRise[0] + 1);
+      else m = Math.max(0, m - spec.meterDecay);
+      if (m >= spec.meterMax) { // full: free spins (Doomsday Protocol if 4+ Nukes filled it), and it empties
+        out.gaugeFull = true; out.protocol = detonations >= spec.protocolAt; out.fsAwarded = spec.fsAward; m = 0;
+      }
+      out.gaugeAfter = m;
+    }
+    return out;
+  }
+  // Feature buy (launch codes): a fixed price for the free spins on a clear board, played at a fixed stake.
+  function buy() { const cost = spec.buyPrice; return { cost, stake: cost / spec.buyCostX, spins: spec.fsAward }; } // exact stake, shown to 2 decimals
+  return { spin, buy, STRIPS, emptySpots };
+}
+const SERVERS = Object.fromEntries(Object.entries(SPECS).map(([k, s]) => [k, makeServer(s)]));
+
+// ===== Batch simulation (placeholder-math check) =====
+const spotStats = (s) => { let hot = 0, top = 0, sum = 0; for (const col of s) for (const v of col) { if (v) hot++; if (v > top) top = v; sum += v; } return { hot, top, sum }; };
+const WIN_BANDS = [0, 1, 5, 20, 100, Infinity]; // round win bands, times the bet: 0, <1, 1-5, 5-20, 20-100, 100+
+function newSim() { return { spins: 0, spent: 0, won: 0, sq: 0, baseWon: 0, fsWon: 0, hits: 0, triggers: 0, natural: 0, gaugeTrig: 0, protocols: 0, maxX: 0, hot: 0, top: 0, nukes: 0, baseNukes: 0, retriggers: 0, gauge: 0, bands: [0, 0, 0, 0, 0, 0] }; }
+function playFeature(server, st, bet, rng, already, cap, spins, spots, protocol) {
+  let left = spins, fw = 0, fsNo = 0, sp = spots || server.emptySpots();
+  while (left > 0) {
+    left--; fsNo++;
+    const f = server.spin({ bet, mode: 'free', rng, spots: sp, fsNo, protocol });
+    fw += f.totalWin; left += f.fsAwarded; if (f.fsAwarded) st.retriggers++; st.nukes += f.detonations; sp = f.spotsAfter;
+    if (already + fw >= cap) { fw = cap - already; break; }
+  }
+  const s = spotStats(sp); st.hot += s.hot; st.top += s.top;
+  return fw;
+}
+function simChunk(server, spec, st, n, bet, rng) {
+  const cap = spec.maxWinX * bet;
+  for (let i = 0; i < n; i++) {
+    st.spins++; st.spent += bet;
+    const o = server.spin({ bet, mode: 'base', rng, gauge: st.gauge });
+    st.gauge = o.gaugeAfter; st.baseNukes += o.nukes;
+    let round = Math.min(o.totalWin, cap); st.baseWon += round;
+    if (o.fsAwarded) {
+      st.triggers++; if (o.gaugeFull) st.gaugeTrig++; else st.natural++; if (o.protocol) st.protocols++;
+      const fw = playFeature(server, st, bet, rng, round, cap, o.fsAwarded, o.spotsAfter, o.protocol);
+      st.fsWon += fw; round += fw;
+    }
+    if (round > 0) st.hits++;
+    const x = round / bet; st.won += round; st.sq += x * x; st.maxX = Math.max(st.maxX, x);
+    let b = 0; while (b < WIN_BANDS.length - 1 && !(x < WIN_BANDS[b] || (b === 0 && x === 0))) b++;
+    st.bands[x === 0 ? 0 : b]++;
+  }
+  return st;
+}
+function newBuySim() { return { buys: 0, spent: 0, won: 0, maxX: 0, hot: 0, top: 0, nukes: 0, retriggers: 0, under: 0 }; }
+function simBuyChunk(server, spec, st, n, bet, rng) { // bet is unused: a buy has its own fixed stake
+  const b = server.buy(), cap = spec.maxWinX * b.stake;
+  for (let i = 0; i < n; i++) {
+    st.buys++; st.spent += b.cost;
+    const round = playFeature(server, st, b.stake, rng, 0, cap, b.spins, null, false);
+    st.won += round; st.maxX = Math.max(st.maxX, round / b.stake); if (round < b.cost) st.under++;
+  }
+  return st;
+}
+/*ENGINE-END*/
+
+// ===== Symbol art (200 x 250 SVG documents) =====
+// Copies of the art team's art/sym_<key>.svg (v2 set, 14 Nov 2026), built in so this one file still plays
+// on its own. When the page is served next to art/, loadArt() loads the files there instead.
+const SYMBOL_ART = {
+trump: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 250" width="200" height="250">
+<style>.ol{stroke:#3b2a22;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}.il{fill:none;stroke:#3b2a22;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}</style>
+<!-- The orange one. Head and shoulders, 3/4 view facing left, cel-shaded. -->
+<!-- tier tile -->
+<path class="ol" d="M100.0 16.0 L122.3 36.9 L152.0 29.9 L160.8 59.2 L190.1 68.0 L183.1 97.7 L204.0 120.0 L183.1 142.3 L190.1 172.0 L160.8 180.8 L152.0 210.1 L122.3 203.1 L100.0 224.0 L77.7 203.1 L48.0 210.1 L39.2 180.8 L9.9 172.0 L16.9 142.3 L-4.0 120.0 L16.9 97.7 L9.9 68.0 L39.2 59.2 L48.0 29.9 L77.7 36.9 Z" fill="#138A84"/>
+<ellipse cx="78" cy="62" rx="48" ry="26" fill="#4FC2BB" opacity="0.45"/>
+<!-- shoulders: navy suit, white collar, the long red tie -->
+<path class="ol" d="M4 250 Q8 212 44 200 Q70 192 100 194 Q134 192 160 200 Q194 212 196 250 Z" fill="#24407a"/>
+<path d="M140 196 Q178 206 192 232 L196 250 L160 250 Q164 222 136 206 Z" fill="#1A3062"/>
+<path d="M86 176 L86 200 L124 198 L126 172 Z" fill="#D67A34"/>
+<path class="ol" d="M82 196 L102 228 L126 194 L122 188 L102 210 L88 188 Z" fill="#FFFFFF" style="stroke-width:2.2"/>
+<path class="il" d="M82 196 L70 250 M126 194 L138 250" style="stroke:#16284f"/>
+<path class="ol" d="M96 210 L110 210 L108 220 L98 220 Z" fill="#B81D30" style="stroke-width:2"/>
+<path class="ol" d="M98 220 L108 220 L116 250 L90 250 Z" fill="#D7263D" style="stroke-width:2"/>
+<g transform="translate(18 2) scale(0.82)">
+<!-- ear -->
+<path class="ol" d="M158 136 Q176 124 183 144 Q186 168 168 182 Q160 182 158 172 Z" fill="#F39A4E"/>
+<path class="il" d="M167 143 Q177 146 174 160 Q171 168 166 162"/>
+<!-- face -->
+<path d="M50 96 L46 118 L52 134 L45 152 L52 176 L58 198 L68 220 Q78 233 97 232 L124 226 Q146 214 156 192 L164 168 L166 120 Q160 96 150 88 Z" fill="#F39A4E"/>
+<!-- shadow planes -->
+<path d="M166 122 Q164 150 156 176 Q146 206 124 224 L116 214 Q136 198 142 172 Q148 148 148 120 Z" fill="#D67A34"/>
+<path d="M48 112 Q100 104 162 112 L160 122 Q100 115 50 124 Z" fill="#D67A34"/>
+<path d="M70 222 Q80 232 97 232 L124 226 Q110 226 96 226 Q82 226 70 222 Z" fill="#D67A34"/>
+<path d="M92 140 Q97 160 99 176 L92 177 Q91 158 90 140 Z" fill="#D67A34"/>
+<!-- goggle tan -->
+<ellipse cx="68" cy="137" rx="14" ry="10" fill="#FCE0BE"/>
+<ellipse cx="113" cy="136" rx="17" ry="11" fill="#FCE0BE"/>
+<!-- face outline on top of the shading -->
+<path class="ol" d="M50 96 L46 118 L52 134 L45 152 L52 176 L58 198 L68 220 Q78 233 97 232 L124 226 Q146 214 156 192 L164 168 L166 120" fill="none"/>
+<!-- pale scowling brows -->
+<path class="il" d="M50 125 L57 118 L83 126 L81 131 L57 126 Z" fill="#E6DAAE"/>
+<path class="il" d="M95 131 L97 125 L126 114 L139 118 L128 123 L99 133 Z" fill="#E6DAAE"/>
+<path class="il" d="M87 119 L90 131 M92 116 L96 128"/>
+<!-- eyes: narrowed, heavy lids, bags -->
+<path d="M58 136 Q68 130 78 135 Q68 141 58 136 Z" fill="#F4EEE6"/>
+<circle cx="69" cy="135.5" r="3.5" fill="#6C7A86"/><circle cx="69" cy="135.5" r="1.5" fill="#22242a"/>
+<path class="il" d="M56 135 Q68 127 80 134" style="stroke-width:2.4"/>
+<path class="il" d="M60 143 Q68 147 76 142"/>
+<path d="M100 137 Q112 129 126 134 Q114 142 100 137 Z" fill="#F4EEE6"/>
+<circle cx="113" cy="135.5" r="4" fill="#6C7A86"/><circle cx="113" cy="135.5" r="1.8" fill="#22242a"/>
+<path class="il" d="M98 136 Q112 126 128 133" style="stroke-width:2.6"/>
+<path class="il" d="M102 144 Q114 150 126 142"/>
+<path class="il" d="M130 132 L137 129 M131 137 L137 139 M54 133 L49 131"/>
+<!-- nose -->
+<path class="il" d="M90 136 Q87 156 75 168 Q71 176 80 178 Q87 181 93 177 L99 177" style="stroke-width:2"/>
+<path class="il" d="M84 175 Q88 172 92 175"/>
+<!-- folds and creases -->
+<path class="il" d="M99 172 Q110 186 113 201 M66 174 Q61 186 64 197 M122 158 Q132 166 140 163"/>
+<!-- the pursed scowl -->
+<path d="M70 201 Q90 209 110 201 Q90 204 70 201 Z" fill="#C9704A"/>
+<path d="M65 199 Q88 193 115 199" stroke="#3b2a22" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+<path class="il" d="M65 199 L61 204 M115 199 L119 205"/>
+<!-- chin and jowls -->
+<path class="il" d="M72 215 Q88 222 104 216 M118 206 Q124 216 121 224"/>
+<!-- the hair: a pale golden swoop from the back, pointed at the front -->
+<path class="ol" d="M28 92 L42 86 L35 74 L52 70 Q60 40 100 28 Q150 18 176 44 Q190 62 188 100 Q186 126 180 146 L171 138 Q168 122 160 110 Q150 100 128 100 Q96 100 70 104 Q54 106 44 112 Z" fill="#E6D79E"/>
+<path d="M44 112 Q54 106 70 104 Q96 100 128 100 Q150 100 160 110 Q168 122 171 138 L166 132 Q160 120 148 115 Q128 108 100 110 Q72 112 52 117 Z" fill="#C9B676"/>
+<path d="M62 62 Q100 36 150 40" stroke="#F7EFC9" stroke-width="5" stroke-linecap="round" fill="none"/>
+<path d="M72 78 Q110 58 160 68 M168 72 Q178 96 176 128" stroke="#F7EFC9" stroke-width="3" stroke-linecap="round" fill="none"/>
+<path class="il" d="M54 80 Q90 60 140 58 M110 84 Q140 78 168 92 M150 30 Q176 46 182 80" style="stroke:#9C8C55"/>
+<path class="ol" d="M28 92 L42 86 L35 74 L52 70 Q60 40 100 28 Q150 18 176 44 Q190 62 188 100 Q186 126 180 146" fill="none"/>
+</g>
+</svg>`,
+putin: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 250" width="200" height="250">
+<style>.ol{stroke:#3b2a22;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}.il{fill:none;stroke:#3b2a22;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}</style>
+<!-- Shirtless Vlad. Head and bare shoulders, front view, cel-shaded.
+     Identity from his public look: wide cheekbones tapering to a small pointed chin, pointed ears,
+     thin light-brown hair combed across a receding line, pale blue eyes under heavy drooping lids,
+     brows raised at the inner ends, a small pouty pressed mouth, bare strongman shoulders. -->
+<!-- tier tile -->
+<path class="ol" d="M100.0 20.0 L190.1 72.0 L190.1 176.0 L100.0 228.0 L9.9 176.0 L9.9 72.0 Z" fill="#2F5FD0"/>
+<ellipse cx="78" cy="62" rx="48" ry="26" fill="#6E93EC" opacity="0.45"/>
+<!-- bare shoulders and chest -->
+<path class="ol" d="M4 250 Q8 206 46 192 Q72 184 100 186 Q130 184 156 192 Q194 206 196 250 Z" fill="#EFC9A8"/>
+<path d="M130 188 Q170 196 190 226 L196 250 L150 250 Q156 220 128 200 Z" fill="#D6A884"/>
+<path class="il" d="M50 206 Q74 210 92 202 M108 202 Q128 210 152 206"/>
+<path class="il" d="M44 242 Q70 232 96 238 M104 238 Q130 232 158 242 M100 214 L100 234" style="stroke:#a87b5a"/>
+<path class="il" d="M26 222 Q34 208 50 204 M174 222 Q166 208 150 204" style="stroke:#a87b5a"/>
+<!-- neck -->
+<path d="M80 158 L78 194 Q100 204 126 194 L124 158 Z" fill="#E3B994"/>
+<path class="il" d="M78 160 L78 192 M124 158 L126 192"/>
+<path class="il" d="M88 168 L93 194 M114 168 L109 194" style="stroke:#a87b5a"/>
+<!-- pointed ears -->
+<path class="ol" d="M58 104 L34 66 Q28 100 42 128 Q50 140 60 136 Z" fill="#EFC9A8"/>
+<path class="il" d="M50 92 Q40 106 46 124" style="stroke:#a87b5a"/>
+<path class="ol" d="M142 104 L166 66 Q172 100 158 128 Q150 140 140 136 Z" fill="#EFC9A8"/>
+<path class="il" d="M150 92 Q160 106 154 124" style="stroke:#a87b5a"/>
+<!-- head: wide cheekbones tapering to a small pointed chin -->
+<path d="M56 74 Q58 30 100 24 Q142 30 144 74 Q150 100 146 124 Q142 148 128 166 Q114 182 100 186 Q86 182 72 166 Q58 148 54 124 Q50 100 56 74 Z" fill="#F0C9A6"/>
+<!-- puffy-cheek shading -->
+<path d="M54 124 Q60 150 76 168 L82 158 Q66 146 62 124 Z" fill="#D6A884"/>
+<path d="M146 124 Q140 150 124 168 L118 158 Q134 146 138 124 Z" fill="#D6A884"/>
+<path d="M98 112 Q97 130 94 142 L100 144 Q101 130 103 112 Z" fill="#D6A884"/>
+<ellipse cx="70" cy="132" rx="10" ry="7" fill="#F8DCC2" opacity="0.8"/><ellipse cx="130" cy="132" rx="10" ry="7" fill="#F8DCC2" opacity="0.8"/>
+<ellipse cx="100" cy="44" rx="22" ry="7" fill="#FBE6D3"/>
+<path class="ol" d="M56 74 Q58 30 100 24 Q142 30 144 74 Q150 100 146 124 Q142 148 128 166 Q114 182 100 186 Q86 182 72 166 Q58 148 54 124 Q50 100 56 74" fill="none"/>
+<!-- thin, receding light-brown hair combed across -->
+<path d="M58 74 Q58 36 98 26 Q138 28 144 70 Q138 50 120 44 Q100 38 82 46 Q66 54 58 74 Z" fill="#C7A77C" opacity="0.9"/>
+<path d="M62 62 Q84 40 132 40 M66 54 Q92 36 128 34 M120 44 Q136 50 142 64" stroke="#A88A60" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+<!-- forehead and the worried crease -->
+<path class="il" d="M72 76 Q100 70 128 76 M78 84 Q100 80 122 84 M98 90 Q99 96 98 100" style="stroke:#c79c7a;stroke-width:1.4"/>
+<!-- thin brows, raised at the inner ends -->
+<path d="M64 102 Q78 98 92 93 M108 93 Q122 98 136 102" stroke="#A88A60" stroke-width="3.4" stroke-linecap="round" fill="none"/>
+<!-- pale blue eyes under heavy, drooping lids -->
+<path d="M68 112 Q80 106 92 111 Q80 117 68 112 Z" fill="#F4EEE6"/>
+<circle cx="81" cy="111.5" r="4.2" fill="#8FB3CF"/><circle cx="81" cy="111.5" r="1.7" fill="#22242a"/><circle cx="82.2" cy="110.3" r="0.9" fill="#ffffff"/>
+<path class="il" d="M64 115 Q70 104 82 104 Q91 105 94 111" style="stroke-width:3"/>
+<path d="M108 111 Q120 106 132 112 Q120 117 108 111 Z" fill="#F4EEE6"/>
+<circle cx="119" cy="111.5" r="4.2" fill="#8FB3CF"/><circle cx="119" cy="111.5" r="1.7" fill="#22242a"/><circle cx="120.2" cy="110.3" r="0.9" fill="#ffffff"/>
+<path class="il" d="M106 111 Q109 105 118 104 Q130 104 136 115" style="stroke-width:3"/>
+<path class="il" d="M68 120 Q80 126 92 119 M108 119 Q120 126 132 120" style="stroke:#b88b66"/>
+<!-- nose -->
+<path class="il" d="M98 110 Q97 128 92 140 Q90 148 98 150 Q104 151 108 146" style="stroke-width:2.1"/>
+<path class="il" d="M95 148 Q99 145 103 148"/>
+<circle cx="100" cy="143" r="3" fill="#FBE3CF"/>
+<!-- deep folds and a pouty, pressed mouth -->
+<path class="il" d="M88 146 Q78 156 80 170 M112 146 Q122 156 120 170" style="stroke-width:1.9"/>
+<path d="M86 163 Q100 172 114 163 Q100 166 86 163 Z" fill="#D99A88" stroke="#3b2a22" stroke-width="1.3"/>
+<path d="M84 162 Q92 158 100 160 Q108 158 116 162" stroke="#3b2a22" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+<path class="il" d="M84 162 L80 167 M116 162 L120 167 M94 178 Q100 181 106 178"/>
+</svg>`,
+xi: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 250" width="200" height="250">
+<style>.ol{stroke:#3b2a22;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}.il{fill:none;stroke:#3b2a22;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}</style>
+<!-- Winnie the Xi. An original honey bear (not any existing cartoon character) given Xi's look:
+     front-facing official-portrait pose, broad round face, jet-black hair combed back with a side part,
+     calm narrow eyes, composed closed-mouth smile, dark suit, white shirt, burgundy tie. -->
+<!-- tier tile -->
+<circle class="ol" cx="100" cy="124" r="96" fill="#D7263D"/>
+<ellipse cx="78" cy="62" rx="48" ry="26" fill="#F0606F" opacity="0.45"/>
+<!-- shoulders: dark suit, white shirt, burgundy tie -->
+<path class="ol" d="M4 250 Q8 210 44 198 Q72 190 100 192 Q128 190 156 198 Q192 210 196 250 Z" fill="#2B2D33"/>
+<path d="M150 196 Q186 208 194 234 L196 250 L166 250 Q166 222 144 206 Z" fill="#1F2025"/>
+<path class="ol" d="M80 194 L100 222 L120 194 L116 188 L100 208 L84 188 Z" fill="#FFFFFF" style="stroke-width:2.2"/>
+<path class="il" d="M80 194 L68 250 M120 194 L132 250" style="stroke:#141518"/>
+<path class="ol" d="M95 206 L105 206 L103 216 L97 216 Z" fill="#7E1F22" style="stroke-width:2"/>
+<path class="ol" d="M97 216 L103 216 L108 250 L92 250 Z" fill="#9E2A2B" style="stroke-width:2"/>
+<!-- round bear ears -->
+<circle class="ol" cx="50" cy="62" r="20" fill="#E9B13B"/><circle cx="50" cy="62" r="10" fill="#D4962A"/>
+<circle class="ol" cx="150" cy="62" r="20" fill="#E9B13B"/><circle cx="150" cy="62" r="10" fill="#D4962A"/>
+<!-- broad round head -->
+<path d="M40 112 Q38 52 100 42 Q162 52 160 112 Q162 160 140 182 Q122 198 100 198 Q78 198 60 182 Q38 160 40 112 Z" fill="#F0BE48"/>
+<path d="M44 130 Q48 168 72 188 Q86 196 100 198 Q114 196 128 188 Q152 168 156 130 Q150 160 126 176 Q112 184 100 184 Q88 184 74 176 Q50 160 44 130 Z" fill="#DDA236"/>
+<path class="ol" d="M40 112 Q38 52 100 42 Q162 52 160 112 Q162 160 140 182 Q122 198 100 198 Q78 198 60 182 Q38 160 40 112 Z" fill="none"/>
+<!-- jet-black hair combed back, side part -->
+<path class="ol" d="M50 94 Q46 52 100 40 Q154 52 150 94 Q144 80 128 76 Q110 72 92 74 Q70 76 58 88 Z" fill="#141418"/>
+<path d="M78 48 Q73 64 71 82" stroke="#40404a" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+<path d="M90 52 Q118 46 142 60" stroke="#4E4E5A" stroke-width="4" stroke-linecap="round" fill="none"/>
+<path d="M86 64 Q114 58 144 70 M58 70 Q64 60 74 56" stroke="#2E2E36" stroke-width="2" stroke-linecap="round" fill="none"/>
+<!-- brows -->
+<path d="M66 100 Q80 95 94 100 M106 100 Q120 95 134 100" stroke="#1A1A1E" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+<!-- calm narrow eyes, built like every other leader's -->
+<path d="M70 113 Q81 107 92 112 Q81 117 70 113 Z" fill="#F7F1EA"/>
+<circle cx="81" cy="112.3" r="3.6" fill="#2A2018"/><circle cx="82" cy="111.4" r="0.9" fill="#ffffff"/>
+<path class="il" d="M68 112 Q81 104 94 111" style="stroke-width:2.4"/>
+<path class="il" d="M72 119 Q81 122 90 118"/>
+<path d="M108 112 Q119 107 130 113 Q119 117 108 112 Z" fill="#F7F1EA"/>
+<circle cx="119" cy="112.3" r="3.6" fill="#2A2018"/><circle cx="120" cy="111.4" r="0.9" fill="#ffffff"/>
+<path class="il" d="M106 111 Q119 104 132 112" style="stroke-width:2.4"/>
+<path class="il" d="M110 118 Q119 122 128 119"/>
+<!-- full cheeks -->
+<ellipse cx="64" cy="142" rx="11" ry="7" fill="#EBA046" opacity="0.7"/>
+<ellipse cx="136" cy="142" rx="11" ry="7" fill="#EBA046" opacity="0.7"/>
+<!-- bear muzzle, nose and a composed smile -->
+<ellipse class="il" cx="100" cy="150" rx="28" ry="20" fill="#F8DA8C"/>
+<ellipse cx="100" cy="137" rx="10" ry="7" fill="#3A2A1A"/>
+<ellipse cx="97" cy="135" rx="3" ry="1.6" fill="#7a6450"/>
+<path class="il" d="M100 144 L100 153 M86 153 Q100 162 114 153" style="stroke-width:2.2"/>
+<path class="il" d="M86 186 Q100 192 114 186" style="stroke:#a8741f"/>
+</svg>`,
+bibi: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 250" width="200" height="250">
+<style>.ol{stroke:#3b2a22;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}.il{fill:none;stroke:#3b2a22;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}</style>
+<!-- Bibi. Head and shoulders, 3/4 view facing left, cel-shaded.
+     Identity from his public look: a broad head with a very high forehead, white-grey hair receding and
+     swept back with fuller sides, big ears, heavy hooded eyes with dark bags under a scowling brow,
+     fleshy cheeks and jowls, a pushed-out lower lip in a smirk. Charcoal suit, blue tie, and his
+     red-line bomb poster with the marker he drew it with.
+     The nose is drawn with the same proportions as every other leader's: no exaggerated nose. -->
+<!-- tier tile -->
+<rect class="ol" x="8" y="20" width="184" height="200" rx="28" fill="#BEC4CE"/>
+<ellipse cx="78" cy="62" rx="48" ry="26" fill="#E6E9EE" opacity="0.6"/>
+<!-- shoulders: charcoal suit, white collar, blue tie -->
+<path class="ol" d="M4 250 Q8 212 44 200 Q72 192 100 194 Q132 192 158 200 Q194 212 196 250 Z" fill="#36383E"/>
+<path d="M140 196 Q178 206 192 232 L196 250 L160 250 Q164 222 136 206 Z" fill="#26282C"/>
+<path d="M78 176 L78 198 L120 198 L122 176 Z" fill="#D49E7A"/>
+<path class="ol" d="M76 196 L98 226 L122 194 L118 188 L98 210 L82 188 Z" fill="#FFFFFF" style="stroke-width:2.2"/>
+<path class="il" d="M76 196 L64 250 M122 194 L132 250" style="stroke:#18243a"/>
+<path class="ol" d="M92 208 L104 208 L102 218 L94 218 Z" fill="#2459B5" style="stroke-width:2"/>
+<path class="ol" d="M94 218 L102 218 L108 250 L88 250 Z" fill="#2F6FD6" style="stroke-width:2"/>
+<!-- big ears -->
+<path class="ol" d="M50 108 Q26 98 24 124 Q24 152 52 156 Z" fill="#EFC4A0"/>
+<path class="il" d="M40 114 Q32 126 40 144" style="stroke:#a87b5a"/>
+<path class="ol" d="M150 104 Q180 90 184 122 Q186 154 152 160 Z" fill="#EFC4A0"/>
+<path class="il" d="M162 112 Q174 124 165 146" style="stroke:#a87b5a"/>
+<!-- broad head with a high forehead and heavy jowls -->
+<path d="M48 96 Q44 36 100 28 Q156 32 158 92 Q162 122 156 144 Q150 174 128 188 Q110 198 92 196 Q68 192 56 176 Q44 158 46 136 Q44 116 48 96 Z" fill="#EFC4A0"/>
+<!-- shadow planes: far cheek, jowls, under the brow -->
+<path d="M158 104 Q160 136 150 162 Q138 184 118 192 L118 182 Q136 170 142 148 Q148 126 146 102 Z" fill="#D49E7A"/>
+<path d="M52 150 Q56 176 76 188 Q86 194 96 196 L94 188 Q76 182 66 168 Q58 158 56 146 Z" fill="#D49E7A"/>
+<path d="M58 104 Q100 96 146 102 L146 110 Q100 104 58 112 Z" fill="#E2B08C"/>
+<path d="M96 110 Q100 128 101 144 L95 146 Q96 128 92 110 Z" fill="#D49E7A"/>
+<ellipse cx="70" cy="146" rx="12" ry="8" fill="#F7D4B6" opacity="0.8"/>
+<ellipse cx="88" cy="58" rx="22" ry="7" fill="#FBE3CF"/>
+<!-- head outline over the shading -->
+<path class="ol" d="M48 96 Q44 36 100 28 Q156 32 158 92 Q162 122 156 144 Q150 174 128 188 Q110 198 92 196 Q68 192 56 176 Q44 158 46 136 Q44 116 48 96" fill="none"/>
+<!-- forehead lines -->
+<path class="il" d="M70 74 Q100 68 134 74 M74 84 Q102 79 130 84" style="stroke:#c79c7a;stroke-width:1.5"/>
+<!-- receding white-grey hair: fuller at the sides, thin and swept back on top -->
+<path class="ol" d="M46 112 Q36 74 52 50 Q62 38 76 36 Q60 58 60 84 Q58 100 60 114 Z" fill="#D6D8DC" style="stroke-width:2.4"/>
+<path class="ol" d="M152 110 Q164 76 154 50 Q144 34 124 30 Q142 52 144 80 Q146 96 142 110 Z" fill="#D6D8DC" style="stroke-width:2.4"/>
+<path class="ol" d="M62 46 Q98 20 140 34 Q120 30 100 34 Q80 36 62 46 Z" fill="#E4E6EA" style="stroke-width:2"/>
+<path d="M50 70 Q54 56 64 48 M150 70 Q148 54 138 44 M84 34 Q104 28 124 32" stroke="#A9AEB7" stroke-width="2" stroke-linecap="round" fill="none"/>
+<!-- heavy scowling brows -->
+<path d="M60 102 Q74 96 90 106 M108 106 Q124 96 140 100" stroke="#6E727A" stroke-width="6.5" stroke-linecap="round" fill="none"/>
+<path class="il" d="M94 100 L96 108 M100 99 L101 107" style="stroke:#c79c7a"/>
+<!-- hooded, heavy-lidded eyes with dark bags -->
+<path d="M64 115 Q75 110 86 115 Q75 119 64 115 Z" fill="#F4EEE6"/>
+<circle cx="76" cy="115" r="3.3" fill="#3A2A20"/><circle cx="76.8" cy="114.2" r="0.9" fill="#ffffff"/>
+<path class="il" d="M60 114 Q74 106 89 113" style="stroke-width:3"/>
+<path d="M106 115 Q118 109 132 114 Q119 120 106 115 Z" fill="#F4EEE6"/>
+<circle cx="119" cy="114.8" r="3.6" fill="#3A2A20"/><circle cx="119.9" cy="113.9" r="1" fill="#ffffff"/>
+<path class="il" d="M103 114 Q118 104 135 112" style="stroke-width:3"/>
+<path d="M64 121 Q75 128 86 121 Q75 124 64 121 Z M106 121 Q119 129 132 120 Q119 125 106 121 Z" fill="#B98A6C" opacity="0.75"/>
+<path class="il" d="M65 127 Q75 132 85 127 M107 128 Q119 134 131 127" style="stroke:#b88b66"/>
+<!-- nose -->
+<path class="il" d="M97 112 Q95 130 88 140 Q85 148 93 150 Q100 152 105 148" style="stroke-width:2.2"/>
+<path class="il" d="M91 148 Q95 145 99 148"/>
+<!-- deep folds and a pushed-out lower lip in a smirk -->
+<path class="il" d="M84 146 Q74 160 79 174 M112 144 Q123 158 119 172" style="stroke-width:1.9"/>
+<path d="M86 169 Q100 180 114 168 Q100 173 86 169 Z" fill="#C88A72" stroke="#3b2a22" stroke-width="1.4"/>
+<path d="M83 166 Q99 161 117 164 Q120 162 122 158" stroke="#3b2a22" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+<path class="il" d="M84 186 Q100 192 116 186" style="stroke:#a87b5a"/>
+<!-- the red line poster, lower right, with the marker he drew it with -->
+<g transform="rotate(-8 168 200)">
+<rect class="ol" x="138" y="150" width="62" height="86" rx="4" fill="#FFFFFF"/>
+<circle cx="169" cy="206" r="18" fill="#222222"/>
+<rect x="163" y="183" width="12" height="8" fill="#222222"/>
+<path d="M169 183 Q175 171 186 174" stroke="#D48A2A" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+<path d="M188 168 L190 173 L195 174 L191 177 L192 182 L188 179 L184 182 L185 176 L181 173 L186 173 Z" fill="#F2B705" stroke="#D48A2A" stroke-width="1"/>
+<path d="M143 194 L195 190" stroke="#D7263D" stroke-width="7" stroke-linecap="round" fill="none"/>
+</g>
+<path class="ol" d="M108 222 L132 216 L136 250 L104 250 Z" fill="#36383E"/>
+<path class="ol" d="M116 208 L134 190 L141 196 L123 214 Z" fill="#D7263D" style="stroke-width:2"/>
+<path d="M134 190 L138 186 L144 191 L141 196 Z" fill="#3b2a22"/>
+<circle class="ol" cx="121" cy="214" r="10" fill="#EFC4A0"/>
+<path class="il" d="M115 210 Q121 208 126 212 M114 216 Q120 215 125 219"/>
+</svg>`,
+ayat: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 250" width="200" height="250">
+<style>.ol{stroke:#3b2a22;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}.il{fill:none;stroke:#3b2a22;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}</style>
+<!-- The ayatollah. Head and shoulders, front view, cel-shaded.
+     Identity from his public look: a huge black turban sitting low on the brow, a long gaunt face with
+     sunken cheeks and a creased forehead, heavy drooping white brows over a narrow glare, a long white
+     beard, a dark robe with his black-and-white checked scarf. Dress drawn plainly and respectfully;
+     the jokes are the glare, the drone buzzing past and the pride-colours tile.
+     Nose drawn with the same proportions as every other leader's. -->
+<defs>
+  <clipPath id="ayatTile"><path d="M36 20 L164 20 Q192 20 192 48 L192 140 Q192 196 100 234 Q8 196 8 140 L8 48 Q8 20 36 20 Z"/></clipPath>
+  <pattern id="ayatCheck" width="9" height="9" patternUnits="userSpaceOnUse">
+    <rect width="9" height="9" fill="#EDEDED"/><path d="M0 0 L9 9 M9 0 L0 9" stroke="#1E1A18" stroke-width="2"/>
+  </pattern>
+</defs>
+<!-- pride-colours tile (v2: a shield in pastel, mid-tier saturation): a jab at the regime's persecution of LGBTQ people -->
+<g clip-path="url(#ayatTile)"><rect x="8" y="20" width="184" height="37" fill="#F07878"/><rect x="8" y="56" width="184" height="37" fill="#FFC27A"/><rect x="8" y="92" width="184" height="37" fill="#FFF080"/><rect x="8" y="128" width="184" height="37" fill="#78BC8C"/><rect x="8" y="164" width="184" height="37" fill="#7AA2FF"/><rect x="8" y="200" width="184" height="37" fill="#B67CC0"/></g>
+<path class="ol" d="M36 20 L164 20 Q192 20 192 48 L192 140 Q192 196 100 234 Q8 196 8 140 L8 48 Q8 20 36 20 Z" fill="none"/>
+<!-- dark robe with the checked scarf -->
+<path class="ol" d="M4 250 Q8 206 44 194 Q72 186 100 188 Q128 186 156 194 Q192 206 196 250 Z" fill="#1E1A18"/>
+<path class="ol" d="M40 198 Q58 190 72 196 L80 250 L44 250 Q48 222 40 198 Z" fill="url(#ayatCheck)" style="stroke-width:2.2"/>
+<path class="ol" d="M160 198 Q142 190 128 196 L120 250 L156 250 Q152 222 160 198 Z" fill="url(#ayatCheck)" style="stroke-width:2.2"/>
+<!-- ears -->
+<path class="ol" d="M60 112 Q44 108 44 126 Q44 144 62 146 Z" fill="#E3B892"/>
+<path class="ol" d="M140 112 Q156 108 156 126 Q156 144 138 146 Z" fill="#E3B892"/>
+<!-- long, gaunt face -->
+<path d="M60 92 Q60 80 72 78 L128 78 Q140 80 140 92 Q144 120 140 142 Q136 168 122 182 Q110 192 100 192 Q90 192 78 182 Q64 168 60 142 Q56 120 60 92 Z" fill="#E3B892"/>
+<path d="M62 126 Q70 140 74 158 L68 160 Q62 148 60 132 Z M138 126 Q130 140 126 158 L132 160 Q138 148 140 132 Z" fill="#C9976F"/>
+<path d="M98 116 Q96 134 95 146 L101 148 Q101 134 103 116 Z" fill="#C9976F"/>
+<path class="ol" d="M60 92 Q60 80 72 78 L128 78 Q140 80 140 92 Q144 120 140 142 Q136 168 122 182 Q110 192 100 192 Q90 192 78 182 Q64 168 60 142 Q56 120 60 92" fill="none"/>
+<!-- creased forehead -->
+<path class="il" d="M74 91 Q100 86 126 91 M78 98 Q100 94 122 98 M96 100 L95 106 M104 100 L105 106" style="stroke:#a87b5a"/>
+<!-- narrow glare under heavy drooping white brows -->
+<path d="M72 114 Q81 109 90 113 Q81 117 72 114 Z" fill="#F4EEE6"/>
+<circle cx="82" cy="113" r="3.2" fill="#E8B92A"/><circle cx="82" cy="113" r="1.4" fill="#1A1410"/>
+<path class="il" d="M69 113 Q81 105 93 111" style="stroke-width:2.8"/>
+<path d="M110 113 Q119 109 128 114 Q119 117 110 113 Z" fill="#F4EEE6"/>
+<circle cx="118" cy="113" r="3.2" fill="#E8B92A"/><circle cx="118" cy="113" r="1.4" fill="#1A1410"/>
+<path class="il" d="M107 111 Q119 105 131 113" style="stroke-width:2.8"/>
+<path class="il" d="M73 121 Q81 125 89 121 M111 121 Q119 125 127 121" style="stroke:#a87b5a"/>
+<path class="ol" d="M50 104 Q62 94 80 98 Q92 100 98 108 Q88 105 78 107 Q64 109 52 120 Z" fill="#F2F0EC" style="stroke-width:2.2"/>
+<path class="ol" d="M150 104 Q138 94 120 98 Q108 100 102 108 Q112 105 122 107 Q136 109 148 120 Z" fill="#F2F0EC" style="stroke-width:2.2"/>
+<path d="M50 104 L42 110 M52 112 L44 120 M150 104 L158 110 M148 112 L156 120" stroke="#DCD8D0" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+<!-- nose -->
+<path class="il" d="M100 112 Q98 132 94 144 Q91 152 100 154 Q108 152 106 144" style="stroke-width:2.2"/>
+<!-- long white beard and drooping moustache -->
+<path class="ol" d="M62 140 Q58 196 80 224 Q92 240 100 248 Q108 240 120 224 Q142 196 138 140 Q130 166 116 172 Q100 176 84 172 Q70 166 62 140 Z" fill="#EEECE8"/>
+<path class="il" d="M78 184 Q84 206 82 222 M92 186 Q94 212 96 234 M108 186 Q106 212 104 234 M122 184 Q116 206 118 222 M70 160 Q72 176 76 190 M130 160 Q128 176 124 190" style="stroke:#C2BDB4"/>
+<path class="ol" d="M80 162 Q100 150 120 162 Q110 172 100 166 Q90 172 80 162 Z" fill="#F4F2EE" style="stroke-width:2"/>
+<path class="il" d="M92 172 Q100 175 108 172" style="stroke:#7a5a48;stroke-width:2"/>
+<!-- the huge black turban, low on the brow -->
+<path class="ol" d="M28 88 Q16 30 70 10 Q100 0 130 10 Q184 30 172 88 Q150 76 100 76 Q50 76 28 88 Z" fill="#151515"/>
+<path d="M38 68 Q100 40 162 68 M34 52 Q100 22 166 52 M50 32 Q100 12 150 32" stroke="#3E3E44" stroke-width="3" stroke-linecap="round" fill="none"/>
+<path d="M60 20 Q100 8 140 20" stroke="#55555C" stroke-width="4" stroke-linecap="round" fill="none"/>
+<path class="ol" d="M28 88 Q100 72 172 88 L170 98 Q100 84 30 98 Z" fill="#222226"/>
+<!-- the attack drone buzzing past -->
+<g transform="rotate(12 34 176)">
+<path d="M52 168 L66 168 M50 176 L68 176 M52 184 L66 184" stroke="#FFFFFF" stroke-width="2.8" stroke-linecap="round" fill="none"/>
+<path class="ol" d="M8 176 L44 158 L37 176 L44 194 Z" fill="#A9B1BB" style="stroke-width:2.4"/>
+<path d="M8 176 L32 173 L32 179 Z" fill="#7E8792"/>
+<ellipse cx="41" cy="176" rx="2.6" ry="8" fill="#FFFFFF" opacity="0.65"/>
+</g>
+</svg>`,
+hotline: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 250" width="200" height="250">
+<style>.ol{stroke:#3b2a22;stroke-width:4;stroke-linejoin:round;stroke-linecap:round}.il{fill:none;stroke:#3b2a22;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}</style>
+<!-- The hotline (low pay, v2): the red rotary phone between the capitals, ringing off the hook.
+     Low pays have no tile, so a phone with no tile reads as a lower tier than any leader. Thicker
+     outline than the leaders so the bare object holds up at phone size. -->
+<!-- ringing marks -->
+<path class="il" d="M22 64 L10 52 M30 54 L24 38 M178 64 L190 52 M170 54 L176 38" style="stroke-width:4"/>
+<!-- coiled cord -->
+<path d="M46 204 C30 206 26 216 34 222 C42 228 26 232 32 240 C38 246 26 248 24 250" stroke="#3b2a22" stroke-width="8" fill="none" stroke-linecap="round"/>
+<path d="M46 204 C30 206 26 216 34 222 C42 228 26 232 32 240 C38 246 26 248 24 250" stroke="#A3332B" stroke-width="4" fill="none" stroke-linecap="round"/>
+<!-- body -->
+<path d="M40 210 L54 140 Q58 126 74 126 L126 126 Q142 126 146 140 L160 210 Q162 222 150 222 L50 222 Q38 222 40 210 Z" fill="#C9443A"/>
+<path d="M120 126 L126 126 Q142 126 146 140 L160 210 Q162 222 150 222 L136 222 L132 142 Q130 130 120 126 Z" fill="#A3332B"/>
+<path d="M60 140 Q62 132 72 132 L84 132" stroke="#E57A6E" stroke-width="5" stroke-linecap="round" fill="none"/>
+<path class="ol" d="M40 210 L54 140 Q58 126 74 126 L126 126 Q142 126 146 140 L160 210 Q162 222 150 222 L50 222 Q38 222 40 210 Z" fill="none"/>
+<!-- rotary dial -->
+<circle class="ol" cx="100" cy="176" r="32" fill="#F3E8D8" style="stroke-width:3"/>
+<g fill="#8A2A22">
+  <circle cx="100" cy="154" r="5"/><circle cx="115.6" cy="160.4" r="5"/><circle cx="122" cy="176" r="5"/><circle cx="115.6" cy="191.6" r="5"/>
+  <circle cx="100" cy="198" r="5"/><circle cx="84.4" cy="191.6" r="5"/><circle cx="78" cy="176" r="5"/><circle cx="84.4" cy="160.4" r="5"/>
+</g>
+<circle class="ol" cx="100" cy="176" r="10" fill="#C9443A" style="stroke-width:2.4"/>
+<!-- cradle -->
+<rect class="ol" x="58" y="110" width="20" height="20" rx="5" fill="#A3332B" style="stroke-width:3"/>
+<rect class="ol" x="122" y="110" width="20" height="20" rx="5" fill="#A3332B" style="stroke-width:3"/>
+<!-- handset, lifted and tilted as it rings -->
+<g transform="rotate(-6 100 92)">
+  <path class="ol" d="M18 98 Q16 74 38 70 L62 68 Q74 68 76 80 L78 92 Q100 86 122 92 L124 80 Q126 68 138 68 L162 70 Q184 74 182 98 Q180 112 164 112 L140 112 Q130 112 128 102 Q100 96 72 102 Q70 112 60 112 L36 112 Q20 112 18 98 Z" fill="#D84E43"/>
+  <path d="M30 86 Q34 78 46 77 M84 90 Q100 87 116 90" stroke="#F09A90" stroke-width="4" stroke-linecap="round" fill="none"/>
+</g>
+</svg>`,
+dove: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 250" width="200" height="250">
+<style>.ol{stroke:#3b2a22;stroke-width:4;stroke-linejoin:round;stroke-linecap:round}.il{fill:none;stroke:#3b2a22;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}</style>
+<!-- The peace dove (lowest pay, v2: "peace pays least"): fleeing the summit with its olive branch,
+     sweating, its tail feathers singed and smoking. No tile, pale and low in saturation, so it sits at
+     the bottom of the pay order. Thicker outline so the white bird holds up on a light board. -->
+<g transform="translate(0 22)">
+<!-- smoke from the singed tail -->
+<circle cx="178" cy="104" r="11" fill="#B8B2AA" opacity=".85"/><circle cx="188" cy="84" r="8" fill="#CBC6BF" opacity=".75"/><circle cx="182" cy="66" r="6" fill="#DAD6D0" opacity=".65"/>
+<!-- far wing -->
+<path class="ol" d="M110 128 Q118 74 160 42 Q162 84 150 122 Z" fill="#D9D3CA" style="stroke-width:3"/>
+<!-- tail fan, singed tips -->
+<path class="ol" d="M136 148 L186 124 L194 148 L190 172 L144 172 Z" fill="#EFEBE5"/>
+<path d="M186 124 L194 148 L190 172 L180 171 L184 148 L177 129 Z" fill="#6B6158"/>
+<path class="il" d="M146 156 L184 136 M148 164 L186 160" style="stroke:#A9A196"/>
+<!-- body -->
+<path class="ol" d="M44 136 Q46 112 70 104 Q92 98 114 116 Q140 134 150 152 Q148 176 116 184 Q80 190 60 172 Q44 158 44 136 Z" fill="#F6F3EE"/>
+<path d="M62 168 Q84 186 116 182 Q140 176 148 158 Q130 172 104 172 Q80 172 62 160 Z" fill="#D9D3CA"/>
+<!-- tucked feet -->
+<path d="M94 184 L90 198 M106 184 L106 198" stroke="#C77A5A" stroke-width="4" stroke-linecap="round"/>
+<!-- near wing, raised in alarm -->
+<path class="ol" d="M80 132 Q60 84 72 30 Q92 52 104 58 Q112 40 128 26 Q138 70 124 120 Q108 138 80 132 Z" fill="#FBFAF7"/>
+<path class="il" d="M90 122 Q80 92 82 58 M106 120 Q104 90 114 50" style="stroke:#BDB5AA"/>
+<!-- head -->
+<circle class="ol" cx="58" cy="112" r="24" fill="#F6F3EE"/>
+<!-- olive branch, held in the beak -->
+<path d="M30 122 Q34 142 48 160" stroke="#3b2a22" stroke-width="6.5" fill="none" stroke-linecap="round"/>
+<path d="M30 122 Q34 142 48 160" stroke="#5E7A34" stroke-width="3" fill="none" stroke-linecap="round"/>
+<ellipse cx="26" cy="140" rx="5" ry="10" fill="#7A9A45" stroke="#3b2a22" stroke-width="1.8" transform="rotate(-35 26 140)"/>
+<ellipse cx="46" cy="140" rx="5" ry="10" fill="#7A9A45" stroke="#3b2a22" stroke-width="1.8" transform="rotate(35 46 140)"/>
+<ellipse cx="36" cy="160" rx="5" ry="10" fill="#7A9A45" stroke="#3b2a22" stroke-width="1.8" transform="rotate(-40 36 160)"/>
+<!-- beak -->
+<path class="ol" d="M36 110 L16 120 L37 124 Z" fill="#E8A35A" style="stroke-width:2.6"/>
+<!-- worried eye looking back, raised brow -->
+<ellipse cx="54" cy="108" rx="7" ry="8" fill="#FFFFFF" stroke="#3b2a22" stroke-width="1.8"/>
+<circle cx="57.5" cy="108.5" r="3.6" fill="#22242a"/>
+<path class="il" d="M45 95 Q54 90 63 97" style="stroke-width:2.6"/>
+<!-- sweat drop -->
+<path class="ol" d="M80 80 Q73 93 80 98 Q87 93 80 80 Z" fill="#9FD0F0" style="stroke-width:2"/>
+</g>
+</svg>`,
+nuke: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 250" width="200" height="250">
+<style>.ol{stroke:#3b2a22;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}.il{fill:none;stroke:#3b2a22;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}</style>
+<!-- Nuke, the bonus trigger (v2). Hazard orange and black: the only symbol in these colours and the
+     only one with hazard stripes, so it can't be mistaken for a pay symbol. It fills the cell. -->
+<defs>
+  <clipPath id="nkBody"><ellipse cx="100" cy="146" rx="80" ry="96"/></clipPath>
+  <pattern id="nkHaz" width="22" height="22" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+    <rect width="22" height="22" fill="#FF6A13"/><rect width="11" height="22" fill="#1B1B1F"/>
+  </pattern>
+</defs>
+<!-- tail fins -->
+<path class="ol" d="M56 66 L144 66 L166 8 L34 8 Z" fill="#1B1B1F"/>
+<path d="M72 58 L128 58 L144 16 L56 16 Z" fill="#34343A"/>
+<path d="M100 16 L100 58" stroke="#5A5A62" stroke-width="3" stroke-linecap="round"/>
+<!-- body -->
+<ellipse cx="100" cy="146" rx="80" ry="96" fill="#FF6A13"/>
+<g clip-path="url(#nkBody)">
+  <path d="M180 116 Q178 200 118 248 L200 250 L200 50 Z" fill="#D9480F"/>
+  <rect x="0" y="56" width="200" height="15" fill="#1B1B1F"/>
+  <rect x="0" y="198" width="200" height="26" fill="url(#nkHaz)"/>
+  <rect x="0" y="195" width="200" height="4" fill="#1B1B1F"/><rect x="0" y="223" width="200" height="4" fill="#1B1B1F"/>
+</g>
+<ellipse class="ol" cx="100" cy="146" rx="80" ry="96" fill="none"/>
+<!-- trefoil badge -->
+<circle class="ol" cx="100" cy="132" r="50" fill="#FFF1E2"/>
+<g transform="translate(100 132) scale(1.32) translate(-100 -112)">
+  <path d="M104.5 104.2 L116 84.3 A32 32 0 0 1 132 112 L109 112 A9 9 0 0 0 104.5 104.2 Z M91 112 L68 112 A32 32 0 0 1 84 84.3 L95.5 104.2 A9 9 0 0 0 91 112 Z M104.5 119.8 L116 139.7 A32 32 0 0 1 84 139.7 L95.5 119.8 A9 9 0 0 0 104.5 119.8 Z" fill="#1B1B1F"/>
+  <circle cx="100" cy="112" r="6" fill="#1B1B1F"/>
+</g>
+<!-- highlight -->
+<ellipse cx="44" cy="102" rx="7" ry="20" fill="#FFB27A" transform="rotate(14 44 102)"/>
+</svg>`,
+mini: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 250" width="200" height="250">
+<style>.ol{stroke:#3b2a22;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}.il{fill:none;stroke:#3b2a22;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}</style>
+<!-- Mini Nuke (free spins only, v2): a slim hazard-orange warhead standing on its fins. Same Nuke-family
+     colours as the Nuke, but tall and narrow where the Nuke is round, so the two read apart; and no
+     briefcase shape, so it can't be confused with the nuclear briefcase pay symbol.
+     (The earlier Suitcase Nuke art is in art/old/sym_mini_v2_suitcase.svg.) -->
+<defs>
+  <clipPath id="mnBody"><path d="M66 214 L66 112 Q66 48 100 18 Q134 48 134 112 L134 214 Z"/></clipPath>
+  <pattern id="mnHaz" width="18" height="18" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+    <rect width="18" height="18" fill="#FF6A13"/><rect width="9" height="18" fill="#1B1B1F"/>
+  </pattern>
+</defs>
+<!-- fins -->
+<path class="ol" d="M66 170 L34 214 L34 236 L66 214 Z" fill="#1B1B1F"/>
+<path class="ol" d="M134 170 L166 214 L166 236 L134 214 Z" fill="#1B1B1F"/>
+<!-- body -->
+<path d="M66 214 L66 112 Q66 48 100 18 Q134 48 134 112 L134 214 Z" fill="#FF6A13"/>
+<g clip-path="url(#mnBody)">
+  <path d="M112 30 Q134 60 134 112 L134 214 L116 214 L116 104 Q116 62 104 34 Z" fill="#D9480F"/>
+  <rect x="60" y="188" width="80" height="26" fill="url(#mnHaz)"/>
+  <rect x="60" y="185" width="80" height="4" fill="#1B1B1F"/>
+  <rect x="60" y="66" width="80" height="9" fill="#1B1B1F"/>
+</g>
+<path class="ol" d="M66 214 L66 112 Q66 48 100 18 Q134 48 134 112 L134 214 Z" fill="none"/>
+<rect class="ol" x="60" y="212" width="80" height="14" rx="4" fill="#1B1B1F"/>
+<!-- trefoil badge -->
+<circle class="ol" cx="100" cy="132" r="25" fill="#FFF1E2"/>
+<g transform="translate(100 132) scale(0.66) translate(-100 -112)">
+  <path d="M104.5 104.2 L116 84.3 A32 32 0 0 1 132 112 L109 112 A9 9 0 0 0 104.5 104.2 Z M91 112 L68 112 A32 32 0 0 1 84 84.3 L95.5 104.2 A9 9 0 0 0 91 112 Z M104.5 119.8 L116 139.7 A32 32 0 0 1 84 139.7 L95.5 119.8 A9 9 0 0 0 104.5 119.8 Z" fill="#1B1B1F"/>
+  <circle cx="100" cy="112" r="6" fill="#1B1B1F"/>
+</g>
+<!-- highlight -->
+<ellipse cx="80" cy="96" rx="5" ry="18" fill="#FFB27A" transform="rotate(10 80 96)"/>
+</svg>`,
+tsar: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 250" width="200" height="250">
+<style>.ol{stroke:#3b2a22;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}.il{fill:none;stroke:#3b2a22;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}</style>
+<!-- Tsar Bomba (free spins only, v2): the fattest bomb, crimson with gold bands and a gold star.
+     Wider than the Nuke and red, not orange, so the two never read alike. -->
+<defs><clipPath id="tkBody"><ellipse cx="100" cy="148" rx="88" ry="96"/></clipPath></defs>
+<!-- tail fins -->
+<path class="ol" d="M58 66 L142 66 L166 6 L34 6 Z" fill="#3B3B4F"/>
+<path d="M72 58 L128 58 L146 14 L54 14 Z" fill="#26263A"/>
+<path d="M100 14 L100 58" stroke="#55556A" stroke-width="3" stroke-linecap="round"/>
+<!-- body -->
+<ellipse cx="100" cy="148" rx="88" ry="96" fill="#C81E36"/>
+<g clip-path="url(#tkBody)">
+  <path d="M188 116 Q184 204 120 250 L200 250 L200 50 Z" fill="#9E1528"/>
+  <rect x="0" y="62" width="200" height="14" fill="#F2B705"/>
+  <rect x="0" y="190" width="200" height="12" fill="#F2B705"/>
+</g>
+<ellipse class="ol" cx="100" cy="148" rx="88" ry="96" fill="none"/>
+<!-- trefoil badge -->
+<circle class="ol" cx="100" cy="132" r="44" fill="#FFF4D6"/>
+<g transform="translate(100 132) scale(1.15) translate(-100 -112)">
+  <path d="M104.5 104.2 L116 84.3 A32 32 0 0 1 132 112 L109 112 A9 9 0 0 0 104.5 104.2 Z M91 112 L68 112 A32 32 0 0 1 84 84.3 L95.5 104.2 A9 9 0 0 0 91 112 Z M104.5 119.8 L116 139.7 A32 32 0 0 1 84 139.7 L95.5 119.8 A9 9 0 0 0 104.5 119.8 Z" fill="#1B1B1F"/>
+  <circle cx="100" cy="112" r="6" fill="#1B1B1F"/>
+</g>
+<!-- gold star -->
+<g transform="translate(100 222) scale(1.25) translate(-100 -189)">
+  <path class="ol" d="M100 176 L103.5 185 L113 185.3 L105.5 191 L108.2 200 L100 194.6 L91.8 200 L94.5 191 L87 185.3 L96.5 185 Z" fill="#F2B705" style="stroke-width:2"/>
+</g>
+<!-- highlight -->
+<ellipse cx="38" cy="112" rx="8" ry="22" fill="#F0607A" transform="rotate(12 38 112)"/>
+</svg>`,
+doom: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 250" width="200" height="250">
+<style>.ol{stroke:#3b2a22;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}.il{fill:none;stroke:#3b2a22;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}</style>
+<!-- Doomsday (free spins only, v2): a black-violet bomb in a green glow, green trefoil and a x2 stamp.
+     Green is reserved for Doomsday. -->
+<defs>
+  <clipPath id="dkBody"><ellipse cx="100" cy="148" rx="80" ry="94"/></clipPath>
+  <radialGradient id="dkGlow"><stop offset="0.55" stop-color="#5CFF6A" stop-opacity=".55"/><stop offset="1" stop-color="#5CFF6A" stop-opacity="0"/></radialGradient>
+</defs>
+<ellipse cx="100" cy="140" rx="100" ry="112" fill="url(#dkGlow)"/>
+<!-- tail fins -->
+<path class="ol" d="M56 66 L144 66 L166 8 L34 8 Z" fill="#1E1530"/>
+<path d="M72 58 L128 58 L144 16 L56 16 Z" fill="#3A2A5C"/>
+<path d="M100 16 L100 58" stroke="#5CFF6A" stroke-width="3" stroke-linecap="round"/>
+<!-- body -->
+<ellipse cx="100" cy="148" rx="80" ry="94" fill="#2B1B4A"/>
+<g clip-path="url(#dkBody)">
+  <path d="M180 116 Q178 200 118 248 L200 250 L200 50 Z" fill="#1E1530"/>
+  <rect x="0" y="60" width="200" height="10" fill="#5CFF6A"/>
+  <rect x="0" y="174" width="200" height="6" fill="#5CFF6A"/>
+</g>
+<ellipse class="ol" cx="100" cy="148" rx="80" ry="94" fill="none"/>
+<!-- trefoil badge -->
+<circle class="ol" cx="100" cy="124" r="44" fill="#1E1530"/>
+<g transform="translate(100 124) scale(1.15) translate(-100 -112)">
+  <path d="M104.5 104.2 L116 84.3 A32 32 0 0 1 132 112 L109 112 A9 9 0 0 0 104.5 104.2 Z M91 112 L68 112 A32 32 0 0 1 84 84.3 L95.5 104.2 A9 9 0 0 0 91 112 Z M104.5 119.8 L116 139.7 A32 32 0 0 1 84 139.7 L95.5 119.8 A9 9 0 0 0 104.5 119.8 Z" fill="#5CFF6A"/>
+  <circle cx="100" cy="112" r="6" fill="#5CFF6A"/>
+</g>
+<!-- x2 stamp -->
+<rect class="ol" x="62" y="190" width="76" height="36" rx="18" fill="#5CFF6A"/>
+<text x="100" y="217" font-family="system-ui,-apple-system,sans-serif" font-weight="900" font-size="27" text-anchor="middle" fill="#1E1530">×2</text>
+<!-- highlight -->
+<ellipse cx="44" cy="104" rx="7" ry="20" fill="#6B5A94" transform="rotate(14 44 104)"/>
+</svg>`,
+mush: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 250" width="200" height="250">
+<style>.ol{stroke:#3b2a22;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}.il{fill:none;stroke:#3b2a22;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}</style>
+<!-- Mushroom cloud (explosion effect, v2): a fiery cap with a hot core over a dust base, so blasts read
+     as fire rather than pastel candy floss. -->
+<!-- dust base -->
+<circle class="ol" cx="58" cy="214" r="20" fill="#B49A80"/><circle class="ol" cx="142" cy="214" r="20" fill="#B49A80"/>
+<circle class="ol" cx="84" cy="222" r="22" fill="#B49A80"/><circle class="ol" cx="116" cy="222" r="22" fill="#B49A80"/>
+<ellipse cx="100" cy="226" rx="50" ry="13" fill="#B49A80"/>
+<path d="M60 236 Q100 246 140 236 Q100 240 60 236 Z" fill="#8F7660"/>
+<!-- stem -->
+<path class="ol" d="M82 214 Q88 160 90 116 L110 116 Q112 160 118 214 Z" fill="#F4A259"/>
+<path d="M104 118 Q106 160 112 212 L117 213 Q112 160 110 116 Z" fill="#D9792F"/>
+<ellipse class="ol" cx="100" cy="164" rx="34" ry="9" fill="#E8553A"/>
+<!-- cap -->
+<circle class="ol" cx="52" cy="88" r="26" fill="#FF6B1A"/><circle class="ol" cx="148" cy="92" r="24" fill="#FF6B1A"/>
+<circle class="ol" cx="76" cy="58" r="28" fill="#FF6B1A"/><circle class="ol" cx="124" cy="58" r="28" fill="#FF6B1A"/>
+<circle class="ol" cx="100" cy="44" r="32" fill="#FF6B1A"/>
+<ellipse cx="100" cy="88" rx="62" ry="34" fill="#FF6B1A"/>
+<path class="ol" d="M40 104 Q100 142 160 104 Q166 118 150 124 Q100 144 50 124 Q34 118 40 104 Z" fill="#C8381A"/>
+<!-- hot core -->
+<ellipse cx="100" cy="74" rx="36" ry="20" fill="#FFB347"/>
+<ellipse cx="100" cy="70" rx="20" ry="10" fill="#FFF1C8"/>
+<circle cx="64" cy="66" r="6" fill="#FFB347"/><circle cx="138" cy="74" r="5" fill="#FFB347"/><circle cx="92" cy="30" r="5" fill="#FFD08A"/>
+</svg>`,
+};
+
+// ===== Client =====
+const $ = (s) => document.querySelector(s);
+const canvas = $('#c'), ctx = canvas.getContext('2d');
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+// Dev tools (forced outcomes, simulator, spin log) show only with ?dev in the address. Strip them from
+// any build that touches real money.
+const DEV = new URLSearchParams(location.search).has('dev') || location.hash === '#dev';
+const NAMES = Object.assign({ nuke: 'Nuke', mini: 'Mini Nuke', tsar: 'Tsar Bomba', doom: 'Doomsday', mush: 'Mushroom cloud' }, Object.fromEntries(Object.entries(SPEC.symbols).map(([k, v]) => [k, v.name])));
+const ART_KEYS = [...Object.keys(SPEC.symbols), 'nuke', 'mini', 'tsar', 'doom', 'mush'];
+// Win outlines (from the art team): checked distinct in normal, deutan, protan and grayscale views. The
+// first colour is solid; any others are dashed over it, so bibi and ayat differ by pattern as well.
+const OUTLINE = {
+  trump: ['#2EC4B6'], putin: ['#4A7BEA'], xi: ['#FFC83A'], hotline: ['#E8394D'], dove: ['#FFFFFF'],
+  bibi: ['#4A90FF', '#FFFFFF'], ayat: ['#F07878', '#FFC27A', '#FFF080', '#78BC8C', '#7AA2FF', '#B67CC0'],
+};
+// Reserved colours: hazard orange #FF6A13 belongs to the Nuke family, neon green #5CFF6A to Doomsday.
+const DOOM_GREEN = '#5CFF6A';
+const fmt = (n) => n.toFixed(2);
+const IMG = {}, PRE = {};
+let W = 0, H = 0, CW = 0, CH = 0, DPR = 1;
+let sprites = [], particles = [], quiet = false;
+const anticCols = new Set(); // columns falling in slow motion while one more Nuke would change the award
+// Fallout squares on screen (this spin's in the base game, the feature's in free spins), how strongly they
+// show (a base spin's fallout fades out when the spin ends) and when each square last flashed.
+let viewSpots = null, spotsAlpha = 1; const spotFlash = new Map();
+
+const loadImg = (src) => new Promise((res) => { const img = new Image(); img.onload = () => res(img); img.onerror = () => res(null); img.src = src; });
+// Every symbol: the art file in art/ when it is there, else the copy built into this file. ART_VERSION
+// stops browsers showing a cached older drawing; bump it when art changes.
+const ART_VERSION = '2026-11-15a';
+async function loadArt() {
+  await Promise.all(ART_KEYS.map(async (k) => {
+    IMG[k] = await loadImg(`art/sym_${k}.svg?v=${ART_VERSION}`) || await loadImg('data:image/svg+xml;charset=utf-8,' + encodeURIComponent(SYMBOL_ART[k]));
+  }));
+}
+function rrc(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+const rr = (x, y, w, h, r) => rrc(ctx, x, y, w, h, r);
+function star(c, x, y, r) { c.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, d = i % 2 ? r * 0.45 : r; c.lineTo(x + d * Math.cos(a), y + d * Math.sin(a)); } c.closePath(); }
+function prerender() {
+  for (const k in IMG) {
+    if (!IMG[k]) continue;
+    const oc = document.createElement('canvas');
+    oc.width = Math.max(1, Math.round(CW * DPR)); oc.height = Math.max(1, Math.round(CH * DPR));
+    const o = oc.getContext('2d'), pad = 0.03, w = oc.width, h = oc.height;
+    const s = Math.min(w * (1 - 2 * pad) / 200, h * (1 - 2 * pad) / 250);
+    o.drawImage(IMG[k], (w - 200 * s) / 2, (h - 250 * s) / 2, 200 * s, 250 * s);
+    if (SPEC.premium.includes(k)) { // the three top pays: a gold frame and a star
+      const lw = Math.max(2, w * 0.05), inset = lw / 2 + 1;
+      rrc(o, inset, inset, w - 2 * inset, h - 2 * inset, w * 0.18);
+      o.lineWidth = lw + 2; o.strokeStyle = 'rgba(70,40,0,.6)'; o.stroke();
+      const gr = o.createLinearGradient(0, 0, w, h); gr.addColorStop(0, '#FFF0A8'); gr.addColorStop(0.5, '#E8B02E'); gr.addColorStop(1, '#B87A14');
+      o.lineWidth = lw; o.strokeStyle = gr; o.stroke();
+      const sr = w * 0.11; star(o, w - inset - sr * 0.95, inset + sr * 0.95, sr);
+      o.fillStyle = '#FFD84A'; o.fill(); o.lineWidth = Math.max(1, w * 0.012); o.strokeStyle = '#6b4200'; o.stroke();
+    }
+    PRE[k] = oc;
+  }
+}
+// Square cells. The board takes what the cabinet leaves: side panels in landscape, the stacked
+// controls in portrait.
+function setBoard(cell) {
+  const w = cell * SPEC.cols, h = cell * SPEC.rows;
+  canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
+  canvas.width = Math.round(w * DPR); canvas.height = Math.round(h * DPR);
+  W = w; H = h; CW = cell; CH = cell;
+}
+// Height the cabinet needs: the lowest of its parts above the control bar, plus the bar itself.
+function cabinetHeight() {
+  const cab = $('#cabinet'), bar = cab.querySelector('.bar'), top = cab.getBoundingClientRect().top;
+  let bottom = 0;
+  for (const el of cab.children) if (el !== bar && el.offsetParent !== null) bottom = Math.max(bottom, el.getBoundingClientRect().bottom - top);
+  return bottom + parseFloat(getComputedStyle(cab).rowGap) + parseFloat(getComputedStyle(bar).marginTop) + bar.offsetHeight;
+}
+function resize() {
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const land = vw > vh && vw >= 560;
+  let maxW, maxH;
+  const meterW = 44; // the nuclear meter and its gap, beside the board
+  if (land) { const side = Math.min(220, Math.max(150, vw * 0.18)); maxW = vw - 2 * side - 80 - meterW; maxH = vh - (vh <= 560 ? 84 : 118); }
+  else { maxW = Math.min(vw - 24 - meterW, 620); maxH = Math.min(vh * 0.7, maxW * SPEC.rows / SPEC.cols); }
+  DPR = Math.min(2, window.devicePixelRatio || 1);
+  let cell = Math.max(30, Math.floor(Math.min(maxW / SPEC.cols, maxH / SPEC.rows)));
+  setBoard(cell);
+  // The whole cabinet, control bar included, must fit the window height (the lobby's phone window
+  // is short): shrink the board by whatever spills over.
+  const over = cabinetHeight() - vh;
+  if (over > 0) { cell = Math.max(30, Math.floor((cell * SPEC.rows - over) / SPEC.rows)); setBoard(cell); }
+  prerender();
+}
+
+let effects = [], shakeUntil = 0, activeWins = [], dimOthers = true;
+// Fallout heat: a stepped scale, yellow (x2), gold, coral, crimson, magenta, pink, then white-hot (x50 and
+// up), each step clearly different on the light base board and the dark bunker. It skips hazard orange,
+// which belongs to the Nukes themselves.
+const HEAT = [[2, '#FFE14D'], [3, '#FFB627'], [4, '#FF5A5F'], [6, '#E3245B'], [10, '#C21FD1'], [20, '#FF8FF0'], [50, '#FFFFFF']];
+function heat(v) { let i = 0; while (i < HEAT.length - 1 && v >= HEAT[i + 1][0]) i++; return { col: HEAT[i][1], step: i }; }
+const hexA = (hex, a) => `rgba(${parseInt(hex.slice(1, 3), 16)},${parseInt(hex.slice(3, 5), 16)},${parseInt(hex.slice(5, 7), 16)},${a})`;
+const spotTotals = (s) => { let sum = 0, top = 0, lit = 0; if (s) for (const col of s) for (const v of col) { sum += v; if (v > top) top = v; if (v) lit++; } return { sum, top, lit }; };
+function drawSpots(t) {
+  if (!viewSpots) return;
+  const { top } = spotTotals(viewSpots);
+  ctx.save(); ctx.globalAlpha = spotsAlpha;
+  for (let c = 0; c < SPEC.cols; c++) for (let r = 0; r < SPEC.rows; r++) {
+    const v = viewSpots[c][r]; if (!v) continue;
+    const { col, step } = heat(v);
+    const x = c * CW + 2, y = r * CH + 2, w = CW - 4, h = CH - 4;
+    if (step === HEAT.length - 1) { ctx.shadowColor = '#ff3b3b'; ctx.shadowBlur = 14; }
+    ctx.fillStyle = hexA(col, Math.min(0.92, 0.42 + 0.07 * step)); rr(x, y, w, h, 10); ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.lineWidth = 4; ctx.strokeStyle = col; ctx.stroke();
+    if (v === top && top > 2) { // the hottest square(s) on the board: a steady white ring
+      ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(255,255,255,.9)'; rr(x + 4, y + 4, w - 8, h - 8, 7); ctx.stroke();
+    }
+  }
+  ctx.restore();
+}
+function drawSpotLabels() {
+  if (!viewSpots) return;
+  const fs = Math.max(9, Math.round(CH * 0.16)); // small corner tags, so the symbols stay visible
+  ctx.save(); ctx.globalAlpha = spotsAlpha; ctx.font = `900 ${fs}px system-ui,sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  for (let c = 0; c < SPEC.cols; c++) for (let r = 0; r < SPEC.rows; r++) {
+    const v = viewSpots[c][r]; if (!v) continue;
+    const label = '×' + v, { col, step } = heat(v), bw = ctx.measureText(label).width + fs * 0.55, bh = fs * 1.25, bx = c * CW + 4, by = (r + 1) * CH - bh - 4;
+    ctx.fillStyle = step >= 4 ? 'rgba(150,20,45,.94)' : 'rgba(20,13,38,.86)'; rr(bx, by, bw, bh, bh / 2); ctx.fill();
+    ctx.fillStyle = step >= 4 ? '#FFFFFF' : col; ctx.fillText(label, bx + bw / 2, by + bh / 2 + 1);
+  }
+  ctx.restore();
+}
+// Winning clusters: one outline traced around each cluster's shape in that symbol's colours (striped
+// where it has several). The rest of the board dims only for a win above the bet.
+function drawWinHighlight() {
+  if (!activeWins.length) return;
+  const on = new Set(); for (const w of activeWins) for (const [c, r] of w.cells) on.add(c * 10 + r);
+  if (dimOthers) { ctx.fillStyle = 'rgba(14,10,32,.55)'; for (let c = 0; c < SPEC.cols; c++) for (let r = 0; r < SPEC.rows; r++) if (!on.has(c * 10 + r)) ctx.fillRect(c * CW, r * CH, CW, CH); }
+  const lw = Math.max(4, Math.round(CW * 0.09));
+  for (const w of activeWins) {
+    const mine = new Set(w.cells.map(([c, r]) => c * 10 + r)), path = new Path2D();
+    for (const [c, r] of w.cells) {
+      const x = c * CW, y = r * CH;
+      if (!mine.has(c * 10 + r - 1)) { path.moveTo(x, y); path.lineTo(x + CW, y); }
+      if (!mine.has(c * 10 + r + 1)) { path.moveTo(x, y + CH); path.lineTo(x + CW, y + CH); }
+      if (!mine.has((c - 1) * 10 + r)) { path.moveTo(x, y); path.lineTo(x, y + CH); }
+      if (!mine.has((c + 1) * 10 + r)) { path.moveTo(x + CW, y); path.lineTo(x + CW, y + CH); }
+    }
+    const cols = OUTLINE[w.s] || ['#FFD23F'], dash = Math.max(8, Math.round(CW * 0.22));
+    ctx.save(); ctx.lineCap = 'square';
+    ctx.lineWidth = lw + 4; ctx.strokeStyle = '#140d26'; ctx.setLineDash([]); ctx.stroke(path);
+    ctx.lineWidth = lw;
+    cols.forEach((col, i) => {
+      ctx.strokeStyle = col;
+      ctx.setLineDash(i === 0 ? [] : [dash, dash * (cols.length - 1)]); ctx.lineDashOffset = -i * dash;
+      ctx.stroke(path);
+    });
+    ctx.restore();
+  }
+}
+// Win amounts that rise from each cluster as it pops.
+const floaters = [];
+// A multiplied cluster plays out in order: its bet win and the fallout multiplier side by side,
+// then the two slide together and become the payout. Unmultiplied wins just show the payout.
+function outlinedText(text, x, y, fs, fill) {
+  ctx.font = `900 ${fs}px system-ui,sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.lineJoin = 'round'; ctx.lineWidth = Math.max(3, fs * 0.18); ctx.strokeStyle = '#2a1f3a'; ctx.strokeText(text, x, y);
+  ctx.fillStyle = fill; ctx.fillText(text, x, y);
+}
+function drawFloaters(t) {
+  const SPLIT = 0.3, MERGE = 0.14; // share of the floater's life spent showing "win ×mult", then merging
+  for (let i = floaters.length - 1; i >= 0; i--) {
+    const f = floaters[i], k = (t - f.t0) / f.dur;
+    if (k >= 1) { floaters.splice(i, 1); continue; }
+    if (k < 0) continue;
+    const fs = Math.max(14, Math.round(CH * 0.42));
+    if (f.label) { // a blast's strength, rising from the Nuke
+      ctx.globalAlpha = k < 0.7 ? 1 : (1 - k) / 0.3;
+      outlinedText(f.label, f.x, f.y - (reduceMotion ? 0 : CH * 0.5 * ease.outCubic(k)), Math.round(fs * 0.7), f.col);
+      ctx.globalAlpha = 1; continue;
+    }
+    if (f.mult > 1 && k < SPLIT + MERGE) {
+      const a = fmt(f.base), b = `×${f.mult}`;
+      ctx.font = `900 ${fs}px system-ui,sans-serif`;
+      const wa = ctx.measureText(a).width, wb = ctx.measureText(b).width, gap = fs * 0.4, total = wa + gap + wb;
+      const xa = f.x - total / 2 + wa / 2, xb = f.x + total / 2 - wb / 2;
+      const m = k < SPLIT ? 0 : ease.inCubic((k - SPLIT) / MERGE);
+      ctx.globalAlpha = 1 - 0.5 * m;
+      outlinedText(a, xa + (f.x - xa) * m, f.y, fs, '#fff');
+      outlinedText(b, xb + (f.x - xb) * m, f.y, fs, '#ff9b5a');
+    } else {
+      const start = f.mult > 1 ? SPLIT + MERGE : 0, k2 = (k - start) / (1 - start);
+      const pop = f.mult > 1 && k2 < 0.15 ? 1.35 - 0.35 * (k2 / 0.15) : 1;
+      ctx.globalAlpha = k2 < 0.7 ? 1 : (1 - k2) / 0.3;
+      const rise = reduceMotion ? 0 : CH * 0.8 * ease.outCubic(k2);
+      outlinedText(fmt(f.pay), f.x, f.y - rise, Math.round(fs * (f.mult > 1 ? 1.2 : 1) * pop), f.mult > 1 ? '#FFD23F' : '#fff');
+    }
+    ctx.globalAlpha = 1;
+  }
+}
+function render(t) {
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.clearRect(0, 0, W, H);
+  ctx.save(); rr(0, 0, W, H, 18); ctx.clip();
+  if (!reduceMotion && t < shakeUntil) { const a = 10 * (shakeUntil - t) / 450; ctx.translate(Math.sin(t / 17) * a, Math.cos(t / 23) * a); }
+  drawSpots(t);
+  for (const ac of anticCols) { ctx.fillStyle = 'rgba(255,190,0,.34)'; rr(ac * CW + 2, 2, CW - 4, H - 4, 12); ctx.fill(); }
+  for (const sp of sprites) {
+    const x = (sp.c + (sp.dx || 0)) * CW, y = (sp.row + (sp.dy || 0)) * CH;
+    if (y > H || y < -CH) continue;
+    if (sp.hl > 0) {
+      ctx.fillStyle = `rgba(255,255,255,${0.6 * sp.hl})`; rr(x + 3, y + 3, CW - 6, CH - 6, 12); ctx.fill();
+      ctx.strokeStyle = `rgba(232,48,111,${sp.hl})`; ctx.lineWidth = 3; ctx.stroke();
+    }
+    const img = PRE[sp.s]; if (!img) continue;
+    const sc = sp.scale;
+    ctx.globalAlpha = sp.alpha;
+    ctx.drawImage(img, x + CW * (1 - sc) / 2, y + CH * (1 - sc) / 2, CW * sc, CH * sc);
+    ctx.globalAlpha = 1;
+  }
+  drawSpotLabels();
+  drawWinHighlight();
+  // Explosions: a flash ring and a mushroom cloud rising from each Nuke (a fading flash only with
+  // reduced motion). A Tsar Bomba blast is wider; a Doomsday sends a green wave across the board.
+  for (let i = effects.length - 1; i >= 0; i--) {
+    const e = effects[i], k = (t - e.t0) / e.dur;
+    if (k >= 1) { effects.splice(i, 1); continue; }
+    if (k < 0) continue;
+    const doom = e.kind === 'doom', big = e.kind === 'tsar' ? 2.1 : e.kind === 'mini' ? 0.55 : doom ? 1.3 : 1, g = reduceMotion ? 0.4 : ease.outCubic(k);
+    const r = doom ? Math.max(W, H) * (0.2 + 1.1 * g) : Math.max(CW, CH) * (0.5 + 2.4 * g) * big;
+    ctx.globalAlpha = 1 - k;
+    ctx.fillStyle = doom ? hexA(DOOM_GREEN, 0.32) : 'rgba(255,190,110,0.45)'; ctx.beginPath(); ctx.arc(e.x, e.y, r, 0, Math.PI * 2); ctx.fill();
+    if (!reduceMotion) { ctx.lineWidth = (10 * (1 - k) + 2) * big; ctx.strokeStyle = doom ? DOOM_GREEN : '#FF6A13'; ctx.stroke(); }
+    ctx.fillStyle = `rgba(255,250,220,${0.9 * (1 - k)})`; ctx.beginPath(); ctx.arc(e.x, e.y, r * 0.35 * (1 - 0.5 * k), 0, Math.PI * 2); ctx.fill();
+    const m = PRE.mush;
+    if (m && !reduceMotion) { const s = (1.1 + 2.1 * g) * big; ctx.drawImage(m, e.x - CW * s / 2, e.y - CH * s * 0.85, CW * s, CH * s); }
+    ctx.globalAlpha = 1;
+  }
+  drawFloaters(t);
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i]; p.x += p.vx; p.y += p.vy; p.vy += 0.18; p.life -= 1; p.rot += p.vr;
+    if (p.life <= 0 || p.y > H + 20) { particles.splice(i, 1); continue; }
+    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.fillStyle = p.col; ctx.fillRect(-p.sz / 2, -p.sz / 4, p.sz, p.sz / 2); ctx.restore();
+  }
+  ctx.restore();
+  requestAnimationFrame(render);
+}
+function confetti(n) {
+  if (reduceMotion) return;
+  const cols = ['#FF5DA2', '#FFD23F', '#4DB6FF', '#7B2FF7', '#FF7A59', '#2F9E44'];
+  for (let i = 0; i < n; i++) particles.push({ x: W / 2 + (CryptoRNG.int(200) - 100), y: H * 0.45, vx: (CryptoRNG.int(1000) / 1000 - 0.5) * 9, vy: -3 - CryptoRNG.int(1000) / 1000 * 7, sz: 7 + CryptoRNG.int(6), col: cols[CryptoRNG.int(cols.length)], life: 120, rot: 0, vr: (CryptoRNG.int(100) - 50) / 300 });
+}
+
+// ===== Animation helpers =====
+// PACE stretches every animation and pause; raise it to slow the whole game down. Reduced motion keeps
+// the same timings (it never speeds play up) and swaps movement for fades.
+const PACE = 1.6;
+const SPEED = PACE;
+const ease = { outCubic: (k) => 1 - Math.pow(1 - k, 3), inCubic: (k) => k * k * k, outBack: (k) => { const c1 = 1.4, c3 = c1 + 1; return 1 + c3 * Math.pow(k - 1, 3) + c1 * Math.pow(k - 1, 2); } };
+const wait = (ms) => new Promise((r) => setTimeout(r, ms * SPEED));
+// Animation frames drive tweens; a slow timer backs them up so play never stalls when frames pause
+// (a hidden tab or panel).
+function tween(dur, fn) {
+  dur *= SPEED;
+  return new Promise((res) => {
+    const s = performance.now(); let done = false;
+    const tick = () => { const k = Math.min(1, (performance.now() - s) / dur); fn(k); if (k >= 1) { done = true; res(); } };
+    const frame = () => { if (done) return; tick(); if (!done) requestAnimationFrame(frame); };
+    const timer = () => { if (done) return; tick(); if (!done) setTimeout(timer, 120); };
+    requestAnimationFrame(frame); setTimeout(timer, 120);
+  });
+}
+const mkSprite = (c, row, cell) => ({ c, row, s: cell.s, scale: 1, alpha: 1, hl: 0 });
+// Column stagger in the base game: spread out so a losing spin's last column lands just inside the
+// minimum game cycle, instead of the board sitting still while the cycle runs out. Free spins have no
+// minimum cycle, so their columns follow each other quickly.
+const STAGGER = Math.max(100, (MARKET.minCycleMs / SPEED - 110 - 320 - 140) / (SPEC.cols - 1)), FREE_STAGGER = 100;
+
+async function animateDrop(grid, mode, spec) {
+  // The old symbols fall away (fade with reduced motion) while the new columns drop in behind them.
+  const old = sprites.map((sp) => ({ sp, r0: sp.row, a0: sp.alpha })), leaving = new Set(sprites);
+  const out = tween(260, (k) => { for (const o of old) { if (reduceMotion) o.sp.alpha = o.a0 * (1 - k); else o.sp.row = o.r0 + ease.inCubic(k) * (SPEC.rows + 1.2); } })
+    .then(() => { sprites = sprites.filter((sp) => !leaving.has(sp)); });
+  await wait(110);
+  // No slow-motion columns: free spins come from the nuclear meter, never from a count of Nukes on one board.
+  const oneShort = [];
+  let seen = 0; const drops = [];
+  for (let c = 0; c < SPEC.cols; c++) {
+    const antic = c > 0 && oneShort.includes(seen);
+    if (c > 0) await wait(antic ? 240 : mode === 'base' ? STAGGER : FREE_STAGGER);
+    if (antic) { anticCols.add(c); SFX.tease(); }
+    const col = grid[c].map((cell, r) => Object.assign(mkSprite(c, reduceMotion ? r : r - SPEC.rows - 0.3, cell), { target: r, alpha: reduceMotion ? 0 : 1 }));
+    sprites.push(...col);
+    const colN = grid[c].filter((x) => x.s === SPEC.scatter).length;
+    const dur = antic ? 1150 : 320, curve = antic ? ease.outCubic : ease.outBack;
+    drops.push(tween(dur, (k) => { if (reduceMotion) { for (const sp of col) sp.alpha = k; return; } const e = curve(k); for (const sp of col) sp.row = sp.target - (1 - e) * (SPEC.rows + 0.3); })
+      .then(() => { anticCols.delete(c); SFX.thud(); if (colN) SFX.clank(); }));
+    seen += colN;
+  }
+  await Promise.all([...drops, out]);
+  anticCols.clear();
+}
+// Pop the given cells and drop new symbols in: shared by winning clusters and exploding Nukes.
+async function popAndRefill(rm, nextGrid, sound) {
+  const popping = sprites.filter((sp) => rm.has(sp.c * 10 + Math.round(sp.row)));
+  if (sound) sound();
+  await tween(200, (k) => { for (const sp of popping) { if (!reduceMotion) sp.scale = 1 - k * 0.9; sp.alpha = 1 - k; } });
+  sprites = sprites.filter((sp) => !popping.includes(sp));
+  const moves = [];
+  for (let c = 0; c < SPEC.cols; c++) {
+    const col = sprites.filter((sp) => sp.c === c).sort((a, b) => a.row - b.row), k = SPEC.rows - col.length;
+    col.forEach((sp, i) => moves.push({ sp, from: sp.row, to: k + i }));
+    for (let i = 0; i < k; i++) { const sp = mkSprite(c, reduceMotion ? i : i - k - 0.2, nextGrid[c][i]); if (reduceMotion) sp.alpha = 0; sprites.push(sp); moves.push({ sp, from: sp.row, to: i, fresh: true }); }
+  }
+  await tween(320, (k) => { const e = ease.outCubic(k); for (const mv of moves) { if (reduceMotion) { mv.sp.row = mv.to; if (mv.fresh) mv.sp.alpha = k; } else mv.sp.row = mv.from + (mv.to - mv.from) * e; } });
+  for (const mv of moves) { const cell = nextGrid[mv.sp.c][mv.to]; mv.sp.row = mv.to; mv.sp.s = cell.s; mv.sp.hl = 0; mv.sp.alpha = 1; }
+  SFX.thud();
+}
+async function animateTumble(step, nextGrid) {
+  const rm = new Set(step.removed.map(([c, r]) => c * 10 + r));
+  for (const sp of sprites) { sp.hl = 0; sp.win = rm.has(sp.c * 10 + Math.round(sp.row)); }
+  activeWins = step.wins; dimOthers = !quiet;
+  const now = performance.now();
+  const centre = (w) => [w.cells.reduce((a, [c]) => a + c, 0) / w.cells.length, w.cells.reduce((a, [, r]) => a + r, 0) / w.cells.length];
+  await wait(quiet ? 380 : 600);
+  // Each cluster's pay rises from its middle as it pops (with its fallout multiplier, if any).
+  const t1 = performance.now();
+  for (const w of step.wins) {
+    const [cx, cy] = centre(w);
+    floaters.push({ x: Math.min(W - 1.5 * CW, Math.max(1.5 * CW, (cx + 0.5) * CW)), y: (cy + 0.5) * CH, base: w.base, mult: w.mult, pay: w.pay, t0: t1, dur: (w.mult > 1 ? 1300 : 800) * SPEED });
+  }
+  activeWins = [];
+  for (const sp of sprites) sp.win = false;
+  await popAndRefill(rm, nextGrid, quiet ? null : SFX.pop);
+}
+// Nukes explode: a flash and mushroom cloud each, the squares they hit light up with their fallout, then
+// the Nukes leave and new symbols tumble in. A Doomsday doubles every lit square in a wave rolling out
+// from where it landed.
+async function animateBlast(step, nextGrid) {
+  const nk = new Set(step.nukes.map(([c, r]) => c * 10 + r));
+  for (const sp of sprites) sp.hl = nk.has(sp.c * 10 + Math.round(sp.row)) ? 1 : 0;
+  await wait(180);
+  if (step.nukes.some((n) => n[2] === 'tsar')) SA.play('tsar'); else SFX.boom();
+  if (step.doom) SFX.doom();
+  const now = performance.now(); shakeUntil = now + (step.doom ? 900 : 450);
+  step.nukes.forEach(([c, r, s, y], i) => {
+    effects.push({ x: (c + 0.5) * CW, y: (r + 0.5) * CH, t0: now + i * 90 * SPEED, dur: (s === 'mini' ? 950 : s === 'nuke' ? 1250 : 1600) * SPEED, kind: s });
+    if (y) floaters.push({ label: `+${y}`, col: heat(y + 1).col, x: (c + 0.5) * CW, y: (r + 0.5) * CH, t0: now + 200 * SPEED, dur: 1000 * SPEED });
+  });
+  if (step.doom) { const st = $('.stage'); st.classList.add('doom'); st.classList.remove('flash'); void st.offsetWidth; st.classList.add('flash'); setTimeout(() => st.classList.remove('flash', 'doom'), 1000); }
+  await wait(step.doom ? 450 : 200);
+  if (step.doom) {
+    const [dc, dr] = step.nukes.find((n) => n[2] === 'doom');
+    const vs = viewSpots ? viewSpots.map((col) => col.slice()) : step.spots.map((col) => col.map(() => 0));
+    viewSpots = vs;
+    let maxd = 0;
+    for (let c = 0; c < SPEC.cols; c++) for (let r = 0; r < SPEC.rows; r++) if (step.spots[c][r] !== vs[c][r]) maxd = Math.max(maxd, Math.abs(c - dc) + Math.abs(r - dr));
+    for (let d = 0; d <= maxd; d++) {
+      let any = 0; const at = performance.now();
+      for (let c = 0; c < SPEC.cols; c++) for (let r = 0; r < SPEC.rows; r++) {
+        if (Math.abs(c - dc) + Math.abs(r - dr) !== d || step.spots[c][r] === vs[c][r]) continue;
+        vs[c][r] = step.spots[c][r]; spotFlash.set(c * 10 + r, at); any = Math.max(any, vs[c][r]);
+      }
+      if (any) { SA.play('fallout', any); await wait(60); }
+    }
+    viewSpots = step.spots;
+    await wait(420);
+  } else {
+    viewSpots = step.spots;
+    const flashAt = performance.now(); let hot = 0;
+    for (const [c, r] of step.cells) { spotFlash.set(c * 10 + r, flashAt); hot = Math.max(hot, step.spots[c][r]); }
+    SA.play('fallout', hot);
+    await wait(300);
+  }
+  await popAndRefill(nk, nextGrid, null);
+}
+// A base spin's fallout fades out when the spin ends (it lasts for that spin only).
+async function clearFallout() {
+  if (!viewSpots) return;
+  await tween(380, (k) => { spotsAlpha = 1 - k; });
+  viewSpots = null; spotsAlpha = 1; spotFlash.clear();
+}
+
+let ovTimer = 0;
+function overlay(big, sub, ms, note) {
+  $('#ovBig').textContent = big; $('#ovSub').textContent = sub || ''; $('#ovSub').style.display = sub ? '' : 'none';
+  $('#ovNote').textContent = note || ''; $('#ovNote').hidden = !note;
+  $('#ov').classList.add('show'); clearTimeout(ovTimer);
+  return new Promise((res) => { ovTimer = setTimeout(() => { $('#ov').classList.remove('show'); res(); }, ms * SPEED); });
+}
+// Win tiers, picked from win / stake (the audio team's table): small > 1x, nice >= 5x, big >= 15x,
+// mega >= 50x, epic >= 250x, max = the max-win cap. From big up a card shows the amount counting up,
+// as long as its sound runs. Never called at or below the stake.
+const CARDS = { big: ['BIG WIN', 1.8], mega: ['MEGA WIN', 2.8], epic: ['MELTDOWN WIN', 3.8], max: ['MAX WIN', 4.6] };
+const tierFor = (x, capped) => capped ? 'max' : x >= 250 ? 'epic' : x >= 50 ? 'mega' : x >= 15 ? 'big' : x >= 5 ? 'nice' : x > 1 ? 'small' : null;
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+// opts.title: a card even below the big tier (the feature summary); opts.cue: a cue in place of win(tier).
+async function celebrate(amount, x, opts = {}) {
+  const tier = tierFor(x, opts.capped); if (!tier) return;
+  if (opts.cue) SA.play(opts.cue); else SA.win(tier);
+  const card = CARDS[tier];
+  if (!card && !opts.title) { if (tier === 'nice') confetti(25); return; }
+  const [name, secs] = card || ['', 1.8];
+  confetti({ big: 80, mega: 120, epic: 170, max: 220 }[tier] || 30);
+  $('#ovBig').textContent = opts.title || name;
+  $('#ovNote').textContent = opts.title && name ? name : ''; $('#ovNote').hidden = !(opts.title && name);
+  $('#ovSub').style.display = ''; $('#ovSub').textContent = fmt(0);
+  clearTimeout(ovTimer); $('#ov').classList.add('show');
+  const stop = SA.rollup(secs * 0.55);
+  await tween(secs * 550 / SPEED, (k) => { $('#ovSub').textContent = fmt(amount * ease.outCubic(k)); });
+  stop(); $('#ovSub').textContent = fmt(amount);
+  await sleep(secs * 450);
+  $('#ov').classList.remove('show');
+}
+
+// ===== Sound: the art and audio team's module (audio/summit-audio.js, loaded before this script) =====
+// It keeps v1's cue names, adds win tiers, music and its own limiter. A silent stand-in keeps the game
+// playable when the file is missing (a single-file copy of this page, for one).
+const SA = window.SummitAudio || (() => {
+  const nop = () => {};
+  return { init: nop, play: nop, win: nop, rollup: () => nop, music: nop, intensity: nop, volume: () => 0.6, muted: () => false, SFX: new Proxy({}, { get: () => nop }) };
+})();
+const SFX = SA.SFX;
+const audioInit = () => SA.init();
+
+// ===== Game state =====
+const G = {
+  balance: MARKET.startCredits, start: MARKET.startCredits, betIdx: Math.min(1, LADDER.length - 1), modeKey: 'summit', mode: 'base',
+  fsLeft: 0, fsPlayed: 0, fsTotal: 0, featureBet: 0, roundWin: 0, lastWin: 0, busy: false, state: 'idle', spinNo: 0,
+  spots: null, boughtFor: 0, protocol: false, gaugeShown: null,
+  // Nuclear meters (0-100), kept per mode and per bet for this session.
+  gauges: Object.fromEntries(Object.keys(SPECS).map((k) => [k, LADDER.map(() => 0)])),
+};
+const S = () => SPECS[G.modeKey], SV = () => SERVERS[G.modeKey];
+const gaugeNow = () => G.gauges[G.modeKey][G.betIdx];
+// Game Lobby: inside the lobby this game plays from the lobby's shared wallet (nothing changes when the game is opened on its own)
+const LOBBY = (() => { try { return window.parent !== window && window.parent.LobbyWallet || null; } catch (e) { return null; } })();
+if (LOBBY) G.balance = G.start = LOBBY.attach(() => G.balance);
+const sessionStart = Date.now();
+const LOG = [];
+const setState = (s) => { G.state = s; $('#state').textContent = '· state: ' + s; };
+const msg = (t) => { $('#msg').textContent = t; };
+
+// The nuclear meter beside the board (0 to the mode's meterMax).
+function renderMeter(m) {
+  const max = S().meterMax, pct = Math.max(0, Math.min(100, m / max * 100));
+  $('#nmCover').style.height = `${100 - pct}%`;
+  $('#nmeter').setAttribute('aria-valuenow', String(Math.round(pct)));
+  $('#nmeter').classList.toggle('hot', pct >= 80);
+}
+// Move the meter on screen to `to` (it already holds that value in G.gauges, or is about to).
+async function fillGauge(to) {
+  const from = G.gaugeShown ?? gaugeNow();
+  if (to > from) SA.play('tick', 0.3);
+  G.gaugeShown = to; renderMeter(to);
+  await wait(reduceMotion ? 0 : 300);
+}
+function updateUI() {
+  const spec = S(), bet = LADDER[G.betIdx], free = G.mode === 'free';
+  $('#bal').textContent = fmt(G.balance);
+  if (!winCounting) { $('#win').textContent = fmt(G.lastWin); winShown = G.lastWin; }
+  const net = G.balance - G.start; $('#net').textContent = (net >= 0 ? '+' : '−') + fmt(Math.abs(net));
+  $('#bet').textContent = fmt(free ? G.featureBet : bet);
+  $('#betDown').disabled = G.busy || free || G.betIdx === 0;
+  $('#betUp').disabled = G.busy || free || G.betIdx === LADDER.length - 1;
+  // Free spins play themselves, so the button only shows how many are left during the feature.
+  const sb = $('#spin');
+  sb.disabled = G.busy || free; sb.classList.toggle('free', free);
+  sb.setAttribute('aria-label', free ? `Free spins playing, ${G.fsLeft} left` : 'Spin');
+  sb.querySelector('svg').style.visibility = free ? 'hidden' : '';
+  $('#spinCount').hidden = !free; $('#spinCount').textContent = G.fsLeft;
+  $('#spinHint').textContent = free ? 'Free spins' : 'Spin';
+  document.body.classList.toggle('fs', free); // bunker background during free spins
+  const mb = $('#modeBadge'); mb.textContent = spec.name; mb.disabled = G.busy || free;
+  // Feature box: free spins only. The nuclear meter shows in the base game (dimmed during free spins).
+  $('#feature').hidden = !free; $('#feature').classList.toggle('on', free);
+  if (free) {
+    const tot = spotTotals(G.spots);
+    $('#fbV1').textContent = G.fsLeft;
+    $('#fbK2').textContent = 'Feature win'; $('#fbV2').textContent = fmt(G.fsTotal);
+    $('#fbK3').textContent = 'Hottest'; $('#fbV3').textContent = tot.top ? `×${tot.top}` : '—';
+  }
+  for (const id of ['#fbK2', '#fbV2', '#fbK3', '#fbV3']) $(id).hidden = !free;
+  $('#fbTag').hidden = !(free && G.protocol);
+  renderMeter(G.gaugeShown ?? gaugeNow());
+  const bb = $('#buy'), cost = spec.buyPrice;
+  bb.hidden = !MARKET.allowBuy;
+  $('#buyCost').textContent = fmt(cost);
+  bb.disabled = G.busy || free || G.balance + 1e-9 < cost;
+  $('#reset').disabled = G.busy || free;
+  for (const r of document.querySelectorAll('#modes input')) r.disabled = G.busy || free;
+  SA.intensity(free ? Math.min(1, 0.3 + 0.7 * G.fsPlayed / Math.max(1, G.fsPlayed + G.fsLeft)) : (G.gaugeShown ?? gaugeNow()) / spec.meterMax);
+}
+function tick() { const s = Math.floor((Date.now() - sessionStart) / 1000); $('#time').textContent = Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+// Resolves when the last floating win amount has finished (timed, so it also works when
+// animation frames pause).
+function floatersDone() {
+  const end = floaters.reduce((m, f) => Math.max(m, f.t0 + f.dur), 0);
+  const left = end - performance.now();
+  return new Promise((r) => setTimeout(r, Math.max(0, left)));
+}
+// The WIN display rolls up to each new total instead of jumping.
+let winCounting = 0, winShown = 0;
+// ticks: count-up sound, only for a win above the stake.
+function countWin(to, ticks) {
+  const from = winShown, id = ++winCounting, stop = ticks ? SA.rollup(0.45 * SPEED) : () => {};
+  tween(450, (k) => { if (id !== winCounting) return; winShown = from + (to - from) * ease.outCubic(k); $('#win').textContent = fmt(winShown); })
+    .then(() => { stop(); if (id === winCounting) { winCounting = 0; winShown = to; $('#win').textContent = fmt(to); } });
+}
+const nukesWord = (n) => `${n} Nuke${n === 1 ? '' : 's'}`;
+// One paid base spin or one free spin. replay: a logged spin to show again (no credits move).
+async function play(replay) {
+  if (G.busy) return;
+  audioInit();
+  const modeKey = replay ? replay.modeKey : G.modeKey, spec = SPECS[modeKey], server = SERVERS[modeKey];
+  const free = replay ? replay.mode === 'free' : G.mode === 'free';
+  const bet = replay ? replay.bet : free ? G.featureBet : LADDER[G.betIdx];
+  if (!replay && !free && G.balance + 1e-9 < bet) { msg('Not enough credits. Lower the bet.'); return; }
+  G.busy = true; const t0 = performance.now(); SFX.click();
+  if (!replay) {
+    if (free) { G.fsLeft--; G.fsPlayed++; }
+    else { G.balance = round2(G.balance - bet); G.lastWin = 0; G.roundWin = 0; }
+  }
+  if (!free) { viewSpots = null; spotsAlpha = 1; spotFlash.clear(); } // every base spin starts on a clear board
+  updateUI(); setState('spinning');
+  msg(replay ? `Replay #${replay.n}` : '');
+
+  // Outcome comes from the mock server first; everything after this only presents it.
+  const mode = free ? 'free' : 'base';
+  let o;
+  if (replay) {
+    viewSpots = replay.spots ? replay.spots.map((col) => col.slice()) : null;
+    o = server.spin({ bet, mode, force: replay.force, spots: replay.spots, fsNo: replay.fsNo, protocol: replay.protocol, gauge: replay.gauge, rng: ReplayRNG(replay.tape) });
+  } else {
+    let force = DEV ? ($('#force').value || null) : null;
+    if (DEV) $('#force').value = '';
+    if (force === 'gauge' || force === 'protocol') { const n = force === 'gauge' ? 'fs1' : 'fs4'; force = free ? null : n; if (!free) { G.gauges[modeKey][G.betIdx] = spec.meterMax - 1; updateUI(); } }
+    if (force && ((/^fs/.test(force) && free) || (['n2', 'mini', 'tsar', 'doom'].includes(force) && !free))) force = null;
+    const tape = [], spots = free ? G.spots : null, fsNo = free ? G.fsPlayed : 0, protocol = free && G.protocol, gauge = free ? 0 : gaugeNow();
+    o = server.spin({ bet, mode, force, spots, fsNo, protocol, gauge, rng: TapeRNG(CryptoRNG, tape) });
+    LOG.unshift({ n: ++G.spinNo, modeKey, mode, bet, force, spots, fsNo, protocol, gauge, tape, win: o.totalWin, cost: 0, nukes: o.nukes, tumbles: o.steps.filter((s) => s.kind === 'win').length });
+    if (LOG.length > 40) LOG.pop(); renderLog();
+  }
+
+  // No celebration for a return at or below the bet, nor for single spins inside a bought feature
+  // (that feature is judged against its price when it ends).
+  const bought = free && G.boughtFor > 0 && !replay;
+  const gaugeBefore = !free && !replay ? (G.gaugeShown ?? gaugeNow()) : 0;
+  quiet = bought || o.totalWin <= bet;
+  setState('stopping'); SA.play('spinStart');
+  await animateDrop(o.steps[0].grid, mode, spec);
+  setState('evaluating');
+  for (let i = 0; i < o.steps.length - 1; i++) {
+    setState('presenting');
+    const st = o.steps[i], next = o.steps[i + 1].grid;
+    if (st.kind === 'win') await animateTumble(st, next);
+    else {
+      await animateBlast(st, next);
+      if (free && !replay) { G.spots = st.spots; updateUI(); }
+    }
+  }
+
+  // The spin's win is shown only once every pop and floating amount has finished.
+  await floatersDone();
+  if (!replay) {
+    let win = o.totalWin;
+    const cap = spec.maxWinX * bet;
+    let capped = false;
+    if (free) { if (G.roundWin + win >= cap) { win = round2(cap - G.roundWin); capped = true; } G.roundWin = round2(G.roundWin + win); G.fsTotal = round2(G.fsTotal + win); G.spots = o.spotsAfter; }
+    else { if (win >= cap) { win = cap; capped = true; } G.roundWin = win; }
+    G.balance = round2(G.balance + win);
+    G.lastWin = free ? G.fsTotal : win;
+    if (G.lastWin !== winShown) countWin(G.lastWin, win > bet && !bought); // the WIN display rolls up to the new total
+    updateUI();
+    setState('presenting');
+    if (win > bet && !bought) await celebrate(win, win / bet, { capped: capped && !free }); // a capped feature shows MAX WIN in its summary
+    // Neutral copy for a return at or below the bet.
+    // Neutral copy for a return at or below the bet; nothing during free spins.
+    msg(''); // the WIN box in the bar shows the amount; the line under the board is for notices only
+    if (capped) { msg(`Max win ${fmt(cap)} reached`); G.fsLeft = 0; if (!free) await clearFallout(); }
+    else if (!free && o.fsAwarded) {
+      // Free spins: from 3+ Nukes in this spin, or from a full nuclear meter.
+      setState('feature');
+      if (o.gaugeFull) await fillGauge(spec.meterMax);
+      await triggerIntro();
+      G.gauges[modeKey][G.betIdx] = o.gaugeAfter; G.gaugeShown = null;
+      startFeature(bet, o.fsAwarded, 0, o.protocol, o.spotsAfter);
+      await tapToStart(o.protocol ? 'DOOMSDAY PROTOCOL' : `${o.fsAwarded} FREE SPINS`);
+    } else if (free && o.fsAwarded) {
+      G.fsLeft += o.fsAwarded; updateUI(); SA.play('retrigger');
+      await overlay(`+${o.fsAwarded} FREE SPINS`, '', 1600);
+    } else if (!free) {
+      // No feature: the nuclear meter moves (up with Nukes, down without), and the spin's fallout clears.
+      G.gauges[modeKey][G.betIdx] = o.gaugeAfter;
+      if (o.gaugeAfter !== gaugeBefore) await fillGauge(o.gaugeAfter);
+      G.gaugeShown = null; updateUI();
+      await clearFallout();
+    }
+    if (free && G.fsLeft <= 0) await endFeature(bet);
+  } else {
+    viewSpots = G.mode === 'free' ? G.spots : null;
+    msg(`Replay #${replay.n}: win ${fmt(o.totalWin)}`);
+  }
+  // Minimum game cycle (market rule) applies to paid base spins; free spins are part of the
+  // feature that triggered them, so they run straight on.
+  const left = (free ? 0 : MARKET.minCycleMs) - (performance.now() - t0);
+  if (left > 0) await new Promise((r) => setTimeout(r, left));
+  setState('idle'); G.busy = false; updateUI();
+  if (!replay) autoFreeSpin();
+}
+// The end of free spins: celebrated only when the feature paid more than the bet (or, for bought
+// launch codes, more than their price); otherwise a neutral summary.
+async function endFeature(bet) {
+  setState('feature'); updateUI();
+  const total = G.fsTotal, cost = G.boughtFor, stake = cost || bet;
+  if (total > stake) await celebrate(total, total / stake, { title: 'FEATURE WIN', cue: 'featureEnd', capped: G.roundWin >= S().maxWinX * bet - 1e-9 });
+  else { SA.play('featureEndQuiet'); await overlay('FREE SPINS OVER', `Paid ${fmt(total)}`, 1800, cost ? `Launch codes cost ${fmt(cost)}` : ''); }
+  G.lastWin = total; G.mode = 'base'; G.fsLeft = 0; G.spots = null; G.boughtFor = 0; G.protocol = false;
+  updateUI(); SA.music('base');
+  await clearFallout();
+}
+// Free spins wait for the player: the intro card stays up until they tap the board, press Spin, or hit
+// Space or Enter. Then they play automatically.
+function tapToStart(big, note) {
+  const ov = $('#ov'), sb = $('#spin');
+  $('#ovBig').textContent = big; $('#ovSub').style.display = '';
+  $('#ovSub').textContent = matchMedia('(pointer: coarse)').matches ? 'Tap to start' : 'Click to start';
+  $('#ovNote').textContent = note || ''; $('#ovNote').hidden = !note;
+  clearTimeout(ovTimer); ov.classList.add('show', 'tap'); sb.disabled = false;
+  return new Promise((res) => {
+    const go = (e) => {
+      if (e.type === 'keydown') { if ((e.code !== 'Space' && e.key !== 'Enter') || !$('#settings').hidden) return; e.preventDefault(); }
+      ov.removeEventListener('click', go); sb.removeEventListener('click', go); document.removeEventListener('keydown', go);
+      ov.classList.remove('show', 'tap'); SFX.click(); updateUI(); res();
+    };
+    ov.addEventListener('click', go); sb.addEventListener('click', go); document.addEventListener('keydown', go);
+  });
+}
+// Free spins play automatically, back to back, until the feature ends.
+function autoFreeSpin() {
+  if (G.mode === 'free' && G.fsLeft > 0) setTimeout(() => { if (!G.busy && G.mode === 'free' && G.fsLeft > 0) play(); }, 350 * SPEED);
+}
+// Bonus trigger (3+ Nukes, a full meter or launch codes): red alert and one siren, then a single blast wave
+// throws every symbol off the board. The fallout already on the board stays lit and goes into the bunker.
+async function triggerIntro() {
+  const st = $('#stage');
+  SFX.airRaid(); st.classList.add('alert');
+  await overlay('RED ALERT', 'Launch detected', 1300);
+  st.classList.remove('alert');
+  st.classList.remove('flash'); void st.offsetWidth; st.classList.add('flash');
+  SFX.boom(); shakeUntil = performance.now() + 700;
+  const cx = (SPEC.cols - 1) / 2, cy = (SPEC.rows - 1) / 2, flying = sprites.slice();
+  await tween(650, (k) => {
+    const e = ease.inCubic(k);
+    for (const sp of flying) {
+      sp.alpha = 1 - k;
+      if (reduceMotion) continue;
+      const dx = sp.c - cx, dy = sp.row - cy, d = Math.hypot(dx, dy) || 1;
+      sp.dx = dx / d * e * 6; sp.dy = dy / d * e * 6; sp.scale = 1 - 0.4 * k;
+    }
+  });
+  sprites = [];
+  await wait(250);
+  st.classList.remove('flash');
+}
+function startFeature(bet, spins, boughtFor, protocol, spots) {
+  G.mode = 'free'; G.featureBet = bet; G.fsLeft = spins; G.fsPlayed = 0; G.fsTotal = 0; G.protocol = !!protocol;
+  G.spots = spots ? spots.map((col) => col.slice()) : SV().emptySpots(); viewSpots = G.spots; spotsAlpha = 1; spotFlash.clear();
+  G.boughtFor = boughtFor; if (!boughtFor) SFX.fanfare(); SA.music('feature'); updateUI();
+}
+
+// ===== Feature buy ("Launch codes") =====
+function confirmBuy(b) {
+  const m = $('#buyModal');
+  $('#buyText').textContent = `${b.spins} free spins for ${fmt(b.cost)}`;
+  m.hidden = false; $('#buyCancel').focus();
+  return new Promise((res) => {
+    const done = (v) => { m.hidden = true; $('#buyOk').onclick = $('#buyCancel').onclick = null; document.removeEventListener('keydown', esc); res(v); };
+    const esc = (e) => { if (e.key === 'Escape') done(false); };
+    $('#buyOk').onclick = () => done(true); $('#buyCancel').onclick = () => done(false);
+    document.addEventListener('keydown', esc);
+  });
+}
+async function buyFeature() {
+  if (G.busy || G.mode === 'free' || !MARKET.allowBuy) return;
+  const b = SV().buy();
+  if (G.balance + 1e-9 < b.cost) { msg('Not enough credits for launch codes.'); return; }
+  if (!(await confirmBuy(b))) return;
+  if (G.busy || G.mode === 'free') return;
+  G.busy = true; audioInit(); SFX.click(); msg('');
+  // The bought free spins play at the buy's own stake; the nuclear meter keeps its level.
+  G.balance = round2(G.balance - b.cost); G.lastWin = 0; G.roundWin = 0; viewSpots = null;
+  LOG.unshift({ n: ++G.spinNo, modeKey: G.modeKey, mode: 'buy', bet: b.stake, cost: b.cost, win: 0, nukes: 0, tumbles: 0 }); renderLog();
+  updateUI(); setState('feature');
+  await triggerIntro();
+  startFeature(b.stake, b.spins, b.cost, false, null);
+  await tapToStart(`${b.spins} FREE SPINS`);
+  setState('idle'); G.busy = false; updateUI(); autoFreeSpin();
+}
+
+function renderLog() {
+  const ul = $('#log'); ul.textContent = '';
+  for (const e of LOG) {
+    const li = document.createElement('li');
+    const span = document.createElement('span');
+    const hot = e.spots ? spotStats(e.spots) : null;
+    span.textContent = `#${e.n} ${SPECS[e.modeKey].name} ${e.cost ? 'buy ' + fmt(e.cost) : e.mode}${hot && hot.top ? ' hot×' + hot.top : ''} bet ${fmt(e.bet)} → ${fmt(e.win)} · ${e.tumbles} tumbles · ${e.nukes} nukes${e.mode === 'base' ? ' · meter ' + e.gauge + ' before' : ''}${e.force ? ' · forced ' + e.force : ''}`;
+    li.append(span);
+    if (e.tape) { const b = document.createElement('button'); b.textContent = 'Replay'; b.onclick = () => { closeSettings(); play(e); }; li.append(b); }
+    ul.append(li);
+  }
+}
+// Rules for the current mode. **text** is bold.
+function renderRules() {
+  const s = S(), ul = $('#rules'); ul.textContent = '';
+  const items = [
+    '**Clusters pay:** 5 or more of the same symbol touching up, down, left or right. Bigger clusters pay more. Pays shown are at your current bet.',
+    'Winning clusters blow away and new symbols tumble in. Tumbles repeat until there are no new wins.',
+    `**Nukes go off on every spin.** Each Nuke that lands lights its own square and the 4 touching it with **fallout**. In the base game that fallout lasts for the rest of the spin and clears when the spin ends.`,
+    `**Fallout squares:** every blast adds a random amount (+${s.yields.map(([y]) => y).join(', +')}) to each square it hits; an unlit square counts as ×1, up to ×${s.spotCap}. Only Doomsday doubles, and it is rare. A winning cluster is multiplied by the **highest** fallout square it covers.`,
+
+    `**Nuclear meter** (beside the board): each Nuke pushes it up by a random amount; a spin without Nukes lets it fall a little. When it fills, **${s.fsAward} free spins** start with that spin's fallout, and the meter empties. If ${s.protocolAt}+ Nukes went off in the spin that filled it, the free spins are **Doomsday Protocol**: Doomsday can land from the first free spin. The meter is kept separately for each mode and bet during this session, a buy leaves it where it is, and it resets if you reload the page.`,
+    `**In free spins** fallout squares keep their value until the free spins end. Nuke types: a **Mini Nuke** hits its own square, a **Nuke** its own square and the 4 touching it, a **Tsar Bomba** every square up to 2 steps away, and a **Doomsday** doubles every lit square on the board.`,
+    `**Build-up:** free spins 1–${s.buildUpSpins} have more Nukes and no Doomsday. From spin ${s.buildUpSpins + 1} Nukes are rarer and Doomsday can land, so the squares lit early are the ones it doubles.`,
+    `**${s.fsRetrigger}+ Nukes in one free spin** add **${s.fsRetriggerAward} more free spins**. Free spins play automatically, one after another, once you tap to start.`,
+    `**Launch codes** (feature buy): ${fmt(s.buyPrice)} buys ${s.fsAward} free spins on a clear board, played at a ${fmt(round2(s.buyPrice / s.buyCostX))} stake whatever your bet. Average return about ${s.rtp.buy}%; about ${s.rtp.buyUnder}% of buys pay back less than the price. Only in markets that allow feature buys.`,
+    `**Maximum win** ${s.maxWinX.toLocaleString('en-US')}× the bet per round (a base spin and the free spins it triggers). The round ends when it is reached.`,
+    `**Return to player:** about ${s.rtp.game}% in this mode (${Object.values(SPECS).map((m) => `${m.name} about ${m.rtp.game}%`).join(', ')}). Placeholder math from rough simulation, not a certified figure. Play credits have no cash value.`,
+  ];
+  for (const text of items) {
+    const li = document.createElement('li');
+    text.split('**').forEach((part, i) => { if (!part) return; if (i % 2) { const b = document.createElement('b'); b.textContent = part; li.append(b); } else li.append(part); });
+    ul.append(li);
+  }
+}
+function renderPaytable() {
+  const s = S(), bet = G.mode === 'free' ? G.featureBet : LADDER[G.betIdx], pt = $('#pt'); pt.textContent = '';
+  const tiers = s.clusterTiers, bands = tiers.map((lo, i) => i === tiers.length - 1 ? `${lo}+` : tiers[i + 1] - 1 === lo ? `${lo}` : `${lo}-${tiers[i + 1] - 1}`);
+  const rows = Object.entries(s.symbols).map(([k, v]) => [k, v.name + (s.premium.includes(k) ? ' ★' : ''), bands.map((b, i) => [b, fmt(v.pays[i] * s.payScale * bet)])]);
+  rows.push(['nuke', 'Nuke', `Goes off wherever it lands: lights its own square and the 4 touching it, and pushes the nuclear meter up. A full meter starts ${s.fsAward} free spins.`]);
+  rows.push(['mini', 'Mini Nuke', 'Free spins only. Lights just the square it lands on.']);
+  rows.push(['tsar', 'Tsar Bomba', 'Free spins only. Blasts every square up to 2 steps away.']);
+  rows.push(['doom', 'Doomsday', `Free spin ${s.buildUpSpins + 1} on (from spin 1 in Doomsday Protocol). Doubles every lit square on the board.`]);
+  for (const [k, n, p] of rows) {
+    const d = document.createElement('div'); d.className = 's' + (typeof p === 'string' ? ' wide' : '');
+    const im = document.createElement('img'); im.src = IMG[k] ? IMG[k].src : ''; im.alt = '';
+    const t = document.createElement('div'); t.innerHTML = '<div class="n"></div><div class="p"></div>';
+    t.firstChild.textContent = n;
+    if (typeof p === 'string') t.lastChild.textContent = p;
+    else for (const [b, v] of p) { const c = document.createElement('span'); c.className = 'band'; c.innerHTML = '<i></i>'; c.firstChild.textContent = b; c.append(v); t.lastChild.append(c); }
+    d.append(im, t); pt.append(d);
+  }
+}
+// Game mode: Summit or Brinkmanship. Same return, different swings; switch only between spins.
+function renderModes() {
+  const box = $('#modes'); box.textContent = '';
+  const lg = document.createElement('legend'); lg.textContent = 'Game mode: same return, different swings'; box.append(lg);
+  for (const [k, m] of Object.entries(SPECS)) {
+    const lab = document.createElement('label'); lab.className = 'mode';
+    const inp = document.createElement('input'); inp.type = 'radio'; inp.name = 'gamemode'; inp.value = k; inp.checked = k === G.modeKey; inp.disabled = G.busy || G.mode === 'free';
+    inp.onchange = () => setMode(k);
+    const t = document.createElement('span'); t.innerHTML = '<b></b><small></small>';
+    t.firstChild.textContent = m.name; t.lastChild.textContent = `${m.blurb} Return about ${m.rtp.game}%.`;
+    lab.append(inp, t); box.append(lab);
+  }
+}
+function setMode(k) {
+  if (G.busy || G.mode === 'free' || !SPECS[k]) { renderModes(); return; }
+  G.modeKey = k; G.gaugeShown = null; viewSpots = null;
+  updateUI(); renderPaytable(); renderRules(); renderModes();
+}
+
+function runSim() {
+  const btn = $('#sim'), out = $('#simOut'), bet = 1, total = 200000, buys = 4000, s = S(), sv = SV(), st = newSim(), bs = newBuySim();
+  btn.disabled = true; out.textContent = 'Running…';
+  const step = () => {
+    if (st.spins < total) { simChunk(sv, s, st, 4000, bet, CryptoRNG); out.textContent = `${s.name}: spins ${st.spins.toLocaleString()} / ${total.toLocaleString()}…`; return setTimeout(step, 0); }
+    if (bs.buys < buys) { simBuyChunk(sv, s, bs, 200, bet, CryptoRNG); out.textContent = `${s.name}: bought features ${bs.buys.toLocaleString()} / ${buys.toLocaleString()}…`; return setTimeout(step, 0); }
+    const rtp = st.won / st.spent * 100, tr = st.triggers || 1;
+    out.textContent = `${s.name}: RTP ${rtp.toFixed(2)}%  (base ${(st.baseWon / st.spent * 100).toFixed(2)}% + free spins ${(st.fsWon / st.spent * 100).toFixed(2)}%)\n` +
+      `Hit rate 1 in ${(st.spins / st.hits).toFixed(2)} · Free spins 1 in ${st.triggers ? Math.round(st.spins / st.triggers) : '∞'} (3+ Nukes ${st.natural}, meter ${st.gaugeTrig}, Protocol ${st.protocols}) · Avg feature ${(st.fsWon / tr).toFixed(1)}× bet\n` +
+      `Per feature: ${(st.nukes / tr).toFixed(1)} Nukes, ${(st.hot / tr).toFixed(1)} fallout squares, hottest ×${(st.top / tr).toFixed(1)} · retriggers ${(st.retriggers / tr).toFixed(2)} · base Nukes ${(st.baseNukes / st.spins).toFixed(3)} a spin\n` +
+      `Feature buy at ${fmt(s.buyPrice)} (stake ${fmt(round2(s.buyPrice / s.buyCostX))}): RTP ${(bs.won / bs.spent * 100).toFixed(1)}% · avg back ${fmt(bs.won / bs.buys)} · under the price ${(bs.under / bs.buys * 100).toFixed(0)}% · best ${bs.maxX.toFixed(0)}× stake\n` +
+      `Biggest round ${st.maxX.toFixed(1)}× bet · Placeholder math, single run of ${total.toLocaleString()}, not a certified figure.`;
+    btn.disabled = false;
+  };
+  setTimeout(step, 0);
+}
+
+// ===== Wire up =====
+$('#spin').addEventListener('click', () => { if (G.mode !== 'free') play(); });
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Space' && !e.repeat && $('#buyModal').hidden && $('#settings').hidden && G.mode !== 'free' && !/INPUT|SELECT|BUTTON|TEXTAREA/.test(document.activeElement.tagName)) { e.preventDefault(); play(); }
+});
+const setBet = (i) => { if (G.busy || G.mode === 'free' || i < 0 || i >= LADDER.length) return; audioInit(); SA.play('bet', i > G.betIdx ? 1 : -1); G.betIdx = i; G.gaugeShown = null; updateUI(); renderPaytable(); };
+$('#betDown').onclick = () => setBet(G.betIdx - 1);
+$('#betUp').onclick = () => setBet(G.betIdx + 1);
+// Volume and mute live in the audio module (remembered between visits).
+function showMute() { const m = SA.muted(); $('#mute').textContent = m ? '🔇' : '🔊'; $('#mute').setAttribute('aria-pressed', String(m)); $('#mute').setAttribute('aria-label', m ? 'Unmute sound' : 'Mute sound'); }
+$('#mute').onclick = () => { audioInit(); SA.muted(!SA.muted()); showMute(); };
+$('#vol').value = SA.volume(); $('#vol').oninput = (e) => { audioInit(); SA.volume(+e.target.value); };
+showMute();
+// Settings sheet: opens from the gear or the mode badge, closes with the X, a tap outside it, or Escape.
+const settingsEl = $('#settings');
+function openSettings() { renderModes(); settingsEl.hidden = false; $('#setClose').focus(); }
+function closeSettings() { if (settingsEl.hidden) return; settingsEl.hidden = true; $('#info').focus(); }
+$('#info').onclick = openSettings;
+$('#modeBadge').onclick = openSettings;
+$('#setClose').onclick = closeSettings;
+settingsEl.addEventListener('click', (e) => { if (e.target === settingsEl) closeSettings(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSettings(); });
+$('#reset').onclick = () => { if (G.busy || G.mode === 'free') return; G.balance = MARKET.startCredits; G.start = MARKET.startCredits; G.lastWin = 0; msg('Credits reset to ' + fmt(MARKET.startCredits)); updateUI(); };
+$('#sim').onclick = runSim;
+$('#buy').onclick = buyFeature;
+// Refit on every size change, then once more a moment later: some browsers and embedding iframes
+// (the Game Lobby) report the final size slightly after the resize event.
+let refitTimer = 0;
+window.addEventListener('resize', () => { resize(); clearTimeout(refitTimer); refitTimer = setTimeout(resize, 200); });
+
+(async function init() {
+  $('#dev').hidden = !DEV;
+  await loadArt();
+  resize(); setTimeout(resize, 300); // second fit once an embedding page has settled its size
+  // Starting screen: a random, unevaluated view of the base strips.
+  const grid = SV().STRIPS.base.map((strip) => { const p = CryptoRNG.int(strip.length); return Array.from({ length: SPEC.rows }, (_, r) => ({ s: strip[(p + r) % strip.length] })); });
+  sprites = []; grid.forEach((col, c) => col.forEach((cell, r) => sprites.push(mkSprite(c, r, cell))));
+  renderModes(); renderRules(); renderPaytable(); updateUI(); setState('idle'); tick(); setInterval(tick, 1000);
+  SA.music('base'); // starts with the first tap (browsers allow audio only after one)
+  requestAnimationFrame(render);
+})();
+</script>
+</body>
+</html>

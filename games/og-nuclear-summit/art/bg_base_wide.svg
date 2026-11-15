@@ -1,0 +1,154 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080" preserveAspectRatio="xMidYMid slice">
+<!-- Base-game background, landscape: "The Summit Hall". Same rules as the portrait version:
+     softer and lighter than the symbols, a glow behind the reels, decoration kept to the edges. -->
+<defs>
+  <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#2A3758"/><stop offset="0.6" stop-color="#1F2A47"/><stop offset="1" stop-color="#161E35"/>
+  </linearGradient>
+  <radialGradient id="glow" cx="960" cy="420" r="620" gradientUnits="userSpaceOnUse">
+    <stop offset="0" stop-color="#F2A93B" stop-opacity="0.42"/><stop offset="0.55" stop-color="#F2A93B" stop-opacity="0.14"/><stop offset="1" stop-color="#F2A93B" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="screen" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#162746"/><stop offset="1" stop-color="#101C36"/>
+  </linearGradient>
+  <linearGradient id="curtainL" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#5E1626"/><stop offset="1" stop-color="#9C2F3F"/>
+  </linearGradient>
+  <linearGradient id="curtainR" x1="1" y1="0" x2="0" y2="0">
+    <stop offset="0" stop-color="#5E1626"/><stop offset="1" stop-color="#9C2F3F"/>
+  </linearGradient>
+  <linearGradient id="carpet" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#9C2F3F"/><stop offset="1" stop-color="#6E1F2E"/>
+  </linearGradient>
+  <linearGradient id="table" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#8A5A3A"/><stop offset="1" stop-color="#6B4128"/>
+  </linearGradient>
+</defs>
+
+<rect width="1920" height="1080" fill="url(#wall)"/>
+<g fill="#3A4A72" opacity="0.5">
+  <rect x="400" y="110" width="70" height="760" rx="35"/><rect x="520" y="110" width="70" height="760" rx="35"/>
+  <rect x="1330" y="110" width="70" height="760" rx="35"/><rect x="1450" y="110" width="70" height="760" rx="35"/>
+</g>
+<rect width="1920" height="1080" fill="url(#glow)"/>
+
+<!-- summit screen behind the reels -->
+<path d="M660 900 L660 330 Q660 90 960 90 Q1260 90 1260 330 L1260 900 Z" fill="url(#screen)" stroke="#B88A2E" stroke-width="10" opacity="0.85"/>
+<g fill="none" stroke="#2C4672" stroke-width="3" opacity="0.9">
+  <path d="M690 300 Q960 270 1230 300 M680 450 Q960 430 1240 450 M680 600 Q960 590 1240 600 M680 750 Q960 745 1240 750"/>
+  <path d="M810 130 Q790 500 820 890 M960 92 L960 900 M1110 130 Q1130 500 1100 890"/>
+</g>
+<g fill="#2E5A8A" opacity="0.95">
+  <path d="M720 300 Q750 240 840 250 Q900 260 880 320 Q870 370 820 380 Q800 440 760 420 Q730 390 745 350 Q710 330 720 300 Z"/>
+  <path d="M810 460 Q850 450 870 500 Q880 560 850 610 Q830 640 815 610 Q800 550 810 460 Z"/>
+  <path d="M980 260 Q1030 230 1110 250 Q1190 270 1180 330 Q1170 380 1120 380 Q1090 430 1050 410 Q1020 390 1030 350 Q980 330 980 260 Z"/>
+  <path d="M1010 420 Q1050 410 1070 460 Q1080 520 1050 570 Q1030 590 1020 550 Q1005 480 1010 420 Z"/>
+  <path d="M1120 540 Q1170 530 1190 570 Q1190 610 1150 610 Q1120 600 1120 540 Z"/>
+</g>
+
+<g fill="#F2A93B" opacity="0.8">
+  <circle cx="460" cy="420" r="26" opacity="0.35"/><circle cx="1480" cy="520" r="34" opacity="0.3"/>
+  <circle cx="1420" cy="250" r="14" opacity="0.5"/><circle cx="520" cy="760" r="18" opacity="0.4"/>
+</g>
+<g fill="#FFC867" opacity="0.7">
+  <path d="M560 260 Q560 280 580 280 Q560 280 560 300 Q560 280 540 280 Q560 280 560 260 Z"/>
+  <path d="M1380 380 Q1380 404 1404 404 Q1380 404 1380 428 Q1380 404 1356 404 Q1380 404 1380 380 Z"/>
+</g>
+
+<!-- nuclear: missile tracks across the summit map -->
+<g fill="none" stroke="#F2A93B" stroke-width="6" stroke-dasharray="12 9" stroke-linecap="round" opacity="0.65">
+<path d="M760 320 Q900 170 1080 300"/>
+<path d="M1120 360 Q1000 520 830 560"/>
+<path d="M760 640 Q960 560 1150 640"/>
+</g><g fill="none" stroke="#FF4D6D" stroke-width="4" opacity="0.7">
+<circle cx="1080" cy="300" r="12"/><circle cx="1080" cy="300" r="4" fill="#FF4D6D"/>
+<circle cx="830" cy="560" r="12"/><circle cx="830" cy="560" r="4" fill="#FF4D6D"/>
+<circle cx="1150" cy="640" r="12"/><circle cx="1150" cy="640" r="4" fill="#FF4D6D"/>
+</g>
+<!-- floor, carpet and the summit table -->
+<path d="M0 860 L1920 860 L1920 1080 L0 1080 Z" fill="#18203A"/>
+<path d="M760 860 L1160 860 L1360 1080 L560 1080 Z" fill="url(#carpet)"/>
+<ellipse cx="960" cy="1010" rx="820" ry="110" fill="#4A2C18"/>
+<ellipse cx="960" cy="992" rx="820" ry="100" fill="url(#table)" stroke="#3A2212" stroke-width="6"/>
+<g stroke="#4B3A44" stroke-width="5" stroke-linecap="round" fill="none">
+  <path d="M380 950 Q390 912 420 898 M620 925 Q630 888 660 876 M1260 925 Q1270 888 1300 876 M1500 950 Q1510 912 1540 898"/>
+</g>
+<g fill="#3A2E36"><circle cx="422" cy="897" r="9"/><circle cx="662" cy="875" r="9"/><circle cx="1302" cy="875" r="9"/><circle cx="1542" cy="897" r="9"/></g>
+<g fill="#FFFFFF" stroke="#B88A2E" stroke-width="4">
+  <path d="M300 990 L360 990 L346 960 L314 960 Z"/><path d="M520 960 L580 960 L566 930 L534 930 Z"/>
+  <path d="M1340 960 L1400 960 L1386 930 L1354 930 Z"/><path d="M1560 990 L1620 990 L1606 960 L1574 960 Z"/>
+</g>
+
+<!-- nuclear: candy mushroom-cloud centrepieces on the table -->
+<g transform="translate(470 860) scale(0.6)" stroke="#1C2742" stroke-width="5" stroke-linejoin="round">
+  <path d="M86 200 Q90 150 92 110 L108 110 Q110 150 114 200 Z" fill="#F6D38A"/>
+  <ellipse cx="100" cy="156" rx="30" ry="8" fill="#F2A93B"/>
+  <circle cx="66" cy="206" r="16" fill="#F6D38A"/><circle cx="134" cy="206" r="16" fill="#F6D38A"/>
+  <circle cx="88" cy="212" r="18" fill="#F6D38A"/><circle cx="112" cy="212" r="18" fill="#F6D38A"/>
+  <circle cx="52" cy="84" r="24" fill="#F08A4B"/><circle cx="154" cy="92" r="20" fill="#F08A4B"/>
+  <circle cx="76" cy="58" r="26" fill="#F08A4B"/><circle cx="140" cy="64" r="26" fill="#F08A4B"/><circle cx="108" cy="48" r="30" fill="#F08A4B"/>
+  <ellipse cx="100" cy="88" rx="58" ry="32" fill="#F08A4B" stroke="none"/>
+  <path d="M44 100 Q100 136 156 100 Q160 112 146 118 Q100 136 54 118 Q40 112 44 100 Z" fill="#D9622E"/>
+  <circle cx="98" cy="38" r="10" fill="#FFD9A8" stroke="none"/><circle cx="70" cy="52" r="7" fill="#FFD9A8" stroke="none"/>
+</g>
+<g transform="translate(1330 860) scale(0.6)" stroke="#1C2742" stroke-width="5" stroke-linejoin="round">
+  <path d="M86 200 Q90 150 92 110 L108 110 Q110 150 114 200 Z" fill="#F6D38A"/>
+  <ellipse cx="100" cy="156" rx="30" ry="8" fill="#F2A93B"/>
+  <circle cx="66" cy="206" r="16" fill="#F6D38A"/><circle cx="134" cy="206" r="16" fill="#F6D38A"/>
+  <circle cx="88" cy="212" r="18" fill="#F6D38A"/><circle cx="112" cy="212" r="18" fill="#F6D38A"/>
+  <circle cx="52" cy="84" r="24" fill="#F08A4B"/><circle cx="154" cy="92" r="20" fill="#F08A4B"/>
+  <circle cx="76" cy="58" r="26" fill="#F08A4B"/><circle cx="140" cy="64" r="26" fill="#F08A4B"/><circle cx="108" cy="48" r="30" fill="#F08A4B"/>
+  <ellipse cx="100" cy="88" rx="58" ry="32" fill="#F08A4B" stroke="none"/>
+  <path d="M44 100 Q100 136 156 100 Q160 112 146 118 Q100 136 54 118 Q40 112 44 100 Z" fill="#D9622E"/>
+  <circle cx="98" cy="38" r="10" fill="#FFD9A8" stroke="none"/><circle cx="70" cy="52" r="7" fill="#FFD9A8" stroke="none"/>
+</g>
+<!-- curtains at the far edges -->
+<path d="M0 0 L330 0 Q300 260 282 440 Q270 540 210 600 Q130 660 0 670 Z" fill="url(#curtainL)"/>
+<path d="M0 670 Q110 660 200 610 Q230 820 270 1080 L0 1080 Z" fill="url(#curtainL)"/>
+<g fill="none" stroke="#3E0E18" stroke-width="5" opacity="0.5">
+  <path d="M80 0 Q90 330 70 660 M170 0 Q180 340 140 640 M260 0 Q250 300 230 560 M70 680 Q90 880 80 1080 M150 650 Q170 860 180 1080"/>
+</g>
+<path d="M1920 0 L1590 0 Q1620 260 1638 440 Q1650 540 1710 600 Q1790 660 1920 670 Z" fill="url(#curtainR)"/>
+<path d="M1920 670 Q1810 660 1720 610 Q1690 820 1650 1080 L1920 1080 Z" fill="url(#curtainR)"/>
+<g fill="none" stroke="#3E0E18" stroke-width="5" opacity="0.5">
+  <path d="M1840 0 Q1830 330 1850 660 M1750 0 Q1740 340 1780 640 M1660 0 Q1670 300 1690 560 M1850 680 Q1830 880 1840 1080 M1770 650 Q1750 860 1740 1080"/>
+</g>
+<g fill="#F2C14E" stroke="#B88A2E" stroke-width="4">
+  <ellipse cx="205" cy="610" rx="62" ry="22"/><ellipse cx="1715" cy="610" rx="62" ry="22"/>
+  <path d="M185 628 L166 712 L224 712 L205 628 Z"/><path d="M1695 628 L1676 712 L1734 712 L1715 628 Z"/>
+</g>
+
+<!-- nuclear: show missiles on pedestals and the Doomsday Clock at two minutes to midnight -->
+<g transform="translate(316 500) scale(1.2)">
+  <rect x="-14" y="292" width="108" height="30" rx="8" fill="#3A4A72" stroke="#1C2742" stroke-width="5"/>
+  <path d="M18 220 L-8 288 L22 282 Z M62 220 L88 288 L58 282 Z" fill="#8FA3BF" stroke="#1C2742" stroke-width="4" stroke-linejoin="round"/>
+  <rect x="18" y="70" width="44" height="214" rx="10" fill="#FFFFFF" stroke="#1C2742" stroke-width="5"/>
+  <g fill="#D7263D"><rect x="20" y="124" width="40" height="18"/><rect x="20" y="166" width="40" height="18"/><rect x="20" y="208" width="40" height="18"/><rect x="20" y="250" width="40" height="18"/></g>
+  <path d="M18 76 Q18 12 40 -12 Q62 12 62 76 Z" fill="#FF4D6D" stroke="#1C2742" stroke-width="5" stroke-linejoin="round"/>
+  <circle cx="40" cy="98" r="9" fill="#FFD23F" stroke="#1C2742" stroke-width="3"/>
+  <path d="M28 20 Q30 0 40 -6" stroke="#FFD0D6" stroke-width="5" stroke-linecap="round" fill="none"/>
+  <path d="M27 84 L27 276" stroke="#E3E8F0" stroke-width="5" stroke-linecap="round" fill="none"/>
+</g>
+<g transform="translate(1508 500) scale(1.2)">
+  <rect x="-14" y="292" width="108" height="30" rx="8" fill="#3A4A72" stroke="#1C2742" stroke-width="5"/>
+  <path d="M18 220 L-8 288 L22 282 Z M62 220 L88 288 L58 282 Z" fill="#8FA3BF" stroke="#1C2742" stroke-width="4" stroke-linejoin="round"/>
+  <rect x="18" y="70" width="44" height="214" rx="10" fill="#FFFFFF" stroke="#1C2742" stroke-width="5"/>
+  <g fill="#D7263D"><rect x="20" y="124" width="40" height="18"/><rect x="20" y="166" width="40" height="18"/><rect x="20" y="208" width="40" height="18"/><rect x="20" y="250" width="40" height="18"/></g>
+  <path d="M18 76 Q18 12 40 -12 Q62 12 62 76 Z" fill="#FF4D6D" stroke="#1C2742" stroke-width="5" stroke-linejoin="round"/>
+  <circle cx="40" cy="98" r="9" fill="#FFD23F" stroke="#1C2742" stroke-width="3"/>
+  <path d="M28 20 Q30 0 40 -6" stroke="#FFD0D6" stroke-width="5" stroke-linecap="round" fill="none"/>
+  <path d="M27 84 L27 276" stroke="#E3E8F0" stroke-width="5" stroke-linecap="round" fill="none"/>
+</g>
+<g>
+  <circle cx="360" cy="190" r="65" fill="#7A2232" stroke="#1C2742" stroke-width="6"/>
+  <circle cx="360" cy="190" r="56" fill="#FFF6E8" stroke="#F2C14E" stroke-width="5"/>
+  <path d="M360 190 L360 138 A52 52 0 0 0 334.0 145.0 Z" fill="#FF4D6D" opacity="0.28"/>
+  <g stroke="#1C2742" stroke-width="5" stroke-linecap="round"><path d="M360 144 L360 158" transform="rotate(0 360 190)"/><path d="M360 144 L360 151" transform="rotate(30 360 190)"/><path d="M360 144 L360 151" transform="rotate(60 360 190)"/><path d="M360 144 L360 158" transform="rotate(90 360 190)"/><path d="M360 144 L360 151" transform="rotate(120 360 190)"/><path d="M360 144 L360 151" transform="rotate(150 360 190)"/><path d="M360 144 L360 158" transform="rotate(180 360 190)"/><path d="M360 144 L360 151" transform="rotate(210 360 190)"/><path d="M360 144 L360 151" transform="rotate(240 360 190)"/><path d="M360 144 L360 158" transform="rotate(270 360 190)"/><path d="M360 144 L360 151" transform="rotate(300 360 190)"/><path d="M360 144 L360 151" transform="rotate(330 360 190)"/></g>
+  <path d="M360 190 L360 159.2" stroke="#1C2742" stroke-width="8" stroke-linecap="round" transform="rotate(-4 360 190)"/>
+  <path d="M360 190 L360 141.8" stroke="#E8384F" stroke-width="5" stroke-linecap="round" transform="rotate(-14 360 190)"/>
+  <circle cx="360" cy="190" r="6" fill="#1C2742"/>
+</g>
+<!-- slim valance -->
+<path d="M0 0 L1920 0 L1920 50 Q1840 96 1760 50 Q1680 96 1600 50 Q1520 96 1440 50 Q1360 96 1280 50 Q1200 96 1120 50 Q1040 96 960 50 Q880 96 800 50 Q720 96 640 50 Q560 96 480 50 Q400 96 320 50 Q240 96 160 50 Q80 96 0 50 Z" fill="#7A2232"/>
+<path d="M0 50 Q80 96 160 50 Q240 96 320 50 Q400 96 480 50 Q560 96 640 50 Q720 96 800 50 Q880 96 960 50 Q1040 96 1120 50 Q1200 96 1280 50 Q1360 96 1440 50 Q1520 96 1600 50 Q1680 96 1760 50 Q1840 96 1920 50" fill="none" stroke="#F2C14E" stroke-width="8" stroke-dasharray="3 9" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 250" width="200" height="250">
+<style>.ol{stroke:#3b2a22;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}.il{fill:none;stroke:#3b2a22;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}</style>
+<!-- Nuke, the bonus trigger (v2). Hazard orange and black: the only symbol in these colours and the
+     only one with hazard stripes, so it can't be mistaken for a pay symbol. It fills the cell. -->
+<defs>
+  <clipPath id="nkBody"><ellipse cx="100" cy="146" rx="80" ry="96"/></clipPath>
+  <pattern id="nkHaz" width="22" height="22" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+    <rect width="22" height="22" fill="#FF6A13"/><rect width="11" height="22" fill="#1B1B1F"/>
+  </pattern>
+</defs>
+<!-- tail fins -->
+<path class="ol" d="M56 66 L144 66 L166 8 L34 8 Z" fill="#1B1B1F"/>
+<path d="M72 58 L128 58 L144 16 L56 16 Z" fill="#34343A"/>
+<path d="M100 16 L100 58" stroke="#5A5A62" stroke-width="3" stroke-linecap="round"/>
+<!-- body -->
+<ellipse cx="100" cy="146" rx="80" ry="96" fill="#FF6A13"/>
+<g clip-path="url(#nkBody)">
+  <path d="M180 116 Q178 200 118 248 L200 250 L200 50 Z" fill="#D9480F"/>
+  <rect x="0" y="56" width="200" height="15" fill="#1B1B1F"/>
+  <rect x="0" y="198" width="200" height="26" fill="url(#nkHaz)"/>
+  <rect x="0" y="195" width="200" height="4" fill="#1B1B1F"/><rect x="0" y="223" width="200" height="4" fill="#1B1B1F"/>
+</g>
+<ellipse class="ol" cx="100" cy="146" rx="80" ry="96" fill="none"/>
+<!-- trefoil badge -->
+<circle class="ol" cx="100" cy="132" r="50" fill="#FFF1E2"/>
+<g transform="translate(100 132) scale(1.32) translate(-100 -112)">
+  <path d="M104.5 104.2 L116 84.3 A32 32 0 0 1 132 112 L109 112 A9 9 0 0 0 104.5 104.2 Z M91 112 L68 112 A32 32 0 0 1 84 84.3 L95.5 104.2 A9 9 0 0 0 91 112 Z M104.5 119.8 L116 139.7 A32 32 0 0 1 84 139.7 L95.5 119.8 A9 9 0 0 0 104.5 119.8 Z" fill="#1B1B1F"/>
+  <circle cx="100" cy="112" r="6" fill="#1B1B1F"/>
+</g>
+<!-- highlight -->
+<ellipse cx="44" cy="102" rx="7" ry="20" fill="#FFB27A" transform="rotate(14 44 102)"/>
+</svg>

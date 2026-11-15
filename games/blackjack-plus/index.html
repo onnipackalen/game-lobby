@@ -1,0 +1,1339 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Blackjack Plus</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b1620; --bg2:#0e1c27; --panel:#12232f; --panel2:#182d3b; --panel3:#21394a; --line:#22404f;
+  --text:#e8f0f5; --muted:#86a0b1; --dim:#5b7586;
+  --green:#22e07a; --greenText:#04210f;
+  --gold:#ffc83d; --gold2:#f2a516; --red:#ff5468;
+  --cw:78px; --ch:110px;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:14px;-webkit-font-smoothing:antialiased;min-height:100vh}
+button{font:inherit;color:inherit;border:0;cursor:pointer;background:none}
+button:disabled{cursor:not-allowed;opacity:.38}
+.num{font-variant-numeric:tabular-nums}
+
+.top{display:flex;align-items:center;gap:14px;padding:10px 18px;background:var(--bg2);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:30}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.06em;font-size:15px}
+.logo{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--green),#10b6a2);display:grid;place-items:center;color:#05241a;font-size:18px}
+.plus{font-size:10px;padding:3px 7px;border-radius:6px;background:rgba(34,224,122,.13);color:var(--green);letter-spacing:.12em}
+.spacer{flex:1}
+.bal{display:flex;align-items:center;gap:12px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:5px 5px 5px 14px}
+.bal small{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.1em}
+.bal b{font-size:15px}
+
+.layout{display:grid;grid-template-columns:290px minmax(0,1fr) 400px;gap:14px;padding:14px;max-width:1680px;margin:0 auto}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px}
+.side{padding:16px;display:flex;flex-direction:column;gap:14px;align-self:start}
+.lab{display:flex;flex-direction:column;min-height:0;align-self:start}
+
+label.lbl{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;font-weight:600;margin-bottom:6px}
+.betrow{display:flex;background:var(--bg2);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.betrow:focus-within{border-color:#3a6a82}
+.betrow .cur{padding:0 0 0 12px;display:grid;place-items:center;color:var(--muted);font-weight:700}
+.betrow input{flex:1;min-width:0;background:none;border:0;color:var(--text);font:inherit;font-weight:700;font-size:15px;padding:11px 8px;outline:none}
+.betrow button{padding:0 13px;border-left:1px solid var(--line);color:var(--muted);font-weight:700;background:var(--panel2)}
+.betrow button:hover:not(:disabled){color:var(--text);background:var(--panel3)}
+input[type=number]::-webkit-inner-spin-button{display:none}
+.chips{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:8px}
+.chip{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:7px 0;font-weight:700;font-size:12px;color:var(--muted)}
+.chip:hover:not(:disabled){color:var(--text);border-color:#36607a}
+
+.btn{border-radius:10px;padding:12px 14px;font-weight:700;transition:transform .08s,filter .15s,background .15s}
+.btn:active:not(:disabled){transform:translateY(1px)}
+.btn.primary{background:var(--green);color:var(--greenText);box-shadow:0 6px 20px -8px rgba(34,224,122,.6)}
+.btn.primary:hover:not(:disabled){filter:brightness(1.07)}
+.btn.gold{background:linear-gradient(180deg,var(--gold),var(--gold2));color:#2a1900;box-shadow:0 6px 22px -8px rgba(255,200,61,.6)}
+.btn.gold:hover:not(:disabled){filter:brightness(1.06)}
+.btn.ghost{background:var(--panel2);border:1px solid var(--line)}
+.btn.ghost:hover:not(:disabled){background:var(--panel3)}
+.btn.big{width:100%;padding:15px;font-size:15px}
+.btn .sub{display:block;font-size:11px;font-weight:600;opacity:.75;margin-top:2px}
+
+.feeline{display:flex;flex-direction:column;gap:6px;background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:12px}
+.feeline div{display:flex;justify-content:space-between;color:var(--muted)}
+.feeline b{color:var(--text)}
+.pos{color:var(--green)!important}.neg{color:var(--red)!important}
+
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.act{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 11px;text-align:left;display:flex;flex-direction:column;gap:2px}
+.act:hover:not(:disabled){background:var(--panel3)}
+.act .k{font-weight:700;font-size:14px;display:flex;justify-content:space-between;align-items:center;gap:6px}
+.act .k kbd{font:600 10px Inter,sans-serif;color:var(--dim);border:1px solid var(--line);border-radius:4px;padding:1px 5px}
+.act .ev{font-size:11px;color:var(--muted)}
+.act .ex{font-size:10px;color:var(--gold);font-weight:700}
+.act.wide{grid-column:1/-1}
+.act.rm{border-color:rgba(255,200,61,.45)}
+.act.rm .k{color:var(--gold)}
+.act.rm.open{background:rgba(255,200,61,.1)}
+.popup.wide{width:min(580px,100%)}
+/* table layout: felt (dealer, side buttons, hands) + always-visible bottom bar */
+.table{height:calc(100vh - 96px);min-height:500px;max-height:960px;min-width:0}
+.felt{flex:1;min-height:0;position:relative;display:flex;flex-direction:column;overflow:hidden}
+.subacts{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;padding:2px 12px 6px}
+.subacts:empty{display:none}
+.subbtn{background:rgba(24,45,59,.92);border:1px solid var(--line);border-radius:999px;padding:7px 13px;font-weight:700;font-size:12.5px;display:inline-flex;gap:6px;align-items:center;white-space:nowrap}
+.subbtn:hover:not(:disabled){border-color:#3f7590;background:var(--panel3)}
+.subbtn small{font-size:11px;color:var(--muted);font-weight:600}
+.subbtn small.pay{color:#ff8494}.subbtn small.get{color:var(--green)}
+.subbtn.gold{border-color:rgba(255,200,61,.55);color:var(--gold)}
+.subbtn.on{border-color:rgba(255,200,61,.75);background:rgba(255,200,61,.12)}
+.subbtn.chipv{padding:5px 10px;font-size:12px}
+.sublabel{width:100%;text-align:center;font-size:10.5px;color:var(--gold);font-weight:800;text-transform:uppercase;letter-spacing:.1em}
+.actbar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:10px 12px;border-top:1px solid var(--line);background:rgba(8,18,25,.94);flex:none}
+.btn.main{padding:9px 6px;font-size:15px;min-height:54px;line-height:1.15}
+.btn.main .sub{font-size:11px}
+.btn.stand{background:#29485b;color:var(--text);border:1px solid #33586e}
+.btn.stand:hover:not(:disabled){filter:brightness(1.12)}
+.span2{grid-column:span 2}
+.barbet{display:flex;align-items:stretch;justify-content:space-between;background:var(--bg2);border:1px solid var(--line);border-radius:10px;overflow:hidden;min-height:54px}
+.barbet button{padding:0 12px;color:var(--muted);font-weight:800;background:var(--panel2)}
+.barbet button:hover{color:var(--text)}
+.barbet span{align-self:center;font-weight:800;font-size:15px}
+.sheet{position:absolute;inset:0;z-index:6;background:rgba(9,21,29,.97);overflow:auto;padding:14px;display:flex;flex-direction:column;gap:10px;animation:sheetIn .2s ease both}
+.sheet[hidden]{display:none}
+.gear{padding:6px 12px;font-size:18px;line-height:1}
+.gear .long{font-size:13.5px;vertical-align:2px}
+.box.settings{width:min(470px,100%);max-height:calc(100vh - 32px);overflow:auto;gap:10px}
+.box.still{animation:none}
+.box.settings h4{margin-top:6px}
+.setrow{display:flex;justify-content:space-between;align-items:center;gap:14px;text-align:left;padding:10px 12px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;font-size:13.5px;font-weight:700;width:100%}
+.setrow:hover{border-color:#36607a}
+.setrow small{display:block;color:var(--muted);font-size:11.5px;font-weight:500;margin-top:3px;line-height:1.4}
+.sw.on{background:var(--green)}
+.sw.on::after{transform:translateX(16px);background:#04210f}
+.setlabel{font-size:12px;color:var(--muted);font-weight:700}
+.setlabel small{font-weight:500;opacity:.85}
+.keys{display:flex;flex-wrap:wrap;gap:7px 14px;font-size:12px;color:var(--muted)}
+.keys kbd{font:700 11px Inter,sans-serif;color:var(--text);border:1px solid var(--line);background:var(--bg2);border-radius:5px;padding:1px 6px;margin-right:3px}
+.sheet-head{display:flex;justify-content:space-between;align-items:center;font-size:15px}
+@keyframes sheetIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.card.offered{box-shadow:0 0 0 3px var(--gold),0 0 26px rgba(255,200,61,.5)}
+@media (max-height:800px){
+  :root{--cw:66px;--ch:93px}
+  .card .mid{font-size:30px}
+  .zone{padding:6px 10px 4px;gap:6px}
+  .hand{padding:6px 12px;gap:8px}
+  .hands{padding:2px 10px 8px}
+}
+.xbtn{color:var(--muted);font-size:13px;padding:0 4px;letter-spacing:0}
+.xbtn:hover{color:var(--text)}
+.shoeline:empty{display:none}
+
+.toggles{display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--line);padding-top:14px}
+.tog{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px;cursor:pointer}
+.tog span small{display:block;color:var(--muted);font-size:11px;margin-top:1px}
+.sw{width:38px;height:22px;border-radius:999px;background:var(--panel3);position:relative;flex:none;transition:background .15s}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#cfe0ea;transition:transform .15s}
+input.hid{display:none}
+input.hid:checked+.sw{background:var(--green)}
+input.hid:checked+.sw::after{transform:translateX(16px);background:#04210f}
+
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;border-top:1px solid var(--line);padding-top:14px}
+.stat{background:var(--bg2);border-radius:10px;padding:9px 10px}
+.stat small{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px}
+.stat b{font-size:14px}
+
+.table{position:relative;overflow:hidden;display:flex;flex-direction:column;height:calc(100vh - 96px);min-height:500px;max-height:960px;
+  background:radial-gradient(130% 75% at 50% -5%,#173d4b 0%,#0f2833 42%,#0a1a23 100%)}
+.table::before{content:"";position:absolute;left:50%;top:44%;width:120%;aspect-ratio:2.4;transform:translate(-50%,-50%);border-radius:50%;border:1px solid rgba(255,255,255,.045);pointer-events:none}
+.rules{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;padding:14px 14px 0}
+.rules span{font-size:11px;color:#9db7c6;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);padding:4px 9px;border-radius:999px}
+.shoeline{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;padding:8px 14px 0;font-size:11.5px;color:var(--muted)}
+.shoeline b{color:var(--text)}
+.zone{display:flex;flex-direction:column;align-items:center;gap:10px;padding:14px 10px}
+.zone-head{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.14em;font-weight:700}
+.total{background:var(--panel3);color:var(--text);padding:3px 10px;border-radius:999px;font-size:13px;letter-spacing:0;font-weight:800;text-transform:none}
+.total.bust{background:var(--red);color:#fff}.total.bj{background:var(--gold);color:#241800}.total.t21{background:var(--green);color:var(--greenText)}
+.cards{display:flex;justify-content:center;align-items:center;min-height:var(--ch);perspective:800px}
+.card{width:var(--cw);height:var(--ch);border-radius:10px;background:#fbfdff;color:#15202b;position:relative;box-shadow:0 8px 20px -6px rgba(0,0,0,.55),0 0 0 1px rgba(0,0,0,.06);flex:none;user-select:none}
+.cards .card+.card{margin-left:calc(var(--cw) * -0.46)}
+.card .tl{position:absolute;left:6px;top:7px;font-weight:800;font-size:17px;line-height:1;text-align:center;width:20px}
+.card .tl i{display:block;font-style:normal;font-size:13px;margin-top:1px}
+.card .mid{position:absolute;inset:0;display:grid;place-items:center;font-size:36px}
+.card.red{color:#e2324b}
+.card.picked{box-shadow:0 0 0 3px var(--gold),0 8px 20px -6px rgba(0,0,0,.55)}
+.card .tag{position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);background:var(--gold);color:#241800;font-size:8.5px;font-weight:800;padding:2px 6px;border-radius:5px;letter-spacing:.08em;white-space:nowrap}
+.card.big{--cw:96px;--ch:136px}
+.card.big .mid{font-size:46px}
+.slot{width:var(--cw);height:var(--ch);border-radius:10px;border:2px dashed rgba(255,255,255,.17);display:grid;place-items:center;color:var(--dim);font-size:10px;font-weight:800;letter-spacing:.12em;margin-left:10px;text-align:center;line-height:1.4;flex:none}
+.deal-in{animation:dealIn .4s cubic-bezier(.2,.8,.2,1) both}
+@keyframes dealIn{from{opacity:0;transform:translate(70px,-90px) rotate(12deg) scale(.88)}to{opacity:1;transform:none}}
+.shields{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.shield{font-size:11px;font-weight:700;color:var(--gold);border:1px solid rgba(255,200,61,.45);background:rgba(255,200,61,.08);padding:3px 9px;border-radius:999px}
+
+.center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:4px 12px;min-height:0}
+.msg{display:flex;align-items:center;gap:10px;background:rgba(8,20,28,.78);border:1px solid var(--line);backdrop-filter:blur(6px);padding:10px 16px;border-radius:999px;font-weight:700;animation:pop .3s ease both;flex-wrap:wrap;justify-content:center}
+.msg .net{font-size:15px}
+.msg small{color:var(--muted);font-weight:600}
+@keyframes pop{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
+.idle{color:var(--muted);text-align:center;max-width:440px;line-height:1.5}
+.idle b{color:var(--text)}
+
+.popup{background:rgba(9,22,30,.88);border:1px solid #2f5a6e;border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:12px;box-shadow:0 20px 50px -20px rgba(0,0,0,.7);animation:pop .25s ease both;width:min(460px,100%)}
+.popup-head{font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:var(--gold);font-weight:800;display:flex;justify-content:space-between;gap:8px}
+.popup-head span{color:var(--muted);letter-spacing:.06em}
+.offer-body{display:flex;gap:16px;align-items:center}
+.offer-info{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--muted)}
+.offer-info b{color:var(--text);font-size:18px}
+.two{display:grid;grid-template-columns:1fr 1.25fr;gap:8px}
+.dgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.dbtn{background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:7px 2px;display:flex;flex-direction:column;align-items:center;gap:4px}
+.dbtn:hover:not(:disabled){border-color:#3f7590}
+.dbtn b{font-size:13px}
+.dbtn.on{border-color:rgba(255,200,61,.6);background:rgba(255,200,61,.1)}
+
+.hands{display:flex;flex-wrap:wrap;justify-content:center;gap:18px;padding:6px 10px 22px}
+.hand{display:flex;flex-direction:column;align-items:center;gap:12px;padding:14px 16px 12px;border-radius:16px;border:1px solid transparent;transition:border-color .2s,background .2s}
+.hand.active{border-color:rgba(34,224,122,.5);background:rgba(34,224,122,.05)}
+.hand-foot{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--muted);flex-wrap:wrap;justify-content:center}
+.stake{background:rgba(255,255,255,.06);padding:3px 9px;border-radius:999px;font-weight:700;color:#cfe0ea}
+.res{padding:3px 9px;border-radius:999px;font-weight:800;font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.res.win,.res.bj{background:var(--green);color:var(--greenText)}.res.lose,.res.bust{background:var(--red);color:#fff}
+.res.push,.res.surrender{background:var(--panel3);color:var(--text)}.res.cashed{background:var(--gold);color:#241800}
+
+.tabs{display:flex;gap:4px;padding:5px;margin:12px 12px 0;background:var(--bg2);border-radius:11px;border:1px solid var(--line)}
+.tab{flex:1;padding:9px 6px;border-radius:8px;color:var(--muted);font-weight:700;font-size:12.5px}
+.tab.on{background:var(--panel3);color:var(--text)}
+.tab:hover:not(.on){color:var(--text)}
+.tabbody{padding:14px;display:flex;flex-direction:column;gap:12px}
+.note{font-size:12px;color:var(--muted);line-height:1.5}
+.note b{color:var(--text)}
+.seg{display:flex;background:var(--bg2);border:1px solid var(--line);border-radius:9px;padding:3px;gap:3px}
+.seg button{flex:1;padding:7px;border-radius:7px;font-weight:700;font-size:12px;color:var(--muted)}
+.seg button.on{background:var(--panel3);color:var(--text)}
+
+.pickgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(62px,1fr));gap:8px}
+.ptile{background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:8px 4px 7px;display:flex;flex-direction:column;align-items:center;gap:5px;transition:border-color .15s,transform .1s}
+.ptile:hover:not(:disabled){border-color:#3f7590;transform:translateY(-1px)}
+.ptile .face{font-size:20px;font-weight:800;line-height:1}
+.ptile .to{font-size:10.5px;color:var(--muted);font-weight:600}
+.price{font-size:10.5px;font-weight:800;padding:2px 6px;border-radius:5px;white-space:nowrap}
+.price.pay{background:rgba(255,84,104,.13);color:#ff8494}
+.price.get{background:rgba(34,224,122,.13);color:var(--green)}
+.price.free{background:rgba(255,255,255,.07);color:var(--muted)}
+
+.sumgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.srows{display:flex;flex-direction:column;gap:6px}
+.colhead,.srow{display:grid;grid-template-columns:58px repeat(3,minmax(0,1fr));gap:6px}
+.srow.pre,.colhead.pre{grid-template-columns:58px minmax(0,1fr) 150px}
+.colhead{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:700;padding:0 7px;text-align:center;align-items:end}
+.colhead span:first-child{text-align:left}
+.srow{align-items:stretch;padding:7px;background:var(--panel2);border:1px solid var(--line);border-radius:10px}
+.vlab{display:flex;flex-direction:column;justify-content:center;gap:5px}
+.vlab b{font-size:16px;line-height:1}
+.vlab small{font-size:10px;color:var(--muted)}
+.bar{height:5px;border-radius:99px;background:var(--bg2);overflow:hidden;position:relative}
+.bar i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#1fb7a0,var(--green));border-radius:99px}
+.sbtn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:6px 3px;min-height:48px}
+.sbtn:hover:not(:disabled){border-color:#3f7590}
+.sbtn .l{font-size:10.5px;font-weight:700;color:var(--muted);white-space:nowrap}
+.sbtn.on{border-color:rgba(255,200,61,.6);background:rgba(255,200,61,.08)}
+.sbtn.on .l{color:var(--gold)}
+
+.mathlist{display:flex;flex-direction:column;gap:8px}
+.mrow{display:flex;justify-content:space-between;gap:10px;padding:9px 11px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;font-size:12.5px}
+.mrow span{color:var(--muted)}
+.formula{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.55;color:var(--muted)}
+.formula b{color:var(--text)}
+h4{margin:4px 0 0;font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
+
+.toasts{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);display:flex;flex-direction:column;gap:8px;z-index:60;align-items:center;pointer-events:none}
+.toast{background:#1b3342;border:1px solid #2d5568;padding:9px 14px;border-radius:10px;font-weight:600;font-size:13px;box-shadow:0 10px 30px -10px rgba(0,0,0,.6);animation:pop .2s ease both}
+.modal{position:fixed;inset:0;background:rgba(3,10,15,.7);display:grid;place-items:center;z-index:70;padding:16px}
+.modal .box{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px;width:min(400px,100%);display:flex;flex-direction:column;gap:12px;animation:pop .2s ease both}
+.modal h3{margin:0;font-size:18px}
+.big-num{font-size:34px;font-weight:800}
+
+@media (max-width:1260px){.layout{grid-template-columns:280px minmax(0,1fr)}.lab{grid-column:1/-1}}
+@media (max-width:780px){
+  .layout{grid-template-columns:1fr;padding:10px;gap:10px}
+  .table{order:-1;height:calc(100svh - 84px);min-height:470px}
+  .btn.main{font-size:14px}
+  :root{--cw:62px;--ch:88px}
+  .card .mid{font-size:28px}.card .tl{font-size:14px}
+  .card.big{--cw:80px;--ch:112px}
+  .top{padding:10px 12px;gap:8px}
+  .brand .wm,.bal small,.long,.rules{display:none}
+  .bal{padding-left:10px;gap:8px}
+  .colhead{display:none}
+  .srow{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .srow.pre{grid-template-columns:minmax(0,1fr) 150px}
+  .srow .vlab{grid-column:1/-1;flex-direction:row;align-items:center;gap:10px}
+  .srow.pre .vlab{grid-column:auto;flex-direction:column;align-items:stretch}
+  .srow .vlab .bar{flex:1}
+  .dgrid{grid-template-columns:repeat(5,1fr)}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><div class="logo">♠</div><span class="wm">BLACKJACK</span><span class="plus">PLUS</span></div>
+  <div class="spacer"></div>
+  <button class="btn ghost gear" data-act="settings" aria-label="Settings">⚙<span class="long"> Settings</span></button>
+  <div class="bal"><small>Balance</small><b id="bal" class="num">$0.00</b><button class="btn ghost" data-act="sessionOut" style="padding:8px 12px">Cash out<span class="long"> session</span></button></div>
+</header>
+
+<main class="layout">
+  <aside class="panel side">
+    <div>
+      <label class="lbl"><span>Bet amount</span><span id="betHint" class="num"></span></label>
+      <div class="betrow">
+        <span class="cur">$</span>
+        <input id="bet" type="number" min="0.1" step="1" value="10" inputmode="decimal">
+        <button data-act="half">½</button><button data-act="dbl">2×</button>
+      </div>
+      <div class="chips">
+        <button class="chip" data-act="chip:1">1</button><button class="chip" data-act="chip:5">5</button>
+        <button class="chip" data-act="chip:25">25</button><button class="chip" data-act="chip:100">100</button>
+        <button class="chip" data-act="max">Max</button>
+      </div>
+    </div>
+    <div id="feeLine" class="feeline"></div>
+    <div class="stats" id="stats"></div>
+  </aside>
+
+  <section class="panel table">
+    <div class="felt">
+      <div class="shoeline" id="shoeLine"></div>
+      <div class="zone">
+        <div class="zone-head">Dealer <span id="dTotal"></span></div>
+        <div class="cards" id="dCards"></div>
+        <div class="shields" id="dShields"></div>
+      </div>
+      <div class="subacts" id="subActs"></div>
+      <div class="center" id="center"></div>
+      <div class="hands" id="hands"></div>
+      <div class="sheet" id="sheet" hidden></div>
+    </div>
+    <div class="actbar" id="bar"></div>
+  </section>
+
+  <aside class="panel lab">
+    <div class="tabs" id="tabs">
+      <button class="tab" data-act="tab:shoe">Shoe control</button>
+      <button class="tab" data-act="tab:pick">Pick a card</button>
+      <button class="tab" data-act="tab:math">Fair math</button>
+    </div>
+    <div class="tabbody" id="tabBody"></div>
+  </aside>
+</main>
+<div class="toasts" id="toasts"></div>
+<div id="modalRoot"></div>
+
+<script>
+/* =====================================================================
+   ENGINE START — exact-composition blackjack EV engine
+   ===================================================================== */
+// Card values are 1..10 (1 = Ace, 10 = any ten-value card).
+const POW = []; { let p = 1; for (let i = 0; i < 10; i++) { POW.push(p); p *= 22; } }
+const best = (h, a) => (a && h + 10 <= 21) ? h + 10 : h;
+// Dealer outcome vector: [17, 18, 19, 20, 21, bust, blackjack]
+const BUSTD = [0, 0, 0, 0, 0, 1, 0], BJD = [0, 0, 0, 0, 0, 0, 1];
+const POINTD = {}; for (let t = 17; t <= 21; t++) { const d = [0, 0, 0, 0, 0, 0, 0]; d[t - 17] = 1; POINTD[t] = d; }
+
+// Dealer final distribution, drawing without replacement from `comp`.
+// (h0, a0, n0) = dealer's current hard total, has-ace, card count.
+// `excl` = card values the dealer's NEXT card can't be (a block, or the no-blackjack condition).
+function dealerDist(comp, h0, a0, n0, excl) {
+  const c = comp.slice(); let N = 0; for (let i = 1; i <= 10; i++) N += c[i];
+  const ex = excl && excl.length ? excl : null;
+  const memo = new Map();
+  function rec(h, a, n, key, first) {
+    if (h > 21) return BUSTD;
+    const b = best(h, a);
+    if (b >= 17) return (n === 2 && b === 21) ? BJD : POINTD[b];
+    if (!first) { const m = memo.get(key); if (m) return m; }
+    const r = [0, 0, 0, 0, 0, 0, 0];
+    let denom = N;
+    if (first && ex) { for (const v of ex) denom -= c[v]; if (denom <= 0) return rec(h, a, n, key, false); }
+    if (denom <= 0) { r[5] = 1; return r; }
+    for (let v = 1; v <= 10; v++) {
+      if (first && ex && ex.includes(v)) continue;
+      const k = c[v]; if (!k) continue;
+      const p = k / denom; c[v]--; N--;
+      const s = rec(h + v, a || v === 1, n + 1, key + POW[v - 1], false);
+      c[v]++; N++;
+      for (let i = 0; i < 7; i++) r[i] += p * s[i];
+    }
+    if (!first) memo.set(key, r);
+    return r;
+  }
+  return rec(h0, a0, n0, 0, true);
+}
+// EV of standing on each total against a (no-blackjack) dealer distribution
+function standArr(D) {
+  const s = new Array(32).fill(-1);
+  for (let t = 0; t <= 21; t++) {
+    let e = D[5];
+    for (let i = 0; i < 5; i++) { const d = 17 + i; if (t > d) e += D[i]; else if (t < d) e -= D[i]; }
+    s[t] = e;
+  }
+  return s;
+}
+function makeCtx(comp, D) {
+  let N = 0; for (let i = 1; i <= 10; i++) N += comp[i];
+  return { c: comp.slice(), N, st: standArr(D), memo: new Map() };
+}
+// Best of stand/hit, every later draw tracked card-by-card through the shoe.
+function pH(x, h, a, key) {
+  if (h > 21) return -1;
+  const b = best(h, a), s = x.st[b];
+  if (b === 21 || x.N <= 0) return s;
+  const mk = key * 64 + h * 2 + (a ? 1 : 0);
+  const m = x.memo.get(mk); if (m !== undefined) return m;
+  let hit = 0; const c = x.c, N = x.N;
+  for (let v = 1; v <= 10; v++) {
+    const n = c[v]; if (!n) continue;
+    c[v]--; x.N--;
+    hit += n / N * pH(x, h + v, a || v === 1, key + POW[v - 1]);
+    c[v]++; x.N++;
+  }
+  const r = hit > s ? hit : s; x.memo.set(mk, r); return r;
+}
+function firstDenom(x, ex) { let d = x.N; if (ex) for (const v of ex) d -= x.c[v]; return d; }
+// Hit / double / split, optionally with the player's next card blocked from values in `ex`.
+function hitEV(x, h, a, ex) {
+  if (x.N <= 0) return x.st[best(h, a)];
+  let d = firstDenom(x, ex); if (d <= 0) { ex = null; d = x.N; }
+  let e = 0; const c = x.c;
+  for (let v = 1; v <= 10; v++) {
+    if (ex && ex.includes(v)) continue;
+    const n = c[v]; if (!n) continue;
+    c[v]--; x.N--; e += n / d * pH(x, h + v, a || v === 1, POW[v - 1]); c[v]++; x.N++;
+  }
+  return e;
+}
+function dblEV(x, h, a, ex) {
+  if (x.N <= 0) return 2 * x.st[best(h, a)];
+  let d = firstDenom(x, ex); if (d <= 0) { ex = null; d = x.N; }
+  let e = 0; const c = x.c;
+  for (let v = 1; v <= 10; v++) {
+    if (ex && ex.includes(v)) continue;
+    const n = c[v]; if (!n) continue;
+    const hh = h + v; e += n / d * (hh > 21 ? -2 : 2 * x.st[best(hh, a || v === 1)]);
+  }
+  return e;
+}
+function splitHalf(x, s, canDbl, ex) {
+  const sa = s === 1; let d = firstDenom(x, ex); if (d <= 0) { ex = null; d = x.N; }
+  let e = 0; const c = x.c;
+  for (let v = 1; v <= 10; v++) {
+    if (ex && ex.includes(v)) continue;
+    const n = c[v]; if (!n) continue;
+    c[v]--; x.N--;
+    const hh = s + v, aa = sa || v === 1;
+    let val = pH(x, hh, aa, POW[v - 1]);
+    if (canDbl && best(hh, aa) < 21) { const dd = dblEV(x, hh, aa, null); if (dd > val) val = dd; }
+    c[v]++; x.N++;
+    e += n / d * val;
+  }
+  return e;
+}
+// One split; the block (if any) protects the first split hand's second card.
+const splitEV = (x, s, canDbl, ex) => splitHalf(x, s, canDbl, ex) + splitHalf(x, s, canDbl, null);
+
+// Pre-deal expected value of one round (per unit bet).
+// Dealer-blackjack-takes-original-bet-only is EV-identical to a peek game, so dealer outcomes
+// are conditioned on no blackjack and blackjack is settled up front.
+function roundEV(comp) {
+  let N = 0; for (let i = 1; i <= 10; i++) N += comp[i];
+  if (N < 10) return NaN;
+  comp = comp.slice();
+  const standUp = [];
+  for (let up = 1; up <= 10; up++) {
+    if (!comp[up]) continue;
+    comp[up]--;
+    const bjCard = up === 1 ? 10 : up === 10 ? 1 : 0;
+    const D = dealerDist(comp, up, up === 1, 1, bjCard ? [bjCard] : null);
+    standUp[up] = standArr(D);
+    comp[up]++;
+  }
+  let ev = 0;
+  const q = new Float64Array(11), memo = new Float64Array(64);
+  for (let c1 = 1; c1 <= 10; c1++) {
+    if (!comp[c1]) continue;
+    for (let c2 = c1; c2 <= 10; c2++) {
+      const n2 = comp[c2] - (c2 === c1 ? 1 : 0); if (n2 <= 0) continue;
+      const p12 = (c1 === c2 ? 1 : 2) * comp[c1] / N * n2 / (N - 1);
+      for (let up = 1; up <= 10; up++) {
+        const nu = comp[up] - (up === c1) - (up === c2); if (nu <= 0) continue;
+        const p = p12 * nu / (N - 2);
+        comp[c1]--; comp[c2]--; comp[up]--;
+        const N3 = N - 3;
+        const pD = up === 1 ? comp[10] / N3 : up === 10 ? comp[1] / N3 : 0;
+        if (c1 === 1 && c2 === 10) ev += p * (1 - pD) * 1.5;
+        else if (standUp[up]) {
+          for (let v = 1; v <= 10; v++) q[v] = comp[v] / N3;
+          memo.fill(NaN);
+          ev += p * (-pD + (1 - pD) * dealValue(q, standUp[up], c1, c2, memo));
+        }
+        comp[c1]++; comp[c2]++; comp[up]++;
+      }
+    }
+  }
+  return ev;
+}
+function dealValue(q, st, c1, c2, memo) {
+  function H(h, a) {
+    if (h > 21) return -1;
+    const b = best(h, a), s = st[b]; if (b === 21) return s;
+    const i = h * 2 + (a ? 1 : 0); if (!isNaN(memo[i])) return memo[i];
+    let hit = 0; for (let v = 1; v <= 10; v++) if (q[v]) hit += q[v] * H(h + v, a || v === 1);
+    const r = hit > s ? hit : s; memo[i] = r; return r;
+  }
+  function D(h, a) { let e = 0; for (let v = 1; v <= 10; v++) if (q[v]) { const hh = h + v; e += q[v] * (hh > 21 ? -2 : 2 * st[best(hh, a || v === 1)]); } return e; }
+  const h = c1 + c2, a = c1 === 1 || c2 === 1;
+  let hit = 0; for (let k = 1; k <= 10; k++) if (q[k]) hit += q[k] * H(h + k, a || k === 1);
+  let v = Math.max(st[best(h, a)], hit, D(h, a), -0.5);
+  if (c1 === c2) {
+    let s = 0; for (let k = 1; k <= 10; k++) if (q[k]) {
+      const hh = c1 + k, aa = c1 === 1 || k === 1;
+      let x = H(hh, aa); if (best(hh, aa) < 21) x = Math.max(x, D(hh, aa));
+      s += q[k] * x;
+    }
+    v = Math.max(v, 2 * s);
+  }
+  return v;
+}
+/* ENGINE END */
+
+/* =====================================================================
+   GAME
+   ===================================================================== */
+const RANKS = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+const RV = [1,2,3,4,5,6,7,8,9,10,10,10,10];
+const VL = ['', 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
+const SUITS = ['♠','♥','♦','♣']; const RED = new Set(['♥','♦']);
+const MIN_POOL = 20, MIN_PRE = 40;
+
+const S = {
+  balance: 1000, start: 1000, bet: 10, decks: 6, preRemoved: new Set(),
+  phase: 'bet', deck: [], dealer: [], hands: [], cur: 0, offer: null, base: 10,
+  pShield: new Set(), dShield: new Set(), gone: {},
+  waiting: false, resume: null, msg: null, token: 0,
+  preview: false, step: false, speed: 1, settingsOpen: false, pickMode: 'hit', tab: 'shoe',
+  margin: 0.05,    // house margin on every power: you pay fair × (1 + m), you're paid fair × (1 − m)
+  coMargin: 0.02,  // house margin on cash outs: you receive fair value × (1 − m)
+  stats: { hands: 0, feesPaid: 0, feesRecv: 0, cashouts: 0, house: 0 },
+  roundStake: 0, roundRet: 0, roundFees: 0,
+};
+// Game Lobby: inside the lobby this game plays from the lobby's shared wallet (nothing changes when the game is opened on its own)
+const LOBBY = (() => { try { return window.parent !== window && window.parent.LobbyWallet || null; } catch (e) { return null; } })();
+if (LOBBY) S.balance = S.start = LOBBY.attach(() => S.balance);
+
+const $ = id => document.getElementById(id);
+const r2 = x => Math.round(x * 100) / 100;
+const fmt = x => '$' + Math.abs(x).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const sfmt = x => (r2(x) >= 0 ? '+' : '−') + fmt(x);
+const pct = x => (x >= 0 ? '+' : '−') + Math.abs(x * 100).toFixed(2) + '%';
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const pace = ms => sleep(ms * S.speed);  // game-speed setting scales every deal / dealer delay
+const sum = a => a.reduce((s, x) => s + x, 0);
+const vlist = set => [...set].sort((a, b) => a - b).map(v => VL[v]).join(', ');
+// House margin: the house always comes out ahead of the fair (zero-EV) price by m × |fair|.
+const housePrice = fair => fair > 0 ? fair * (1 + S.margin) : fair * (1 - S.margin);
+const cashOffer = fair => fair * (1 - S.coMargin);
+let uid = 0;
+const mkCard = (r, s, picked) => ({ id: ++uid, r, s, v: RV[r], picked: !!picked });
+function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function stdComp() { const c = new Array(11).fill(0); for (let v = 1; v <= 9; v++) c[v] = 4 * S.decks; c[10] = 16 * S.decks; return c; }
+function preComp(set = S.preRemoved) { const c = stdComp(); for (const v of set) c[v] = 0; return c; }
+function poolComp() { const c = new Array(11).fill(0); for (const x of S.deck) c[x.v]++; return c; }
+function buildShoe() {
+  const d = [];
+  for (let r = 0; r < 13; r++) {
+    if (S.preRemoved.has(RV[r]) || S.gone[RV[r]]) continue;
+    for (let k = 0; k < 4 * S.decks; k++) d.push(mkCard(r, SUITS[k % 4]));
+  }
+  return shuffle(d);
+}
+// Deal from the top of the shoe, skipping any card values blocked for this target.
+function drawFor(target) {
+  if (!S.deck.length) { S.deck = buildShoe(); toast('Shoe ran out — fresh shoe shuffled in'); }
+  const sh = target === 'player' ? S.pShield : target === 'dealer' ? S.dShield : null;
+  let i = S.deck.length - 1;
+  if (sh && sh.size) { while (i >= 0 && sh.has(S.deck[i].v)) i--; if (i < 0) i = S.deck.length - 1; }
+  const [c] = S.deck.splice(i, 1);
+  if (target === 'dealer') S.dShield.clear();
+  return c;
+}
+function HA(cards) { let h = 0, a = false; for (const x of cards) { h += x.v; if (x.v === 1) a = true; } return [h, a]; }
+const handBest = cards => { const [h, a] = HA(cards); return best(h, a); };
+const isBJ = cards => cards.length === 2 && handBest(cards) === 21;
+const curHand = () => S.hands[S.cur];
+const inHand = () => S.phase === 'player' || S.phase === 'offer';
+const betPhase = () => S.phase === 'bet' || S.phase === 'done';
+const liveHands = () => S.hands.filter(h => !h.result && !h.natural);
+
+/* ---------- pre-deal pricing (cached) ---------- */
+const evCache = new Map(), stdCache = new Map();
+function stdEV() { if (!stdCache.has(S.decks)) stdCache.set(S.decks, roundEV(stdComp())); return stdCache.get(S.decks); }
+function deckStats() {
+  const k = S.decks + '|' + [...S.preRemoved].sort((a, b) => a - b).join(',');
+  if (evCache.has(k)) return evCache.get(k);
+  const comp = preComp(), std = stdComp(), total = sum(comp), ev = roundEV(comp), rem = [], add = [];
+  for (let v = 1; v <= 10; v++) {
+    if (comp[v] > 0 && total - comp[v] >= MIN_PRE) { const c2 = comp.slice(); c2[v] = 0; rem[v] = roundEV(c2); }
+    if (S.preRemoved.has(v)) { const c2 = comp.slice(); c2[v] = std[v]; add[v] = roundEV(c2); }
+  }
+  const res = { ev, rem, add, total }; evCache.set(k, res); return res;
+}
+const deckFair = (ev = deckStats().ev) => S.bet * (ev - stdEV());
+const deckFee = (ev) => r2(housePrice(deckFair(ev)));
+
+/* ---------- live valuation ---------- */
+function handOptions(x, hd, h, a, isCur, ex) {
+  const two = hd.cards.length === 2, afford = S.balance >= S.base, b = best(h, a);
+  const o = { stand: x.st[b] };
+  if (b < 21) o.hit = hitEV(x, h, a, ex);
+  if (two && afford && b < 21) o.double = dblEV(x, h, a, ex);
+  if (isCur && two && S.hands.length === 1) {
+    o.surrender = -0.5;
+    if (hd.cards[0].v === hd.cards[1].v && afford) o.split = splitEV(x, hd.cards[0].v, true, ex);
+  }
+  o.best = Math.max(...Object.values(o));
+  return o;
+}
+function offerTakeValue(x, h, a, v, mode) {
+  x.c[v]--; x.N--;
+  const hh = h + v, aa = a || v === 1;
+  const val = mode === 'hit' ? pH(x, hh, aa, POW[v - 1]) : (hh > 21 ? -2 : 2 * x.st[best(hh, aa)]);
+  x.c[v]++; x.N++;
+  return val;
+}
+function pickValue(x, h, a, v, mode) {
+  const hh = h + v, aa = a || v === 1;
+  return mode === 'hit' ? pH(x, hh, aa, 0) : (hh > 21 ? -2 : 2 * x.st[best(hh, aa)]);
+}
+// Fair value of the whole round during your turn. Overrides let us price a change before making it:
+// o.comp = shoe composition, o.pShield / o.dShield = blocked values for your / the dealer's next card.
+function inHandEval(o = {}) {
+  const comp = (o.comp || poolComp()).slice();
+  if (S.offer) comp[S.offer.card.v]++;
+  const pEx = [...(o.pShield || S.pShield)], dEx = [...(o.dShield || S.dShield)];
+  const up = S.dealer[0].v;
+  const D = dealerDist(comp, up, up === 1, 1, dEx);
+  const pbj = D[6], q = 1 - pbj;
+  const Dc = q > 1e-12 ? D.map(p => p / q) : [0, 0, 0, 0, 0, 1, 0];
+  const x = makeCtx(comp, Dc);
+  const base = S.base; let stakes = 0, ev = 0, cur = null;
+  S.hands.forEach((hd, i) => {
+    stakes += hd.stake;
+    const [h, a] = HA(hd.cards);
+    if (hd.result === 'bust') { ev -= hd.stake; return; }
+    if (hd.result === 'surrender') { ev -= hd.stake / 2; return; }
+    if (hd.done) { ev += hd.stake * x.st[best(h, a)]; return; }
+    if (i === S.cur) {
+      if (S.offer) {
+        const v = offerTakeValue(x, h, a, S.offer.card.v, S.offer.mode);
+        const eh = S.offer.mode === 'hit' ? hitEV(x, h, a, pEx) : dblEV(x, h, a, pEx);
+        const rf = base * q * (eh - v);
+        cur = { h, a, offerV: v, now: v, rerollFair: rf, rerollFee: housePrice(rf) };
+        ev += base * v;
+      } else {
+        const opts = handOptions(x, hd, h, a, true, pEx);
+        cur = { h, a, opts, now: opts.best };
+        ev += base * opts.best;
+      }
+    } else ev += base * handOptions(x, hd, h, a, false, null).best;
+  });
+  if (cur) { cur.others = ev - base * cur.now; }
+  return { cash: stakes - pbj * base + q * ev, stakes, x, cur, pbj, q };
+}
+// Fair value during the dealer's turn.
+function dealerEval(o = {}) {
+  const comp = o.comp || poolComp();
+  const [h, a] = HA(S.dealer);
+  const D = dealerDist(comp, h, a, S.dealer.length, [...(o.dShield || S.dShield)]);
+  let stakes = 0, cash = 0, nat = false;
+  for (const hd of S.hands) {
+    stakes += hd.stake;
+    if (hd.natural) { nat = true; cash += (1 - D[6]) * 2.5 * hd.stake; continue; }
+    if (hd.result === 'bust') continue;
+    if (hd.result === 'surrender') { cash += (1 - D[6]) * hd.stake / 2; continue; }
+    const pb = handBest(hd.cards);
+    for (let i = 0; i < 6; i++) cash += D[i] * hd.stake * (i === 5 || pb > 17 + i ? 2 : pb === 17 + i ? 1 : 0);
+  }
+  cash += D[6] * (nat ? S.hands[0].stake : stakes - S.base);
+  return { cash, stakes, pbj: D[6], dealerPhase: true };
+}
+const evalNow = (o) => S.phase === 'dealer' ? dealerEval(o) : inHandEval(o);
+
+/* ---------- money ---------- */
+function applyFee(fee, label, fair) {
+  fee = r2(fee);
+  if (fair !== undefined) S.stats.house += fee - fair;
+  if (Math.abs(fee) < 0.005) { toast(label + ' · free'); return; }
+  S.balance = r2(S.balance - fee); S.roundFees = r2(S.roundFees + fee);
+  if (fee > 0) S.stats.feesPaid += fee; else S.stats.feesRecv += -fee;
+  toast(label + ' · ' + (fee > 0 ? 'paid ' + fmt(fee) : 'received ' + fmt(fee)));
+}
+function feeTag(f, suffix = '') {
+  f = r2(f);
+  if (Math.abs(f) < 0.005) return `<span class="price free">Free</span>`;
+  return f > 0 ? `<span class="price pay">Pay ${fmt(f)}${suffix}</span>` : `<span class="price get">Get ${fmt(f)}${suffix}</span>`;
+}
+
+/* ---------- flow ---------- */
+async function deal() {
+  if (!betPhase()) return;
+  const bet = r2(S.bet), fee = deckFee();
+  if (!(bet > 0)) return toast('Enter a bet');
+  if (S.balance < bet + Math.max(0, fee)) return toast('Not enough balance');
+  S.token++; const t = S.token;
+  S.base = bet; S.balance = r2(S.balance - bet);
+  S.roundStake = bet; S.roundRet = 0; S.roundFees = 0;
+  if (Math.abs(fee) >= 0.005) applyFee(fee, 'Shoe modifier', deckFair());
+  S.gone = {}; S.pShield.clear(); S.dShield.clear();
+  S.deck = buildShoe(); S.dealer = []; S.offer = null; S.msg = null; S.cur = 0;
+  S.hands = [{ cards: [], stake: bet, done: false, result: null, natural: false, doubled: false }];
+  S.phase = 'dealing'; render();
+  const steps = [() => S.hands[0].cards.push(drawFor()), () => S.dealer.push(drawFor()), () => S.hands[0].cards.push(drawFor())];
+  for (const s of steps) { await pace(240); if (t !== S.token) return; s(); render(); }
+  await pace(220); if (t !== S.token) return;
+  const hd = S.hands[0];
+  if (isBJ(hd.cards)) {
+    hd.natural = true; hd.done = true;
+    const up = S.dealer[0].v;
+    if (up === 1 || up === 10) { toast('Blackjack! Waiting on the dealer\'s second card'); return dealerTurn(); }
+    return settle();
+  }
+  S.phase = 'player'; render();
+}
+function afterCard(hd) {
+  S.pShield.clear();
+  const [h] = HA(hd.cards);
+  if (h > 21) { hd.done = true; hd.result = 'bust'; }
+  else if (handBest(hd.cards) === 21 || hd.doubled) hd.done = true;
+  if (hd.done) nextHand(); else { S.phase = 'player'; render(); }
+}
+function nextHand() {
+  S.pShield.clear();
+  let i = S.cur;
+  while (i < S.hands.length && S.hands[i].done) i++;
+  if (i < S.hands.length) {
+    S.cur = i; const hd = S.hands[i];
+    if (handBest(hd.cards) === 21) { hd.done = true; return nextHand(); }
+    S.phase = 'player'; render(); return;
+  }
+  // The dealer only needs to play if a hand is still live, or a dealer blackjack would change the payout
+  // (refunding doubles/splits, a pending natural, or a surrender).
+  const up = S.dealer[0].v;
+  const bjMatters = (up === 1 || up === 10) && (S.roundStake > S.base || S.hands.some(h => h.natural || h.result === 'surrender'));
+  if (liveHands().length || bjMatters) dealerTurn(); else settle();
+}
+function hit(preview) {
+  if (S.phase !== 'player') return;
+  const hd = curHand(); if (handBest(hd.cards) >= 21) return;
+  if (S.preview || preview === true) { S.offer = { card: drawFor('player'), mode: 'hit' }; S.phase = 'offer'; render(); }
+  else { hd.cards.push(drawFor('player')); afterCard(hd); }
+}
+function stand() {
+  if (S.phase !== 'player') return;
+  if (S.pShield.size) toast('Unused block on your next card expired');
+  curHand().done = true; nextHand();
+}
+function doubleDown() {
+  if (S.phase !== 'player') return;
+  const hd = curHand(); if (hd.cards.length !== 2 || S.balance < S.base || handBest(hd.cards) >= 21) return;
+  S.balance = r2(S.balance - S.base); hd.stake += S.base; hd.doubled = true; S.roundStake += S.base;
+  if (S.preview) { S.offer = { card: drawFor('player'), mode: 'double' }; S.phase = 'offer'; render(); }
+  else { hd.cards.push(drawFor('player')); afterCard(hd); }
+}
+async function split() {
+  if (S.phase !== 'player') return;
+  const hd = curHand();
+  if (S.hands.length !== 1 || hd.cards.length !== 2 || hd.cards[0].v !== hd.cards[1].v || S.balance < S.base) return;
+  S.balance = r2(S.balance - S.base); S.roundStake += S.base;
+  const t = S.token;
+  S.hands = hd.cards.map(c => ({ cards: [c], stake: S.base, done: false, result: null, natural: false, doubled: false, split: true }));
+  S.phase = 'dealing'; render();
+  await pace(280); if (t !== S.token) return;
+  S.hands[0].cards.push(drawFor('player')); S.pShield.clear(); render();
+  await pace(280); if (t !== S.token) return;
+  S.hands[1].cards.push(drawFor()); render();
+  await pace(200); if (t !== S.token) return;
+  S.cur = 0; nextHand();
+}
+function surrender() {
+  if (S.phase !== 'player') return;
+  const hd = curHand(); if (S.hands.length !== 1 || hd.cards.length !== 2) return;
+  hd.done = true; hd.result = 'surrender'; nextHand();
+}
+function takeOffer() {
+  if (S.phase !== 'offer') return;
+  const hd = curHand(); hd.cards.push(S.offer.card); S.offer = null; afterCard(hd);
+}
+function reroll() {
+  if (S.phase !== 'offer') return;
+  const c = inHandEval().cur, fee = r2(c.rerollFee);
+  if (fee > S.balance) return toast('Not enough balance to reshuffle');
+  applyFee(fee, 'Reshuffled', c.rerollFair);
+  S.deck.push(S.offer.card); shuffle(S.deck);
+  S.offer = { card: drawFor('player'), mode: S.offer.mode };
+  render();
+}
+function pickCard(r) {
+  if (!inHand()) return;
+  const E = inHandEval(), hd = curHand(), { h, a } = E.cur;
+  const mode = S.offer ? S.offer.mode : S.pickMode;
+  if (!S.offer && mode === 'double' && (hd.cards.length !== 2 || S.balance < S.base)) return;
+  const fair = S.base * E.q * (pickValue(E.x, h, a, RV[r], mode) - E.cur.now);
+  const fee = r2(housePrice(fair));
+  const extra = (!S.offer && mode === 'double') ? S.base : 0;
+  if (fee + extra > S.balance) return toast('Not enough balance for that card');
+  applyFee(fee, 'Picked ' + RANKS[r], fair);
+  S.sheet = null;
+  if (S.offer) { S.deck.push(S.offer.card); shuffle(S.deck); S.offer = null; }
+  else if (mode === 'double') { S.balance = r2(S.balance - S.base); hd.stake += S.base; hd.doubled = true; S.roundStake += S.base; }
+  hd.cards.push(mkCard(r, SUITS[Math.random() * 4 | 0], true));
+  afterCard(hd);
+}
+function dealerNeedsDraw() {
+  if (S.dealer.length === 1) return true;
+  return liveHands().length > 0 && handBest(S.dealer) < 17;
+}
+async function dealerTurn() {
+  S.phase = 'dealer'; const t = S.token; render();
+  await pace(300);
+  while (t === S.token && dealerNeedsDraw()) {
+    if (S.step) {
+      S.waiting = true; render();
+      await new Promise(r => { S.resume = r; });
+      S.waiting = false; S.resume = null;
+    } else await pace(850);
+    if (t !== S.token) return;
+    S.dealer.push(drawFor('dealer')); render();
+    await pace(450);
+  }
+  if (t !== S.token) return;
+  settle();
+}
+function letDealerDraw() { if (S.waiting && S.resume) S.resume(); }
+function settle() {
+  const dBJ = isBJ(S.dealer); let ret = 0, label = null;
+  if (dBJ) {
+    const nat = S.hands[0].natural;
+    for (const hd of S.hands) hd.result = hd.natural ? 'push' : 'lose';
+    ret = nat ? S.hands[0].stake : S.roundStake - S.base;
+    label = nat ? 'Both blackjack' : 'Dealer blackjack' + (ret > 0 ? ' · extra bets refunded' : '');
+  } else {
+    const db = handBest(S.dealer), dBust = db > 21;
+    for (const hd of S.hands) {
+      if (hd.natural) { hd.result = 'bj'; ret += hd.stake * 2.5; label = 'Blackjack!'; continue; }
+      if (hd.result === 'bust') continue;
+      if (hd.result === 'surrender') { ret += hd.stake / 2; label = 'Surrendered'; continue; }
+      const pb = handBest(hd.cards);
+      if (dBust || pb > db) { hd.result = 'win'; ret += hd.stake * 2; }
+      else if (pb === db) { hd.result = 'push'; ret += hd.stake; }
+      else hd.result = 'lose';
+    }
+    if (dBust) label = 'Dealer busts';
+  }
+  S.balance = r2(S.balance + ret); S.roundRet += ret;
+  finish(label);
+}
+function cashOut() {
+  if (!inHand() && S.phase !== 'dealer') return;
+  const fair = evalNow().cash, v = r2(cashOffer(fair));
+  S.stats.house += fair - v;
+  S.token++;
+  if (S.resume) { const r = S.resume; S.resume = null; S.waiting = false; r(); }
+  S.balance = r2(S.balance + v); S.roundRet += v; S.stats.cashouts++;
+  for (const hd of S.hands) hd.result = 'cashed';
+  if (S.offer) { S.deck.push(S.offer.card); S.offer = null; }
+  finish('Cashed out ' + fmt(v));
+}
+function finish(label) {
+  S.phase = 'done'; S.offer = null; S.waiting = false; S.sheet = null; S.stats.hands++;
+  S.pShield.clear(); S.dShield.clear();
+  const net = r2(S.roundRet - S.roundStake);
+  S.msg = { label: label || (net > 0 ? 'You win' : net < 0 ? 'Dealer wins' : 'Push'), net, fees: S.roundFees };
+  render();
+}
+
+/* ---------- shoe control ---------- */
+function shieldTarget(t) { return t === 'p' ? S.pShield : S.dShield; }
+function canShield(t, v, pool) {
+  if (t === 'p') { if (S.phase !== 'player') return false; if (handBest(curHand().cards) >= 21) return false; }
+  else if (!(S.phase === 'player' || S.phase === 'dealer')) return false;
+  if (t === 'd' && S.phase === 'dealer' && !dealerNeedsDraw()) return false;
+  const set = shieldTarget(t);
+  if (set.has(v) || !pool[v]) return false;
+  let allowed = sum(pool); for (const w of set) allowed -= pool[w];
+  return allowed - pool[v] > 0;
+}
+function shieldFair(t, v) {
+  const set = new Set(shieldTarget(t)); set.add(v);
+  return evalNow({ [t === 'p' ? 'pShield' : 'dShield']: set }).cash - evalNow().cash;
+}
+const shieldPrice = (t, v) => housePrice(shieldFair(t, v));
+function buyShield(t, v) {
+  if (!canShield(t, v, poolComp())) return;
+  const fair = shieldFair(t, v), fee = r2(housePrice(fair));
+  if (fee > S.balance) return toast('Not enough balance');
+  applyFee(fee, `${t === 'p' ? 'Your' : "Dealer's"} next card won't be ${VL[v]}`, fair);
+  shieldTarget(t).add(v); render();
+}
+function canRemoveAll(v, pool) {
+  if (!(S.phase === 'player' || S.phase === 'dealer')) return false;
+  return pool[v] > 0 && sum(pool) - pool[v] >= MIN_POOL;
+}
+function removeAllFair(v) { const c = poolComp(); c[v] = 0; return evalNow({ comp: c }).cash - evalNow().cash; }
+function putBackFair(v) { const c = poolComp(); c[v] += S.gone[v].length; return evalNow({ comp: c }).cash - evalNow().cash; }
+const removeAllPrice = v => housePrice(removeAllFair(v));
+const putBackPrice = v => housePrice(putBackFair(v));
+function removeAll(v) {
+  if (!canRemoveAll(v, poolComp())) return;
+  const fair = removeAllFair(v), fee = r2(housePrice(fair));
+  if (fee > S.balance) return toast('Not enough balance');
+  applyFee(fee, `Removed every ${VL[v]} from the shoe`, fair);
+  S.gone[v] = S.deck.filter(c => c.v === v); S.deck = S.deck.filter(c => c.v !== v);
+  S.pShield.delete(v); S.dShield.delete(v);
+  render();
+}
+function putBack(v) {
+  if (!S.gone[v] || !(S.phase === 'player' || S.phase === 'dealer')) return;
+  const fair = putBackFair(v), fee = r2(housePrice(fair));
+  if (fee > S.balance) return toast('Not enough balance');
+  applyFee(fee, `Put the ${VL[v]}s back`, fair);
+  S.deck.push(...S.gone[v]); shuffle(S.deck); delete S.gone[v];
+  render();
+}
+function togglePre(v) {
+  if (!betPhase()) return;
+  const ds = deckStats();
+  if (S.preRemoved.has(v)) S.preRemoved.delete(v);
+  else { if (ds.rem[v] === undefined) return toast(`Shoe needs at least ${MIN_PRE} cards`); S.preRemoved.add(v); }
+  render();
+}
+
+/* ---------- rendering ---------- */
+const seen = new Set();
+function cardHTML(c, opts = {}) {
+  let anim = ''; if (!seen.has(c.id)) { anim = 'deal-in'; seen.add(c.id); }
+  return `<div class="card ${RED.has(c.s) ? 'red' : ''} ${anim} ${c.picked ? 'picked' : ''} ${opts.offered ? 'offered' : ''} ${opts.big ? 'big' : ''}">
+    <div class="tl">${RANKS[c.r]}<i>${c.s}</i></div><div class="mid">${c.s}</div>
+    ${opts.offered ? '<span class="tag">ON OFFER</span>' : c.picked ? '<span class="tag">PICKED</span>' : ''}</div>`;
+}
+function totalText(cards) {
+  const [h, a] = HA(cards);
+  if (h > 21) return h;
+  if (a && h + 10 < 21) return `${h}/${h + 10}`;
+  return best(h, a);
+}
+function totalBadge(cards) {
+  if (!cards.length) return '';
+  const b = handBest(cards);
+  const cls = b > 21 ? 'bust' : isBJ(cards) ? 'bj' : b === 21 ? 't21' : '';
+  return `<span class="total num ${cls}">${isBJ(cards) ? 'BJ' : totalText(cards)}</span>`;
+}
+
+function render() {
+  let E = null;
+  if (inHand()) E = inHandEval();
+  else if (S.phase === 'dealer') E = dealerEval();
+  renderSide(E); renderTable(E); renderLab(E);
+  $('bal').textContent = fmt(S.balance);
+}
+
+function renderSide(E) {
+  const bp = betPhase(), inp = $('bet');
+  if (document.activeElement !== inp) inp.value = S.bet;
+  inp.disabled = !bp;
+  document.querySelectorAll('.betrow button,.chip').forEach(b => b.disabled = !bp);
+  $('betHint').textContent = bp ? '' : 'In play: ' + fmt(S.roundStake);
+
+  if (bp) {
+    const ds = deckStats();
+    $('feeLine').innerHTML = `
+      <div><span>Your edge (this shoe)</span><b class="num ${ds.ev >= 0 ? 'pos' : 'neg'}">${pct(ds.ev)}</b></div>
+      <div><span>Shoe modifier per hand</span><b class="num">${feeTag(deckFee())}</b></div>
+      <div><span>House margin</span><b class="num">${(S.margin * 100).toFixed(1).replace('.0', '')}% powers · ${(S.coMargin * 100).toFixed(1).replace('.0', '')}% cash out</b></div>`;
+  }
+  $('feeLine').style.display = bp ? '' : 'none';
+
+  const st = S.stats, net = S.balance - S.start;
+  $('stats').innerHTML = `
+    <div class="stat"><small>Session</small><b class="num ${net >= 0 ? 'pos' : 'neg'}">${sfmt(net)}</b></div>
+    <div class="stat"><small>Hands</small><b class="num">${st.hands}</b></div>
+    <div class="stat"><small>Fees paid</small><b class="num">${fmt(st.feesPaid)}</b></div>
+    <div class="stat"><small>Paid to you</small><b class="num">${fmt(st.feesRecv)}</b></div>
+    <div class="stat"><small>House margin</small><b class="num">${fmt(st.house)}</b></div>
+    <div class="stat"><small>Cash outs</small><b class="num">${st.cashouts}</b></div>`;
+}
+
+function priceWord(f) {
+  f = r2(f);
+  if (Math.abs(f) < 0.005) return `<small>free</small>`;
+  return f > 0 ? `<small class="pay">pay ${fmt(f)}</small>` : `<small class="get">get ${fmt(f)}</small>`;
+}
+
+// Main buttons: always visible at the bottom of the table.
+function renderBar(E) {
+  const P = S.phase;
+  const canCash = !!E && (inHand() || P === 'dealer') && cashOffer(E.cash) >= 0.005;
+  const cash = `<button class="btn gold main" data-act="cashout" ${canCash ? '' : 'disabled'}>Cash out<span class="sub num">${canCash ? fmt(cashOffer(E.cash)) : '&nbsp;'}</span></button>`;
+  let h;
+  if (betPhase()) {
+    const fee = deckFee(), ok = S.bet > 0 && S.balance >= S.bet + Math.max(0, fee);
+    h = `<div class="barbet"><button data-act="half" aria-label="Halve bet">½</button><span class="num">${fmt(S.bet)}</span><button data-act="dbl" aria-label="Double bet">2×</button></div>
+      <button class="btn primary main span2" data-act="deal" ${ok ? '' : 'disabled'}>${P === 'done' ? 'Deal again' : 'Deal'}<span class="sub">Space</span></button>`;
+  } else if (P === 'player' && E && E.cur) {
+    const o = E.cur.opts, blk = S.pShield.size ? ` · no ${vlist(S.pShield)}` : '';
+    h = `<button class="btn primary main" data-act="hit" ${o.hit === undefined ? 'disabled' : ''}>Hit${blk}<span class="sub num">H</span></button>
+      <button class="btn stand main" data-act="stand">Stand<span class="sub num">S</span></button>${cash}`;
+  } else if (P === 'offer' && E) {
+    const f = r2(E.cur.rerollFee);
+    h = `<button class="btn primary main" data-act="take">Take it<span class="sub">T</span></button>
+      <button class="btn stand main" data-act="reroll" ${f > S.balance ? 'disabled' : ''}>Reshuffle<span class="sub num">${Math.abs(f) < 0.005 ? 'free' : f > 0 ? 'pay ' + fmt(f) : 'get ' + fmt(f)}</span></button>${cash}`;
+  } else if (P === 'dealer' && E) {
+    h = S.waiting
+      ? `<button class="btn primary main span2" data-act="letDraw">Deal dealer's card<span class="sub">${S.dShield.size ? 'won\'t be ' + vlist(S.dShield) : 'Space'}</span></button>${cash}`
+      : `<button class="btn stand main span2" disabled>Dealer drawing…<span class="sub">&nbsp;</span></button>${cash}`;
+  } else {
+    h = `<button class="btn primary main" disabled>Hit<span class="sub">&nbsp;</span></button><button class="btn stand main" disabled>Stand<span class="sub">&nbsp;</span></button>${cash}`;
+  }
+  $('bar').innerHTML = h;
+}
+
+// Secondary buttons: a row just under the dealer.
+function renderSubActs(E) {
+  const P = S.phase;
+  const sb = (act, label, sub, ok, cls = '') => `<button class="subbtn ${cls}" data-act="${act}" ${ok ? '' : 'disabled'}>${label}${sub ? `<small class="num">${sub}</small>` : ''}</button>`;
+  let h = '';
+  if (P === 'player' && E && E.cur) {
+    const o = E.cur.opts;
+    h = sb('double', 'Double', '', o.double !== undefined)
+      + sb('split', 'Split', '', o.split !== undefined)
+      + sb('surrender', 'Surrender', '', o.surrender !== undefined)
+      + sb('peek', 'Preview hit', '', o.hit !== undefined, 'gold')
+      + sb('sheet:pick', 'Pick card', '', true, 'gold')
+      + sb('sheet:remove', 'Remove cards', '', true, 'gold');
+  } else if (P === 'offer') {
+    h = sb('sheet:pick', 'Pick a different card', '', true, 'gold');
+  } else if (P === 'dealer' && E && S.waiting) {
+    const pool = poolComp(), chips = [];
+    for (let v = 1; v <= 10; v++) {
+      const on = S.dShield.has(v), ok = canShield('d', v, pool), price = ok ? shieldPrice('d', v) : null;
+      chips.push(`<button class="subbtn chipv ${on ? 'on' : ''}" data-act="ds:${v}" ${ok && r2(price) <= S.balance ? '' : 'disabled'}>No ${VL[v]}${on ? '<small>blocked</small>' : ok ? priceWord(price) : '<small>—</small>'}</button>`);
+    }
+    const lead = S.dealer.length === 1 ? 'Block the dealer\'s 2nd card' : `Dealer on ${totalText(S.dealer)} — block its next card`;
+    h = `<div class="sublabel">${lead}${E.pbj > 0.00005 ? ` · blackjack ${(E.pbj * 100).toFixed(1)}%` : ''}</div>` + chips.join('') + sb('sheet:remove', 'Remove all…', '', true, 'gold');
+  }
+  $('subActs').innerHTML = h;
+}
+
+// Pop-out sheet over the table for Pick card / Remove cards.
+function renderSheet(E) {
+  const el = $('sheet');
+  if (S.sheet === 'remove' && !(S.phase === 'player' || S.phase === 'dealer')) S.sheet = null;
+  if (S.sheet === 'pick' && !inHand()) S.sheet = null;
+  if (!S.sheet || !E) { el.hidden = true; el.innerHTML = ''; return; }
+  const keep = el.hidden ? 0 : el.scrollTop;
+  el.hidden = false;
+  const title = S.sheet === 'pick' ? (S.offer ? 'Swap the card on offer' : 'Pick your next card') : 'Remove cards';
+  const body = S.sheet === 'pick' ? pickTab(E)
+    : `<div class="note"><b>Next ≠</b> keeps a value off one card — yours or the dealer's. <b>Remove all</b> pulls every card of that value from the shoe for the rest of the hand.</div>${removalRows()}`;
+  el.innerHTML = `<div class="sheet-head"><b>${title}</b><button class="xbtn" data-act="closeSheet">Close ✕</button></div>${body}`;
+  el.scrollTop = keep;
+}
+function toggleSheet(kind) {
+  if (S.sheet === kind) S.sheet = null;
+  else {
+    if (kind === 'remove' && !(S.phase === 'player' || S.phase === 'dealer')) return;
+    if (kind === 'pick' && !inHand()) return;
+    S.sheet = kind;
+  }
+  render();
+}
+
+function renderTable(E) {
+  const gone = Object.keys(S.gone).map(Number), pre = [...S.preRemoved];
+  const goneNow = gone.length && !betPhase();
+  $('shoeLine').innerHTML =
+    (pre.length ? `<span>Every hand without <b>${vlist(new Set(pre))}</b></span>` : '') +
+    (goneNow ? `<span>${pre.length ? '· ' : ''}Pulled this hand: <b>${vlist(new Set(gone))}</b></span>` : '');
+
+  $('dCards').innerHTML = S.dealer.map(c => cardHTML(c)).join('') +
+    (S.dealer.length === 1 && !betPhase() ? `<div class="slot">NEXT<br>CARD</div>` : '');
+  $('dTotal').innerHTML = !S.dealer.length ? '' : S.dealer.length === 1 ? `<span class="total num">${S.dealer[0].v === 1 ? '1/11' : S.dealer[0].v}</span>` : totalBadge(S.dealer);
+  $('dShields').innerHTML = S.dShield.size ? `<span class="shield">Dealer's next card won't be ${vlist(S.dShield)}</span>` : '';
+
+  let center = '';
+  if (S.msg && S.phase === 'done') {
+    const m = S.msg;
+    center = `<div class="msg"><span>${m.label}</span><span class="net num ${m.net > 0 ? 'pos' : m.net < 0 ? 'neg' : ''}">${sfmt(m.net)}</span>${Math.abs(m.fees) >= 0.005 ? `<small class="num">fees ${m.fees > 0 ? '−' : '+'}${fmt(m.fees)}</small>` : ''}</div>`;
+  } else if (S.phase === 'bet') {
+    center = `<div class="idle">Scared of a 10? <b>Block it</b> or <b>pull every 10</b> from the shoe. <b>Pick</b> your card, <b>reshuffle</b> until you like it, <b>cash out</b> any time.</div>`;
+  }
+  $('center').innerHTML = center;
+
+  $('hands').innerHTML = S.hands.map((hd, i) => {
+    const active = inHand() && i === S.cur;
+    const offer = active && S.offer ? S.offer.card : null;
+    const label = { win: 'Win', lose: 'Lose', push: 'Push', bust: 'Bust', bj: 'Blackjack', surrender: 'Surrender', cashed: 'Cashed out' }[hd.result];
+    let preview = '';
+    if (offer) {
+      const [h] = HA(hd.cards);
+      preview = `<span class="shield">${S.offer.mode === 'double' ? 'Double card' : 'On offer'} → ${h + offer.v > 21 ? 'bust' : totalText([...hd.cards, offer])}</span>`;
+    }
+    return `<div class="hand ${active && S.hands.length > 1 ? 'active' : ''}">
+      <div class="cards">${hd.cards.map(c => cardHTML(c)).join('')}${offer ? cardHTML(offer, { offered: true }) : ''}</div>
+      <div class="hand-foot">${S.hands.length > 1 ? `<span>Hand ${i + 1}</span>` : ''}${totalBadge(hd.cards)}<span class="stake num">${fmt(hd.stake)}${hd.doubled ? ' · 2×' : ''}</span>${label ? `<span class="res ${hd.result}">${label}</span>` : ''}${preview}</div>
+      ${active && S.pShield.size && !offer ? `<span class="shield">Your next card won't be ${vlist(S.pShield)}</span>` : ''}
+    </div>`;
+  }).join('');
+  renderSubActs(E); renderBar(E); renderSheet(E);
+}
+
+function renderLab(E) {
+  document.querySelectorAll('#tabs .tab').forEach(t => t.classList.toggle('on', t.dataset.act === 'tab:' + S.tab));
+  const body = $('tabBody');
+  body.innerHTML = S.tab === 'pick' ? pickTab(E) : S.tab === 'shoe' ? shoeTab(E) : mathTab(E);
+}
+
+function pickTab(E) {
+  if (!inHand() || !E || !E.cur) {
+    return `<div class="note"><b>Choose your next card.</b> On your turn, pick any rank and it's added straight to your hand — it doesn't come out of the shoe.</div>
+      <div class="note">The price is the exact change in your hand's value plus the house margin. A card that helps you costs money; a card that hurts you pays you.</div>
+      <div class="note" style="opacity:.7">${S.phase === 'dealer' ? 'The dealer is playing.' : 'Deal a hand to start picking.'}</div>`;
+  }
+  const hd = curHand(), { h, a } = E.cur;
+  const mode = S.offer ? S.offer.mode : S.pickMode;
+  const canDbl = !S.offer && hd.cards.length === 2 && S.balance >= S.base;
+  const vals = []; for (let v = 1; v <= 10; v++) vals[v] = pickValue(E.x, h, a, v, mode);
+  const tiles = RANKS.map((rk, r) => {
+    const v = RV[r], fee = housePrice(S.base * E.q * (vals[v] - E.cur.now));
+    const extra = (!S.offer && mode === 'double') ? S.base : 0;
+    const disabled = r2(fee) + extra > S.balance || (mode === 'double' && !S.offer && !canDbl);
+    const tot = h + v > 21 ? 'Bust' : totalText([...hd.cards, { v }]);
+    return `<button class="ptile" data-act="pick:${r}" ${disabled ? 'disabled' : ''}>
+      <span class="face">${rk}</span><span class="to">→ ${tot}</span>${feeTag(fee)}</button>`;
+  }).join('');
+  const modeSeg = S.offer
+    ? `<div class="note">Swap the <b>${RANKS[S.offer.card.r]}</b> on offer for any card. Priced against the card you'd otherwise take.</div>`
+    : `<div class="seg"><button class="${mode === 'hit' ? 'on' : ''}" data-act="pmode:hit">Hit with it</button><button class="${mode === 'double' ? 'on' : ''}" data-act="pmode:double" ${canDbl ? '' : 'disabled'}>Double with it</button></div>`;
+  return `${modeSeg}<div class="pickgrid">${tiles}</div>
+    <div class="note"><span class="price pay">Pay</span> means the card helps you, <span class="price get">Get</span> means it hurts you.</div>`;
+}
+
+function valLabel(v) { return v === 10 ? `<b>10</b><small>10 J Q K</small>` : `<b>${VL[v]}</b>`; }
+
+function shoeTab(E) {
+  if (betPhase()) {
+    const ds = deckStats(), std = stdEV(), sc = stdComp();
+    const rows = [];
+    for (let v = 1; v <= 10; v++) {
+      const off = S.preRemoved.has(v);
+      const nev = off ? ds.add[v] : ds.rem[v];
+      const price = nev === undefined ? null : deckFee(nev) - deckFee();
+      rows.push(`<div class="srow pre"><div class="vlab">${valLabel(v)}<small class="num">${off ? 'removed' : sc[v] + ' in shoe'}</small></div>
+        <div class="vlab"><div class="bar"><i style="width:${off ? 0 : 100}%"></i></div></div>
+        <button class="sbtn ${off ? 'on' : ''}" data-act="pre:${v}" ${price === null ? 'disabled' : ''}><span class="l">${off ? 'Put back every hand' : 'Remove all, every hand'}</span>${price === null ? '<span class="price free">—</span>' : feeTag(price, '/hand')}</button></div>`);
+    }
+    return `
+      <div class="sumgrid">
+        <div class="stat"><small>Cards in shoe</small><b class="num">${ds.total}</b></div>
+        <div class="stat"><small>Your edge</small><b class="num ${ds.ev >= 0 ? 'pos' : 'neg'}">${pct(ds.ev)}</b></div>
+        <div class="stat"><small>Standard shoe</small><b class="num ${std >= 0 ? 'pos' : 'neg'}">${pct(std)}</b></div>
+        <div class="stat"><small>Modifier / hand</small><b class="num">${feeTag(deckFee())}</b></div>
+      </div>
+      <div class="note">Between hands you can strip a whole rank out of every shoe. Each hand you pay (or get paid) <b>bet × (your shoe's EV − standard EV)</b>. Once a hand is dealt, the in-hand controls take over: block the next card, yours or the dealer's, or pull a rank for that hand only.</div>
+      <div class="srows">${rows.join('')}</div>
+      ${S.preRemoved.size ? '<button class="btn ghost" data-act="resetPre">Back to a standard shoe</button>' : ''}`;
+  }
+  if (S.phase === 'offer') return `<div class="note"><b>A card is on offer.</b> Take it or reshuffle first — then you can block cards or clear ranks from the shoe.</div>`;
+  if (!E) return `<div class="note">Dealing…</div>`;
+  return `<div class="sumgrid">
+      <div class="stat"><small>Cards in shoe</small><b class="num">${S.deck.length}</b></div>
+      <div class="stat"><small>Hand value now</small><b class="num">${fmt(E.cash)}</b></div></div>
+    <div class="note"><b>Next ≠</b> blocks one value for a single card — yours or the dealer's. <b>Remove all</b> pulls every card of that value out of the shoe for the rest of this hand, changing your draws and the dealer's. Each price starts from the exact change in your hand's fair value, recalculated through every card still to come, then adds the house margin.</div>` + removalRows();
+}
+// The removal list (shared by the pop-out on the table and the Shoe control tab).
+function removalRows() {
+  const pool = poolComp(), dPhase = S.phase === 'dealer';
+  const rows = [];
+  for (let v = 1; v <= 10; v++) {
+    const goneN = S.gone[v] ? S.gone[v].length : 0;
+    const pOk = canShield('p', v, pool), dOk = canShield('d', v, pool), rOk = canRemoveAll(v, pool);
+    const pPrice = pOk ? shieldPrice('p', v) : null, dPrice = dOk ? shieldPrice('d', v) : null;
+    const rPrice = goneN ? putBackPrice(v) : rOk ? removeAllPrice(v) : null;
+    const cell = (act, ok, price, on, labelOn, label, why) =>
+      `<button class="sbtn ${on ? 'on' : ''}" data-act="${act}" ${ok && price !== null && r2(price) <= S.balance ? '' : 'disabled'}><span class="l">${on ? labelOn : label}</span>${on && !ok ? '<span class="price free">Active</span>' : price === null ? `<span class="price free">${why}</span>` : feeTag(price)}</button>`;
+    rows.push(`<div class="srow">
+      <div class="vlab">${valLabel(v)}<div class="bar"><i style="width:${Math.min(1, pool[v] / (v === 10 ? 16 : 4) / S.decks) * 100}%"></i></div><small class="num">${goneN ? 'all pulled' : pool[v] + ' left'}</small></div>
+      ${cell('ps:' + v, pOk, pPrice, S.pShield.has(v), `Yours ≠ ${VL[v]}`, `Your next ≠ ${VL[v]}`, dPhase ? 'Your turn only' : !pool[v] ? 'None left' : '—')}
+      ${cell('ds:' + v, dOk, dPrice, S.dShield.has(v), `Dealer ≠ ${VL[v]}`, `Dealer next ≠ ${VL[v]}`, !pool[v] ? 'None left' : '—')}
+      ${cell(goneN ? 'pb:' + v : 'ra:' + v, goneN ? true : rOk, rPrice, !!goneN, `Put ${VL[v]}s back`, `Remove all ${VL[v]}s`, !pool[v] ? 'None left' : 'Min ' + MIN_POOL + ' cards')}
+    </div>`);
+  }
+  return `<div class="colhead"><span>Card</span><span>Your next card</span><span>Dealer's next card</span><span>Whole shoe</span></div>
+    <div class="srows">${rows.join('')}</div>`;
+}
+
+function mathTab(E) {
+  const ds = deckStats(), std = stdEV();
+  let live = '';
+  if (E) {
+    live = `<h4>Right now</h4><div class="mathlist"><div class="mrow"><span>Cash-out value</span><b class="num">${fmt(cashOffer(E.cash))}</b></div></div>`;
+  }
+  return `${live}
+    <h4>The game</h4>
+    <div class="mathlist">
+      <div class="mrow"><span>Standard ${S.decks}-deck shoe</span><b class="num ${std >= 0 ? 'pos' : 'neg'}">${pct(std)}</b></div>
+      <div class="mrow"><span>Your shoe</span><b class="num ${ds.ev >= 0 ? 'pos' : 'neg'}">${pct(ds.ev)}</b></div>
+    </div>
+    <div class="note">A ${S.decks}-deck shoe, 3:2 blackjack, dealer stands on soft 17, double on any two cards and after splitting, surrender. The dealer takes its second card only after you've played, so every dealer card is still in the shoe and your blocks and removals reach it. If the dealer makes blackjack you lose only your original bet (doubles and splits are refunded) — the same value as a dealer who peeks.</div>
+    <h4>House margin</h4>
+    <div class="mathlist">
+      <div class="mrow"><span>On powers · on cash outs</span><b class="num">${+(S.margin * 100).toFixed(1)}% · ${+(S.coMargin * 100).toFixed(1)}%</b></div>
+      <div class="mrow"><span>Collected this session</span><b class="num">${fmt(S.stats.house)}</b></div>
+    </div>
+    <div class="note">Change the margins in <b>Settings</b> (⚙ at the top).</div>
+    <h4>How every power is priced</h4>
+    <div class="formula"><b>Fair value + house margin.</b> Every power starts from its exact fair price — the change in your expected value. When you pay, you pay fair × (1 + ${(S.margin * 100).toFixed(1).replace('.0', '')}%). When the house pays you, it pays fair × (1 − ${(S.margin * 100).toFixed(1).replace('.0', '')}%). Cash outs pay fair value × (1 − ${(S.coMargin * 100).toFixed(1).replace('.0', '')}%). The house wins on every trade, and there's no way to buy and sell back at a profit.</div>
+    <div class="formula"><b>Next card ≠ X</b> (yours or the dealer's) and <b>Remove all X</b> are priced by re-solving the rest of the hand with the changed shoe: every card you might still draw, then the dealer's full run to 17 (including the blackjack chance on its second card).</div>
+    <div class="formula"><b>Cash out</b>: fair value = stakes + EV of playing perfectly from here. Works mid-hand, with a card on offer, and before every dealer card.</div>
+    <div class="formula"><b>Pick a card</b>: fair = bet × (EV with that card − EV now). <b>Reshuffle</b>: fair = bet × (EV of a random card − EV of the card on offer).</div>
+    <div class="formula"><b>Between hands</b>: removing a whole rank from every shoe has fair price bet × (your shoe's EV − standard EV), charged or paid each hand.</div>`;
+}
+
+/* ---------- settings (remembered per browser) ---------- */
+const SETTINGS_KEY = 'blackjackPlus.settings';
+const SPEEDS = [1.6, 1, 0.5], MARGINS = [0, 0.025, 0.05, 0.1], CO_MARGINS = [0, 0.01, 0.02, 0.05];
+function saveSettings() {
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify({ preview: S.preview, step: S.step, speed: S.speed, decks: S.decks, margin: S.margin, coMargin: S.coMargin })); } catch (e) {}
+}
+function loadSettings() {
+  try {
+    const v = JSON.parse(localStorage.getItem(SETTINGS_KEY) || 'null'); if (!v) return;
+    if (typeof v.preview === 'boolean') S.preview = v.preview;
+    if (typeof v.step === 'boolean') S.step = v.step;
+    if (SPEEDS.includes(v.speed)) S.speed = v.speed;
+    if ([6, 8].includes(v.decks)) S.decks = v.decks;
+    if (MARGINS.includes(v.margin)) S.margin = v.margin;
+    if (CO_MARGINS.includes(v.coMargin)) S.coMargin = v.coMargin;
+  } catch (e) {}
+}
+function settingsHTML(first) {
+  const sw = (act, on, title, sub) => `<button class="setrow" data-act="${act}" role="switch" aria-checked="${on}"><span>${title}<small>${sub}</small></span><i class="sw ${on ? 'on' : ''}"></i></button>`;
+  const seg = items => `<div class="seg">${items.map(([act, label, on, dis]) => `<button class="${on ? 'on' : ''}" data-act="${act}" ${dis ? 'disabled' : ''}>${label}</button>`).join('')}</div>`;
+  const pl = m => +(m * 100).toFixed(1) + '%';
+  const midHand = !betPhase();
+  return `<div class="modal" data-act="closeSettings"><div class="box settings ${first ? '' : 'still'}" role="dialog" aria-label="Settings">
+    <div class="sheet-head"><h3>Settings</h3><button class="xbtn" data-act="closeSettings">Close ✕</button></div>
+    <h4>Gameplay</h4>
+    ${sw('set:preview', S.preview, 'Preview every hit', 'See each card first, then take it or reshuffle. Off: cards land straight away (you can still use Preview hit).')}
+    ${sw('set:step', S.step, 'Pause before dealer cards', 'Stop before each dealer card so you can block it. Off: the dealer plays out on its own.')}
+    <div class="setlabel">Game speed</div>
+    ${seg([['speed:1.6', 'Relaxed', S.speed === 1.6], ['speed:1', 'Normal', S.speed === 1], ['speed:0.5', 'Fast', S.speed === 0.5]])}
+    <h4>Table</h4>
+    <div class="setlabel">Shoe size${midHand ? ' <small>· change between hands</small>' : ''}</div>
+    ${seg([['decks:6', '6 decks', S.decks === 6, midHand], ['decks:8', '8 decks', S.decks === 8, midHand]])}
+    <h4>House margin</h4>
+    <div class="setlabel">On powers <small>(pick, reshuffle, block, remove)</small></div>
+    ${seg(MARGINS.map(m => ['margin:' + m, pl(m), S.margin === m]))}
+    <div class="setlabel">On cash outs</div>
+    ${seg(CO_MARGINS.map(m => ['comargin:' + m, pl(m), S.coMargin === m]))}
+    <h4>Keyboard</h4>
+    <div class="keys"><span><kbd>Space</kbd> Deal</span><span><kbd>H</kbd> Hit</span><span><kbd>S</kbd> Stand</span><span><kbd>C</kbd> Cash out</span><span><kbd>D</kbd> Double</span><span><kbd>P</kbd> Split</span><span><kbd>R</kbd> Surrender</span><span><kbd>V</kbd> Preview hit</span><span><kbd>K</kbd> Pick card</span><span><kbd>B</kbd> Remove cards</span><span><kbd>T</kbd> Take</span><span><kbd>X</kbd> Reshuffle</span><span><kbd>Esc</kbd> Close</span></div>
+  </div></div>`;
+}
+function renderSettings(first) { $('modalRoot').innerHTML = S.settingsOpen ? settingsHTML(first) : ''; }
+function afterSetting() { saveSettings(); render(); if (S.settingsOpen) renderSettings(); }
+
+/* ---------- toasts / modal ---------- */
+function toast(t) {
+  const el = document.createElement('div'); el.className = 'toast'; el.textContent = t;
+  $('toasts').appendChild(el); setTimeout(() => el.remove(), 2400);
+  while ($('toasts').children.length > 3) $('toasts').firstChild.remove();
+}
+function sessionOut() {
+  if (!betPhase()) cashOut();
+  const net = S.balance - S.start, st = S.stats;
+  $('modalRoot').innerHTML = `<div class="modal" data-act="closeModal"><div class="box">
+    <h3>Session cash out</h3>
+    <div class="big-num num">${fmt(S.balance)}</div>
+    <div class="mathlist">
+      <div class="mrow"><span>Started with</span><b class="num">${fmt(S.start)}</b></div>
+      <div class="mrow"><span>Net</span><b class="num ${net >= 0 ? 'pos' : 'neg'}">${sfmt(net)}</b></div>
+      <div class="mrow"><span>Hands played</span><b class="num">${st.hands}</b></div>
+      <div class="mrow"><span>Fees paid / received</span><b class="num">${fmt(st.feesPaid)} / ${fmt(st.feesRecv)}</b></div>
+      <div class="mrow"><span>Mid-hand cash outs</span><b class="num">${st.cashouts}</b></div>
+    </div>
+    <button class="btn primary big" data-act="newSession">Start a new session${LOBBY ? '' : ' · $1,000'}</button>
+    <button class="btn ghost" data-act="closeModal">Keep playing</button>
+  </div></div>`;
+}
+
+/* ---------- input ---------- */
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]'); if (!el || el.disabled) return;
+  if (el.classList.contains('modal') && e.target !== el) return;
+  const [act, arg] = el.dataset.act.split(':');
+  switch (act) {
+    case 'deal': deal(); break;
+    case 'hit': hit(); break; case 'peek': hit(true); break; case 'stand': stand(); break; case 'double': doubleDown(); break;
+    case 'split': split(); break; case 'surrender': surrender(); break;
+    case 'cashout': cashOut(); break; case 'take': takeOffer(); break; case 'reroll': reroll(); break;
+    case 'letDraw': letDealerDraw(); break;
+    case 'sheet': toggleSheet(arg); break;
+    case 'closeSheet': S.sheet = null; render(); break;
+    case 'pick': pickCard(+arg); break;
+    case 'pmode': S.pickMode = arg; render(); break;
+    case 'ps': buyShield('p', +arg); break; case 'ds': buyShield('d', +arg); break;
+    case 'ra': removeAll(+arg); break; case 'pb': putBack(+arg); break;
+    case 'pre': togglePre(+arg); break;
+    case 'resetPre': S.preRemoved.clear(); render(); break;
+    case 'tab': S.tab = arg; render(); break;
+    case 'decks': if (!betPhase()) break; S.decks = +arg; afterSetting(); break;
+    case 'margin': S.margin = +arg; afterSetting(); break;
+    case 'comargin': S.coMargin = +arg; afterSetting(); break;
+    case 'settings': S.settingsOpen = true; renderSettings(true); break;
+    case 'closeSettings': S.settingsOpen = false; renderSettings(); break;
+    case 'set':
+      if (arg === 'preview') S.preview = !S.preview;
+      if (arg === 'step') { S.step = !S.step; if (!S.step) letDealerDraw(); }
+      afterSetting(); break;
+    case 'speed': S.speed = +arg; afterSetting(); break;
+    case 'chip': S.bet = +arg; render(); break;
+    case 'half': S.bet = Math.max(0.1, r2(S.bet / 2)); render(); break;
+    case 'dbl': S.bet = r2(Math.min(S.balance, S.bet * 2)); render(); break;
+    case 'max': S.bet = r2(Math.max(0, S.balance - Math.max(0, deckFee()))); render(); break;
+    case 'sessionOut': sessionOut(); break;
+    case 'closeModal': $('modalRoot').innerHTML = ''; break;
+    case 'newSession':
+      // Game Lobby: the shared wallet keeps its balance (the lobby's Refill tops it up); only the session restarts
+      S.balance = LOBBY ? S.balance : 1000; S.start = S.balance; S.stats = { hands: 0, feesPaid: 0, feesRecv: 0, cashouts: 0, house: 0 };
+      S.phase = 'bet'; S.hands = []; S.dealer = []; S.msg = null; $('modalRoot').innerHTML = ''; render(); break;
+  }
+});
+$('bet').addEventListener('input', e => { const v = parseFloat(e.target.value); S.bet = isFinite(v) && v > 0 ? r2(v) : 0; render(); });
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.metaKey || e.ctrlKey) return;
+  const k = e.key.toLowerCase();
+  const map = { h: hit, s: stand, d: doubleDown, p: split, r: surrender, c: cashOut, t: takeOffer, x: reroll, v: () => hit(true), b: () => toggleSheet('remove'), k: () => toggleSheet('pick') };
+  if (k === 'escape' && S.settingsOpen) { S.settingsOpen = false; renderSettings(); }
+  else if (S.settingsOpen) return;
+  else if (k === 'escape' && S.sheet) { S.sheet = null; render(); }
+  else if (k === ' ' || k === 'enter') {
+    if (betPhase()) { e.preventDefault(); deal(); }
+    else if (S.waiting) { e.preventDefault(); letDealerDraw(); }
+  } else if (map[k]) { e.preventDefault(); map[k](); }
+});
+loadSettings();
+render();
+</script>
+</body>
+</html>

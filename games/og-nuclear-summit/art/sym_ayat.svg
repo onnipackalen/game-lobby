@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 250" width="200" height="250">
+<style>.ol{stroke:#3b2a22;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}.il{fill:none;stroke:#3b2a22;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}</style>
+<!-- The ayatollah. Head and shoulders, front view, cel-shaded.
+     Identity from his public look: a huge black turban sitting low on the brow, a long gaunt face with
+     sunken cheeks and a creased forehead, heavy drooping white brows over a narrow glare, a long white
+     beard, a dark robe with his black-and-white checked scarf. Dress drawn plainly and respectfully;
+     the jokes are the glare, the drone buzzing past and the pride-colours tile.
+     Nose drawn with the same proportions as every other leader's. -->
+<defs>
+  <clipPath id="ayatTile"><rect x="8" y="20" width="184" height="200" rx="28"/></clipPath>
+  <pattern id="ayatCheck" width="9" height="9" patternUnits="userSpaceOnUse">
+    <rect width="9" height="9" fill="#EDEDED"/><path d="M0 0 L9 9 M9 0 L0 9" stroke="#1E1A18" stroke-width="2"/>
+  </pattern>
+</defs>
+<!-- pride-colours tile: a jab at the regime's persecution of LGBTQ people -->
+<g clip-path="url(#ayatTile)"><rect x="8" y="20" width="184" height="34" fill="#E40303"/><rect x="8" y="53.3" width="184" height="34" fill="#FF8C00"/><rect x="8" y="86.7" width="184" height="34" fill="#FFED00"/><rect x="8" y="120" width="184" height="34" fill="#008026"/><rect x="8" y="153.3" width="184" height="34" fill="#004DFF"/><rect x="8" y="186.7" width="184" height="34" fill="#750787"/></g>
+<rect class="ol" x="8" y="20" width="184" height="200" rx="28" fill="none"/>
+<!-- dark robe with the checked scarf -->
+<path class="ol" d="M4 250 Q8 206 44 194 Q72 186 100 188 Q128 186 156 194 Q192 206 196 250 Z" fill="#1E1A18"/>
+<path class="ol" d="M40 198 Q58 190 72 196 L80 250 L44 250 Q48 222 40 198 Z" fill="url(#ayatCheck)" style="stroke-width:2.2"/>
+<path class="ol" d="M160 198 Q142 190 128 196 L120 250 L156 250 Q152 222 160 198 Z" fill="url(#ayatCheck)" style="stroke-width:2.2"/>
+<!-- ears -->
+<path class="ol" d="M60 112 Q44 108 44 126 Q44 144 62 146 Z" fill="#E3B892"/>
+<path class="ol" d="M140 112 Q156 108 156 126 Q156 144 138 146 Z" fill="#E3B892"/>
+<!-- long, gaunt face -->
+<path d="M60 92 Q60 80 72 78 L128 78 Q140 80 140 92 Q144 120 140 142 Q136 168 122 182 Q110 192 100 192 Q90 192 78 182 Q64 168 60 142 Q56 120 60 92 Z" fill="#E3B892"/>
+<path d="M62 126 Q70 140 74 158 L68 160 Q62 148 60 132 Z M138 126 Q130 140 126 158 L132 160 Q138 148 140 132 Z" fill="#C9976F"/>
+<path d="M98 116 Q96 134 95 146 L101 148 Q101 134 103 116 Z" fill="#C9976F"/>
+<path class="ol" d="M60 92 Q60 80 72 78 L128 78 Q140 80 140 92 Q144 120 140 142 Q136 168 122 182 Q110 192 100 192 Q90 192 78 182 Q64 168 60 142 Q56 120 60 92" fill="none"/>
+<!-- creased forehead -->
+<path class="il" d="M74 91 Q100 86 126 91 M78 98 Q100 94 122 98 M96 100 L95 106 M104 100 L105 106" style="stroke:#a87b5a"/>
+<!-- narrow glare under heavy drooping white brows -->
+<path d="M72 114 Q81 109 90 113 Q81 117 72 114 Z" fill="#F4EEE6"/>
+<circle cx="82" cy="113" r="3.2" fill="#E8B92A"/><circle cx="82" cy="113" r="1.4" fill="#1A1410"/>
+<path class="il" d="M69 113 Q81 105 93 111" style="stroke-width:2.8"/>
+<path d="M110 113 Q119 109 128 114 Q119 117 110 113 Z" fill="#F4EEE6"/>
+<circle cx="118" cy="113" r="3.2" fill="#E8B92A"/><circle cx="118" cy="113" r="1.4" fill="#1A1410"/>
+<path class="il" d="M107 111 Q119 105 131 113" style="stroke-width:2.8"/>
+<path class="il" d="M73 121 Q81 125 89 121 M111 121 Q119 125 127 121" style="stroke:#a87b5a"/>
+<path class="ol" d="M50 104 Q62 94 80 98 Q92 100 98 108 Q88 105 78 107 Q64 109 52 120 Z" fill="#F2F0EC" style="stroke-width:2.2"/>
+<path class="ol" d="M150 104 Q138 94 120 98 Q108 100 102 108 Q112 105 122 107 Q136 109 148 120 Z" fill="#F2F0EC" style="stroke-width:2.2"/>
+<path d="M50 104 L42 110 M52 112 L44 120 M150 104 L158 110 M148 112 L156 120" stroke="#DCD8D0" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+<!-- nose -->
+<path class="il" d="M100 112 Q98 132 94 144 Q91 152 100 154 Q108 152 106 144" style="stroke-width:2.2"/>
+<!-- long white beard and drooping moustache -->
+<path class="ol" d="M62 140 Q58 196 80 224 Q92 240 100 248 Q108 240 120 224 Q142 196 138 140 Q130 166 116 172 Q100 176 84 172 Q70 166 62 140 Z" fill="#EEECE8"/>
+<path class="il" d="M78 184 Q84 206 82 222 M92 186 Q94 212 96 234 M108 186 Q106 212 104 234 M122 184 Q116 206 118 222 M70 160 Q72 176 76 190 M130 160 Q128 176 124 190" style="stroke:#C2BDB4"/>
+<path class="ol" d="M80 162 Q100 150 120 162 Q110 172 100 166 Q90 172 80 162 Z" fill="#F4F2EE" style="stroke-width:2"/>
+<path class="il" d="M92 172 Q100 175 108 172" style="stroke:#7a5a48;stroke-width:2"/>
+<!-- the huge black turban, low on the brow -->
+<path class="ol" d="M28 88 Q16 30 70 10 Q100 0 130 10 Q184 30 172 88 Q150 76 100 76 Q50 76 28 88 Z" fill="#151515"/>
+<path d="M38 68 Q100 40 162 68 M34 52 Q100 22 166 52 M50 32 Q100 12 150 32" stroke="#3E3E44" stroke-width="3" stroke-linecap="round" fill="none"/>
+<path d="M60 20 Q100 8 140 20" stroke="#55555C" stroke-width="4" stroke-linecap="round" fill="none"/>
+<path class="ol" d="M28 88 Q100 72 172 88 L170 98 Q100 84 30 98 Z" fill="#222226"/>
+<!-- the attack drone buzzing past -->
+<g transform="rotate(12 34 176)">
+<path d="M52 168 L66 168 M50 176 L68 176 M52 184 L66 184" stroke="#FFFFFF" stroke-width="2.8" stroke-linecap="round" fill="none"/>
+<path class="ol" d="M8 176 L44 158 L37 176 L44 194 Z" fill="#A9B1BB" style="stroke-width:2.4"/>
+<path d="M8 176 L32 173 L32 179 Z" fill="#7E8792"/>
+<ellipse cx="41" cy="176" rx="2.6" ry="8" fill="#FFFFFF" opacity="0.65"/>
+</g>
+</svg>
