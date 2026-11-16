@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Nuclear Summit v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Special+Elite&display=swap" rel="stylesheet">
 <style>
 :root{--bg1:#ffd6ec;--bg2:#d9c8ff;--panel:rgba(255,255,255,.72);--text:#2a1f3a;--muted:#6b5a7a;--deep:#4b1d8f;--hot:#e8306f;--rim:#8A64D6}
 *{box-sizing:border-box}
@@ -186,18 +189,16 @@ summary{cursor:pointer;font-weight:800;min-height:28px;line-height:28px}
 #buyOk{background:var(--hot);color:#fff}
 #buyCancel{background:#eee}
 footer{font-size:12px;color:var(--muted);text-align:center;line-height:1.5}
-/* Summit Hall background (sources: art/bg_base_wide.svg, art/bg_base.svg). A fixed layer, so it also stays put on iOS. */
-body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1920 1080%22 width=%221920%22 height=%221080%22 preserveAspectRatio=%22xMidYMid slice%22%3E %3Cdefs%3E %3ClinearGradient id=%22wall%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%232A3758%22/%3E%3Cstop offset=%220.6%22 stop-color=%22%231F2A47%22/%3E%3Cstop offset=%221%22 stop-color=%22%23161E35%22/%3E %3C/linearGradient%3E %3CradialGradient id=%22glow%22 cx=%22960%22 cy=%22420%22 r=%22620%22 gradientUnits=%22userSpaceOnUse%22%3E %3Cstop offset=%220%22 stop-color=%22%23F2A93B%22 stop-opacity=%220.42%22/%3E%3Cstop offset=%220.55%22 stop-color=%22%23F2A93B%22 stop-opacity=%220.14%22/%3E%3Cstop offset=%221%22 stop-color=%22%23F2A93B%22 stop-opacity=%220%22/%3E %3C/radialGradient%3E %3ClinearGradient id=%22screen%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%23162746%22/%3E%3Cstop offset=%221%22 stop-color=%22%23101C36%22/%3E %3C/linearGradient%3E %3ClinearGradient id=%22curtainL%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%220%22%3E %3Cstop offset=%220%22 stop-color=%22%235E1626%22/%3E%3Cstop offset=%221%22 stop-color=%22%239C2F3F%22/%3E %3C/linearGradient%3E %3ClinearGradient id=%22curtainR%22 x1=%221%22 y1=%220%22 x2=%220%22 y2=%220%22%3E %3Cstop offset=%220%22 stop-color=%22%235E1626%22/%3E%3Cstop offset=%221%22 stop-color=%22%239C2F3F%22/%3E %3C/linearGradient%3E %3ClinearGradient id=%22carpet%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%239C2F3F%22/%3E%3Cstop offset=%221%22 stop-color=%22%236E1F2E%22/%3E %3C/linearGradient%3E %3ClinearGradient id=%22table%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%238A5A3A%22/%3E%3Cstop offset=%221%22 stop-color=%22%236B4128%22/%3E %3C/linearGradient%3E %3C/defs%3E %3Crect width=%221920%22 height=%221080%22 fill=%22url(%23wall)%22/%3E %3Cg fill=%22%233A4A72%22 opacity=%220.5%22%3E %3Crect x=%22400%22 y=%22110%22 width=%2270%22 height=%22760%22 rx=%2235%22/%3E%3Crect x=%22520%22 y=%22110%22 width=%2270%22 height=%22760%22 rx=%2235%22/%3E %3Crect x=%221330%22 y=%22110%22 width=%2270%22 height=%22760%22 rx=%2235%22/%3E%3Crect x=%221450%22 y=%22110%22 width=%2270%22 height=%22760%22 rx=%2235%22/%3E %3C/g%3E %3Crect width=%221920%22 height=%221080%22 fill=%22url(%23glow)%22/%3E %3Cpath d=%22M660 900 L660 330 Q660 90 960 90 Q1260 90 1260 330 L1260 900 Z%22 fill=%22url(%23screen)%22 stroke=%22%23B88A2E%22 stroke-width=%2210%22 opacity=%220.85%22/%3E %3Cg fill=%22none%22 stroke=%22%232C4672%22 stroke-width=%223%22 opacity=%220.9%22%3E %3Cpath d=%22M690 300 Q960 270 1230 300 M680 450 Q960 430 1240 450 M680 600 Q960 590 1240 600 M680 750 Q960 745 1240 750%22/%3E %3Cpath d=%22M810 130 Q790 500 820 890 M960 92 L960 900 M1110 130 Q1130 500 1100 890%22/%3E %3C/g%3E %3Cg fill=%22%232E5A8A%22 opacity=%220.95%22%3E %3Cpath d=%22M720 300 Q750 240 840 250 Q900 260 880 320 Q870 370 820 380 Q800 440 760 420 Q730 390 745 350 Q710 330 720 300 Z%22/%3E %3Cpath d=%22M810 460 Q850 450 870 500 Q880 560 850 610 Q830 640 815 610 Q800 550 810 460 Z%22/%3E %3Cpath d=%22M980 260 Q1030 230 1110 250 Q1190 270 1180 330 Q1170 380 1120 380 Q1090 430 1050 410 Q1020 390 1030 350 Q980 330 980 260 Z%22/%3E %3Cpath d=%22M1010 420 Q1050 410 1070 460 Q1080 520 1050 570 Q1030 590 1020 550 Q1005 480 1010 420 Z%22/%3E %3Cpath d=%22M1120 540 Q1170 530 1190 570 Q1190 610 1150 610 Q1120 600 1120 540 Z%22/%3E %3C/g%3E %3Cg fill=%22%23F2A93B%22 opacity=%220.8%22%3E %3Ccircle cx=%22460%22 cy=%22420%22 r=%2226%22 opacity=%220.35%22/%3E%3Ccircle cx=%221480%22 cy=%22520%22 r=%2234%22 opacity=%220.3%22/%3E %3Ccircle cx=%221420%22 cy=%22250%22 r=%2214%22 opacity=%220.5%22/%3E%3Ccircle cx=%22520%22 cy=%22760%22 r=%2218%22 opacity=%220.4%22/%3E %3C/g%3E %3Cg fill=%22%23FFC867%22 opacity=%220.7%22%3E %3Cpath d=%22M560 260 Q560 280 580 280 Q560 280 560 300 Q560 280 540 280 Q560 280 560 260 Z%22/%3E %3Cpath d=%22M1380 380 Q1380 404 1404 404 Q1380 404 1380 428 Q1380 404 1356 404 Q1380 404 1380 380 Z%22/%3E %3C/g%3E %3Cg fill=%22none%22 stroke=%22%23F2A93B%22 stroke-width=%226%22 stroke-dasharray=%2212 9%22 stroke-linecap=%22round%22 opacity=%220.65%22%3E %3Cpath d=%22M760 320 Q900 170 1080 300%22/%3E %3Cpath d=%22M1120 360 Q1000 520 830 560%22/%3E %3Cpath d=%22M760 640 Q960 560 1150 640%22/%3E %3C/g%3E%3Cg fill=%22none%22 stroke=%22%23FF4D6D%22 stroke-width=%224%22 opacity=%220.7%22%3E %3Ccircle cx=%221080%22 cy=%22300%22 r=%2212%22/%3E%3Ccircle cx=%221080%22 cy=%22300%22 r=%224%22 fill=%22%23FF4D6D%22/%3E %3Ccircle cx=%22830%22 cy=%22560%22 r=%2212%22/%3E%3Ccircle cx=%22830%22 cy=%22560%22 r=%224%22 fill=%22%23FF4D6D%22/%3E %3Ccircle cx=%221150%22 cy=%22640%22 r=%2212%22/%3E%3Ccircle cx=%221150%22 cy=%22640%22 r=%224%22 fill=%22%23FF4D6D%22/%3E %3C/g%3E %3Cpath d=%22M0 860 L1920 860 L1920 1080 L0 1080 Z%22 fill=%22%2318203A%22/%3E %3Cpath d=%22M760 860 L1160 860 L1360 1080 L560 1080 Z%22 fill=%22url(%23carpet)%22/%3E %3Cellipse cx=%22960%22 cy=%221010%22 rx=%22820%22 ry=%22110%22 fill=%22%234A2C18%22/%3E %3Cellipse cx=%22960%22 cy=%22992%22 rx=%22820%22 ry=%22100%22 fill=%22url(%23table)%22 stroke=%22%233A2212%22 stroke-width=%226%22/%3E %3Cg stroke=%22%234B3A44%22 stroke-width=%225%22 stroke-linecap=%22round%22 fill=%22none%22%3E %3Cpath d=%22M380 950 Q390 912 420 898 M620 925 Q630 888 660 876 M1260 925 Q1270 888 1300 876 M1500 950 Q1510 912 1540 898%22/%3E %3C/g%3E %3Cg fill=%22%233A2E36%22%3E%3Ccircle cx=%22422%22 cy=%22897%22 r=%229%22/%3E%3Ccircle cx=%22662%22 cy=%22875%22 r=%229%22/%3E%3Ccircle cx=%221302%22 cy=%22875%22 r=%229%22/%3E%3Ccircle cx=%221542%22 cy=%22897%22 r=%229%22/%3E%3C/g%3E %3Cg fill=%22%23FFFFFF%22 stroke=%22%23B88A2E%22 stroke-width=%224%22%3E %3Cpath d=%22M300 990 L360 990 L346 960 L314 960 Z%22/%3E%3Cpath d=%22M520 960 L580 960 L566 930 L534 930 Z%22/%3E %3Cpath d=%22M1340 960 L1400 960 L1386 930 L1354 930 Z%22/%3E%3Cpath d=%22M1560 990 L1620 990 L1606 960 L1574 960 Z%22/%3E %3C/g%3E %3Cg transform=%22translate(470 860) scale(0.6)%22 stroke=%22%231C2742%22 stroke-width=%225%22 stroke-linejoin=%22round%22%3E %3Cpath d=%22M86 200 Q90 150 92 110 L108 110 Q110 150 114 200 Z%22 fill=%22%23F6D38A%22/%3E %3Cellipse cx=%22100%22 cy=%22156%22 rx=%2230%22 ry=%228%22 fill=%22%23F2A93B%22/%3E %3Ccircle cx=%2266%22 cy=%22206%22 r=%2216%22 fill=%22%23F6D38A%22/%3E%3Ccircle cx=%22134%22 cy=%22206%22 r=%2216%22 fill=%22%23F6D38A%22/%3E %3Ccircle cx=%2288%22 cy=%22212%22 r=%2218%22 fill=%22%23F6D38A%22/%3E%3Ccircle cx=%22112%22 cy=%22212%22 r=%2218%22 fill=%22%23F6D38A%22/%3E %3Ccircle cx=%2252%22 cy=%2284%22 r=%2224%22 fill=%22%23F08A4B%22/%3E%3Ccircle cx=%22154%22 cy=%2292%22 r=%2220%22 fill=%22%23F08A4B%22/%3E %3Ccircle cx=%2276%22 cy=%2258%22 r=%2226%22 fill=%22%23F08A4B%22/%3E%3Ccircle cx=%22140%22 cy=%2264%22 r=%2226%22 fill=%22%23F08A4B%22/%3E%3Ccircle cx=%22108%22 cy=%2248%22 r=%2230%22 fill=%22%23F08A4B%22/%3E %3Cellipse cx=%22100%22 cy=%2288%22 rx=%2258%22 ry=%2232%22 fill=%22%23F08A4B%22 stroke=%22none%22/%3E %3Cpath d=%22M44 100 Q100 136 156 100 Q160 112 146 118 Q100 136 54 118 Q40 112 44 100 Z%22 fill=%22%23D9622E%22/%3E %3Ccircle cx=%2298%22 cy=%2238%22 r=%2210%22 fill=%22%23FFD9A8%22 stroke=%22none%22/%3E%3Ccircle cx=%2270%22 cy=%2252%22 r=%227%22 fill=%22%23FFD9A8%22 stroke=%22none%22/%3E %3C/g%3E %3Cg transform=%22translate(1330 860) scale(0.6)%22 stroke=%22%231C2742%22 stroke-width=%225%22 stroke-linejoin=%22round%22%3E %3Cpath d=%22M86 200 Q90 150 92 110 L108 110 Q110 150 114 200 Z%22 fill=%22%23F6D38A%22/%3E %3Cellipse cx=%22100%22 cy=%22156%22 rx=%2230%22 ry=%228%22 fill=%22%23F2A93B%22/%3E %3Ccircle cx=%2266%22 cy=%22206%22 r=%2216%22 fill=%22%23F6D38A%22/%3E%3Ccircle cx=%22134%22 cy=%22206%22 r=%2216%22 fill=%22%23F6D38A%22/%3E %3Ccircle cx=%2288%22 cy=%22212%22 r=%2218%22 fill=%22%23F6D38A%22/%3E%3Ccircle cx=%22112%22 cy=%22212%22 r=%2218%22 fill=%22%23F6D38A%22/%3E %3Ccircle cx=%2252%22 cy=%2284%22 r=%2224%22 fill=%22%23F08A4B%22/%3E%3Ccircle cx=%22154%22 cy=%2292%22 r=%2220%22 fill=%22%23F08A4B%22/%3E %3Ccircle cx=%2276%22 cy=%2258%22 r=%2226%22 fill=%22%23F08A4B%22/%3E%3Ccircle cx=%22140%22 cy=%2264%22 r=%2226%22 fill=%22%23F08A4B%22/%3E%3Ccircle cx=%22108%22 cy=%2248%22 r=%2230%22 fill=%22%23F08A4B%22/%3E %3Cellipse cx=%22100%22 cy=%2288%22 rx=%2258%22 ry=%2232%22 fill=%22%23F08A4B%22 stroke=%22none%22/%3E %3Cpath d=%22M44 100 Q100 136 156 100 Q160 112 146 118 Q100 136 54 118 Q40 112 44 100 Z%22 fill=%22%23D9622E%22/%3E %3Ccircle cx=%2298%22 cy=%2238%22 r=%2210%22 fill=%22%23FFD9A8%22 stroke=%22none%22/%3E%3Ccircle cx=%2270%22 cy=%2252%22 r=%227%22 fill=%22%23FFD9A8%22 stroke=%22none%22/%3E %3C/g%3E %3Cpath d=%22M0 0 L330 0 Q300 260 282 440 Q270 540 210 600 Q130 660 0 670 Z%22 fill=%22url(%23curtainL)%22/%3E %3Cpath d=%22M0 670 Q110 660 200 610 Q230 820 270 1080 L0 1080 Z%22 fill=%22url(%23curtainL)%22/%3E %3Cg fill=%22none%22 stroke=%22%233E0E18%22 stroke-width=%225%22 opacity=%220.5%22%3E %3Cpath d=%22M80 0 Q90 330 70 660 M170 0 Q180 340 140 640 M260 0 Q250 300 230 560 M70 680 Q90 880 80 1080 M150 650 Q170 860 180 1080%22/%3E %3C/g%3E %3Cpath d=%22M1920 0 L1590 0 Q1620 260 1638 440 Q1650 540 1710 600 Q1790 660 1920 670 Z%22 fill=%22url(%23curtainR)%22/%3E %3Cpath d=%22M1920 670 Q1810 660 1720 610 Q1690 820 1650 1080 L1920 1080 Z%22 fill=%22url(%23curtainR)%22/%3E %3Cg fill=%22none%22 stroke=%22%233E0E18%22 stroke-width=%225%22 opacity=%220.5%22%3E %3Cpath d=%22M1840 0 Q1830 330 1850 660 M1750 0 Q1740 340 1780 640 M1660 0 Q1670 300 1690 560 M1850 680 Q1830 880 1840 1080 M1770 650 Q1750 860 1740 1080%22/%3E %3C/g%3E %3Cg fill=%22%23F2C14E%22 stroke=%22%23B88A2E%22 stroke-width=%224%22%3E %3Cellipse cx=%22205%22 cy=%22610%22 rx=%2262%22 ry=%2222%22/%3E%3Cellipse cx=%221715%22 cy=%22610%22 rx=%2262%22 ry=%2222%22/%3E %3Cpath d=%22M185 628 L166 712 L224 712 L205 628 Z%22/%3E%3Cpath d=%22M1695 628 L1676 712 L1734 712 L1715 628 Z%22/%3E %3C/g%3E %3Cg transform=%22translate(316 500) scale(1.2)%22%3E %3Crect x=%22-14%22 y=%22292%22 width=%22108%22 height=%2230%22 rx=%228%22 fill=%22%233A4A72%22 stroke=%22%231C2742%22 stroke-width=%225%22/%3E %3Cpath d=%22M18 220 L-8 288 L22 282 Z M62 220 L88 288 L58 282 Z%22 fill=%22%238FA3BF%22 stroke=%22%231C2742%22 stroke-width=%224%22 stroke-linejoin=%22round%22/%3E %3Crect x=%2218%22 y=%2270%22 width=%2244%22 height=%22214%22 rx=%2210%22 fill=%22%23FFFFFF%22 stroke=%22%231C2742%22 stroke-width=%225%22/%3E %3Cg fill=%22%23D7263D%22%3E%3Crect x=%2220%22 y=%22124%22 width=%2240%22 height=%2218%22/%3E%3Crect x=%2220%22 y=%22166%22 width=%2240%22 height=%2218%22/%3E%3Crect x=%2220%22 y=%22208%22 width=%2240%22 height=%2218%22/%3E%3Crect x=%2220%22 y=%22250%22 width=%2240%22 height=%2218%22/%3E%3C/g%3E %3Cpath d=%22M18 76 Q18 12 40 -12 Q62 12 62 76 Z%22 fill=%22%23FF4D6D%22 stroke=%22%231C2742%22 stroke-width=%225%22 stroke-linejoin=%22round%22/%3E %3Ccircle cx=%2240%22 cy=%2298%22 r=%229%22 fill=%22%23FFD23F%22 stroke=%22%231C2742%22 stroke-width=%223%22/%3E %3Cpath d=%22M28 20 Q30 0 40 -6%22 stroke=%22%23FFD0D6%22 stroke-width=%225%22 stroke-linecap=%22round%22 fill=%22none%22/%3E %3Cpath d=%22M27 84 L27 276%22 stroke=%22%23E3E8F0%22 stroke-width=%225%22 stroke-linecap=%22round%22 fill=%22none%22/%3E %3C/g%3E %3Cg transform=%22translate(1508 500) scale(1.2)%22%3E %3Crect x=%22-14%22 y=%22292%22 width=%22108%22 height=%2230%22 rx=%228%22 fill=%22%233A4A72%22 stroke=%22%231C2742%22 stroke-width=%225%22/%3E %3Cpath d=%22M18 220 L-8 288 L22 282 Z M62 220 L88 288 L58 282 Z%22 fill=%22%238FA3BF%22 stroke=%22%231C2742%22 stroke-width=%224%22 stroke-linejoin=%22round%22/%3E %3Crect x=%2218%22 y=%2270%22 width=%2244%22 height=%22214%22 rx=%2210%22 fill=%22%23FFFFFF%22 stroke=%22%231C2742%22 stroke-width=%225%22/%3E %3Cg fill=%22%23D7263D%22%3E%3Crect x=%2220%22 y=%22124%22 width=%2240%22 height=%2218%22/%3E%3Crect x=%2220%22 y=%22166%22 width=%2240%22 height=%2218%22/%3E%3Crect x=%2220%22 y=%22208%22 width=%2240%22 height=%2218%22/%3E%3Crect x=%2220%22 y=%22250%22 width=%2240%22 height=%2218%22/%3E%3C/g%3E %3Cpath d=%22M18 76 Q18 12 40 -12 Q62 12 62 76 Z%22 fill=%22%23FF4D6D%22 stroke=%22%231C2742%22 stroke-width=%225%22 stroke-linejoin=%22round%22/%3E %3Ccircle cx=%2240%22 cy=%2298%22 r=%229%22 fill=%22%23FFD23F%22 stroke=%22%231C2742%22 stroke-width=%223%22/%3E %3Cpath d=%22M28 20 Q30 0 40 -6%22 stroke=%22%23FFD0D6%22 stroke-width=%225%22 stroke-linecap=%22round%22 fill=%22none%22/%3E %3Cpath d=%22M27 84 L27 276%22 stroke=%22%23E3E8F0%22 stroke-width=%225%22 stroke-linecap=%22round%22 fill=%22none%22/%3E %3C/g%3E %3Cg%3E %3Ccircle cx=%22360%22 cy=%22190%22 r=%2265%22 fill=%22%237A2232%22 stroke=%22%231C2742%22 stroke-width=%226%22/%3E %3Ccircle cx=%22360%22 cy=%22190%22 r=%2256%22 fill=%22%23FFF6E8%22 stroke=%22%23F2C14E%22 stroke-width=%225%22/%3E %3Cpath d=%22M360 190 L360 138 A52 52 0 0 0 334.0 145.0 Z%22 fill=%22%23FF4D6D%22 opacity=%220.28%22/%3E %3Cg stroke=%22%231C2742%22 stroke-width=%225%22 stroke-linecap=%22round%22%3E%3Cpath d=%22M360 144 L360 158%22 transform=%22rotate(0 360 190)%22/%3E%3Cpath d=%22M360 144 L360 151%22 transform=%22rotate(30 360 190)%22/%3E%3Cpath d=%22M360 144 L360 151%22 transform=%22rotate(60 360 190)%22/%3E%3Cpath d=%22M360 144 L360 158%22 transform=%22rotate(90 360 190)%22/%3E%3Cpath d=%22M360 144 L360 151%22 transform=%22rotate(120 360 190)%22/%3E%3Cpath d=%22M360 144 L360 151%22 transform=%22rotate(150 360 190)%22/%3E%3Cpath d=%22M360 144 L360 158%22 transform=%22rotate(180 360 190)%22/%3E%3Cpath d=%22M360 144 L360 151%22 transform=%22rotate(210 360 190)%22/%3E%3Cpath d=%22M360 144 L360 151%22 transform=%22rotate(240 360 190)%22/%3E%3Cpath d=%22M360 144 L360 158%22 transform=%22rotate(270 360 190)%22/%3E%3Cpath d=%22M360 144 L360 151%22 transform=%22rotate(300 360 190)%22/%3E%3Cpath d=%22M360 144 L360 151%22 transform=%22rotate(330 360 190)%22/%3E%3C/g%3E %3Cpath d=%22M360 190 L360 159.2%22 stroke=%22%231C2742%22 stroke-width=%228%22 stroke-linecap=%22round%22 transform=%22rotate(-4 360 190)%22/%3E %3Cpath d=%22M360 190 L360 141.8%22 stroke=%22%23E8384F%22 stroke-width=%225%22 stroke-linecap=%22round%22 transform=%22rotate(-14 360 190)%22/%3E %3Ccircle cx=%22360%22 cy=%22190%22 r=%226%22 fill=%22%231C2742%22/%3E %3C/g%3E %3Cpath d=%22M0 0 L1920 0 L1920 50 Q1840 96 1760 50 Q1680 96 1600 50 Q1520 96 1440 50 Q1360 96 1280 50 Q1200 96 1120 50 Q1040 96 960 50 Q880 96 800 50 Q720 96 640 50 Q560 96 480 50 Q400 96 320 50 Q240 96 160 50 Q80 96 0 50 Z%22 fill=%22%237A2232%22/%3E %3Cpath d=%22M0 50 Q80 96 160 50 Q240 96 320 50 Q400 96 480 50 Q560 96 640 50 Q720 96 800 50 Q880 96 960 50 Q1040 96 1120 50 Q1200 96 1280 50 Q1360 96 1440 50 Q1520 96 1600 50 Q1680 96 1760 50 Q1840 96 1920 50%22 fill=%22none%22 stroke=%22%23F2C14E%22 stroke-width=%228%22 stroke-dasharray=%223 9%22 stroke-linecap=%22round%22/%3E %3C/svg%3E") center top/cover no-repeat}
-@media (orientation:portrait){body::before{background-image:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1080 1920%22 width=%221080%22 height=%221920%22 preserveAspectRatio=%22xMidYMid slice%22%3E %3Cdefs%3E %3ClinearGradient id=%22wall%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%232A3758%22/%3E%3Cstop offset=%220.6%22 stop-color=%22%231F2A47%22/%3E%3Cstop offset=%221%22 stop-color=%22%23161E35%22/%3E %3C/linearGradient%3E %3CradialGradient id=%22glow%22 cx=%22540%22 cy=%22700%22 r=%22560%22 gradientUnits=%22userSpaceOnUse%22%3E %3Cstop offset=%220%22 stop-color=%22%23F2A93B%22 stop-opacity=%220.42%22/%3E%3Cstop offset=%220.55%22 stop-color=%22%23F2A93B%22 stop-opacity=%220.14%22/%3E%3Cstop offset=%221%22 stop-color=%22%23F2A93B%22 stop-opacity=%220%22/%3E %3C/radialGradient%3E %3ClinearGradient id=%22screen%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%23162746%22/%3E%3Cstop offset=%221%22 stop-color=%22%23101C36%22/%3E %3C/linearGradient%3E %3ClinearGradient id=%22curtainL%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%220%22%3E %3Cstop offset=%220%22 stop-color=%22%235E1626%22/%3E%3Cstop offset=%221%22 stop-color=%22%239C2F3F%22/%3E %3C/linearGradient%3E %3ClinearGradient id=%22curtainR%22 x1=%221%22 y1=%220%22 x2=%220%22 y2=%220%22%3E %3Cstop offset=%220%22 stop-color=%22%235E1626%22/%3E%3Cstop offset=%221%22 stop-color=%22%239C2F3F%22/%3E %3C/linearGradient%3E %3ClinearGradient id=%22carpet%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%239C2F3F%22/%3E%3Cstop offset=%221%22 stop-color=%22%236E1F2E%22/%3E %3C/linearGradient%3E %3ClinearGradient id=%22table%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%238A5A3A%22/%3E%3Cstop offset=%221%22 stop-color=%22%236B4128%22/%3E %3C/linearGradient%3E %3C/defs%3E %3Crect width=%221080%22 height=%221920%22 fill=%22url(%23wall)%22/%3E %3Cg fill=%22%233A4A72%22 opacity=%220.5%22%3E %3Crect x=%22130%22 y=%22180%22 width=%2270%22 height=%221300%22 rx=%2235%22/%3E%3Crect x=%22250%22 y=%22180%22 width=%2270%22 height=%221300%22 rx=%2235%22/%3E %3Crect x=%22760%22 y=%22180%22 width=%2270%22 height=%221300%22 rx=%2235%22/%3E%3Crect x=%22880%22 y=%22180%22 width=%2270%22 height=%221300%22 rx=%2235%22/%3E %3C/g%3E %3Crect width=%221080%22 height=%221920%22 fill=%22url(%23glow)%22/%3E %3Cpath d=%22M270 1180 L270 560 Q270 270 540 270 Q810 270 810 560 L810 1180 Z%22 fill=%22url(%23screen)%22 stroke=%22%23B88A2E%22 stroke-width=%2210%22 opacity=%220.85%22/%3E %3Cg fill=%22none%22 stroke=%22%232C4672%22 stroke-width=%223%22 opacity=%220.9%22%3E %3Cpath d=%22M300 520 Q540 480 780 520 M290 680 Q540 650 790 680 M290 840 Q540 820 790 840 M290 1000 Q540 990 790 1000%22/%3E %3Cpath d=%22M400 330 Q380 760 410 1170 M540 280 L540 1180 M680 330 Q700 760 670 1170%22/%3E %3C/g%3E %3Cg fill=%22%232E5A8A%22 opacity=%220.95%22%3E %3Cpath d=%22M330 520 Q360 450 440 460 Q500 470 480 540 Q470 600 420 610 Q400 680 360 660 Q330 620 345 580 Q320 560 330 520 Z%22/%3E %3Cpath d=%22M410 700 Q450 690 470 740 Q480 800 450 860 Q430 900 415 860 Q400 800 410 700 Z%22/%3E %3Cpath d=%22M560 470 Q610 440 690 460 Q760 480 750 540 Q740 590 690 590 Q660 640 620 620 Q590 600 600 560 Q560 540 560 470 Z%22/%3E %3Cpath d=%22M590 640 Q630 630 650 680 Q660 740 630 790 Q610 810 600 770 Q585 700 590 640 Z%22/%3E %3Cpath d=%22M690 780 Q740 770 760 810 Q760 850 720 850 Q690 840 690 780 Z%22/%3E %3C/g%3E %3Cg fill=%22%23F2A93B%22 opacity=%220.8%22%3E %3Ccircle cx=%22170%22 cy=%22560%22 r=%2226%22 opacity=%220.35%22/%3E%3Ccircle cx=%22930%22 cy=%22700%22 r=%2234%22 opacity=%220.3%22/%3E %3Ccircle cx=%22900%22 cy=%22420%22 r=%2214%22 opacity=%220.5%22/%3E%3Ccircle cx=%22190%22 cy=%22980%22 r=%2218%22 opacity=%220.4%22/%3E %3Ccircle cx=%22880%22 cy=%221120%22 r=%2222%22 opacity=%220.35%22/%3E%3Ccircle cx=%22230%22 cy=%221260%22 r=%2212%22 opacity=%220.5%22/%3E %3C/g%3E %3Cg fill=%22%23FFC867%22 opacity=%220.7%22%3E %3Cpath d=%22M220 420 Q220 440 240 440 Q220 440 220 460 Q220 440 200 440 Q220 440 220 420 Z%22/%3E %3Cpath d=%22M860 560 Q860 584 884 584 Q860 584 860 608 Q860 584 836 584 Q860 584 860 560 Z%22/%3E %3Cpath d=%22M860 1300 Q860 1318 878 1318 Q860 1318 860 1336 Q860 1318 842 1318 Q860 1318 860 1300 Z%22/%3E %3C/g%3E %3Cg fill=%22none%22 stroke=%22%23F2A93B%22 stroke-width=%226%22 stroke-dasharray=%2212 9%22 stroke-linecap=%22round%22 opacity=%220.65%22%3E %3Cpath d=%22M380 560 Q520 380 700 520%22/%3E %3Cpath d=%22M720 600 Q600 760 440 830%22/%3E %3Cpath d=%22M350 900 Q560 820 740 960%22/%3E %3C/g%3E%3Cg fill=%22none%22 stroke=%22%23FF4D6D%22 stroke-width=%224%22 opacity=%220.7%22%3E %3Ccircle cx=%22700%22 cy=%22520%22 r=%2212%22/%3E%3Ccircle cx=%22700%22 cy=%22520%22 r=%224%22 fill=%22%23FF4D6D%22/%3E %3Ccircle cx=%22440%22 cy=%22830%22 r=%2212%22/%3E%3Ccircle cx=%22440%22 cy=%22830%22 r=%224%22 fill=%22%23FF4D6D%22/%3E %3Ccircle cx=%22740%22 cy=%22960%22 r=%2212%22/%3E%3Ccircle cx=%22740%22 cy=%22960%22 r=%224%22 fill=%22%23FF4D6D%22/%3E %3C/g%3E %3Cpath d=%22M0 1500 L1080 1500 L1080 1920 L0 1920 Z%22 fill=%22%2318203A%22/%3E %3Cpath d=%22M330 1500 L750 1500 L1000 1920 L80 1920 Z%22 fill=%22url(%23carpet)%22/%3E %3Cpath d=%22M420 1500 L660 1500 L760 1920 L320 1920 Z%22 fill=%22%23FFFFFF%22 opacity=%220.12%22/%3E %3Cellipse cx=%22540%22 cy=%221700%22 rx=%22560%22 ry=%22150%22 fill=%22%234A2C18%22/%3E %3Cellipse cx=%22540%22 cy=%221680%22 rx=%22560%22 ry=%22140%22 fill=%22url(%23table)%22 stroke=%22%233A2212%22 stroke-width=%226%22/%3E %3Cg stroke=%22%234B3A44%22 stroke-width=%225%22 stroke-linecap=%22round%22 fill=%22none%22%3E %3Cpath d=%22M220 1640 Q230 1600 260 1585 M440 1600 Q450 1560 480 1548 M640 1600 Q650 1560 680 1548 M860 1640 Q870 1600 900 1585%22/%3E %3C/g%3E %3Cg fill=%22%233A2E36%22%3E%3Ccircle cx=%22262%22 cy=%221584%22 r=%229%22/%3E%3Ccircle cx=%22482%22 cy=%221547%22 r=%229%22/%3E%3Ccircle cx=%22682%22 cy=%221547%22 r=%229%22/%3E%3Ccircle cx=%22902%22 cy=%221584%22 r=%229%22/%3E%3C/g%3E %3Cg fill=%22%23FFFFFF%22 stroke=%22%23B88A2E%22 stroke-width=%224%22%3E %3Cpath d=%22M150 1680 L210 1680 L196 1650 L164 1650 Z%22/%3E%3Cpath d=%22M360 1640 L420 1640 L406 1610 L374 1610 Z%22/%3E %3Cpath d=%22M570 1640 L630 1640 L616 1610 L584 1610 Z%22/%3E%3Cpath d=%22M790 1680 L850 1680 L836 1650 L804 1650 Z%22/%3E %3C/g%3E %3Cg fill=%22%23CFE8FF%22 stroke=%22%239FC4EA%22 stroke-width=%223%22 opacity=%220.9%22%3E %3Crect x=%22300%22 y=%221625%22 width=%2218%22 height=%2230%22 rx=%224%22/%3E%3Crect x=%22520%22 y=%221605%22 width=%2218%22 height=%2230%22 rx=%224%22/%3E %3Crect x=%22740%22 y=%221625%22 width=%2218%22 height=%2230%22 rx=%224%22/%3E %3C/g%3E %3Cg transform=%22translate(214 1500) scale(0.62)%22 stroke=%22%231C2742%22 stroke-width=%225%22 stroke-linejoin=%22round%22%3E %3Cpath d=%22M86 200 Q90 150 92 110 L108 110 Q110 150 114 200 Z%22 fill=%22%23F6D38A%22/%3E %3Cellipse cx=%22100%22 cy=%22156%22 rx=%2230%22 ry=%228%22 fill=%22%23F2A93B%22/%3E %3Ccircle cx=%2266%22 cy=%22206%22 r=%2216%22 fill=%22%23F6D38A%22/%3E%3Ccircle cx=%22134%22 cy=%22206%22 r=%2216%22 fill=%22%23F6D38A%22/%3E %3Ccircle cx=%2288%22 cy=%22212%22 r=%2218%22 fill=%22%23F6D38A%22/%3E%3Ccircle cx=%22112%22 cy=%22212%22 r=%2218%22 fill=%22%23F6D38A%22/%3E %3Ccircle cx=%2252%22 cy=%2284%22 r=%2224%22 fill=%22%23F08A4B%22/%3E%3Ccircle cx=%22154%22 cy=%2292%22 r=%2220%22 fill=%22%23F08A4B%22/%3E %3Ccircle cx=%2276%22 cy=%2258%22 r=%2226%22 fill=%22%23F08A4B%22/%3E%3Ccircle cx=%22140%22 cy=%2264%22 r=%2226%22 fill=%22%23F08A4B%22/%3E%3Ccircle cx=%22108%22 cy=%2248%22 r=%2230%22 fill=%22%23F08A4B%22/%3E %3Cellipse cx=%22100%22 cy=%2288%22 rx=%2258%22 ry=%2232%22 fill=%22%23F08A4B%22 stroke=%22none%22/%3E %3Cpath d=%22M44 100 Q100 136 156 100 Q160 112 146 118 Q100 136 54 118 Q40 112 44 100 Z%22 fill=%22%23D9622E%22/%3E %3Ccircle cx=%2298%22 cy=%2238%22 r=%2210%22 fill=%22%23FFD9A8%22 stroke=%22none%22/%3E%3Ccircle cx=%2270%22 cy=%2252%22 r=%227%22 fill=%22%23FFD9A8%22 stroke=%22none%22/%3E %3C/g%3E %3Cg transform=%22translate(742 1500) scale(0.62)%22 stroke=%22%231C2742%22 stroke-width=%225%22 stroke-linejoin=%22round%22%3E %3Cpath d=%22M86 200 Q90 150 92 110 L108 110 Q110 150 114 200 Z%22 fill=%22%23F6D38A%22/%3E %3Cellipse cx=%22100%22 cy=%22156%22 rx=%2230%22 ry=%228%22 fill=%22%23F2A93B%22/%3E %3Ccircle cx=%2266%22 cy=%22206%22 r=%2216%22 fill=%22%23F6D38A%22/%3E%3Ccircle cx=%22134%22 cy=%22206%22 r=%2216%22 fill=%22%23F6D38A%22/%3E %3Ccircle cx=%2288%22 cy=%22212%22 r=%2218%22 fill=%22%23F6D38A%22/%3E%3Ccircle cx=%22112%22 cy=%22212%22 r=%2218%22 fill=%22%23F6D38A%22/%3E %3Ccircle cx=%2252%22 cy=%2284%22 r=%2224%22 fill=%22%23F08A4B%22/%3E%3Ccircle cx=%22154%22 cy=%2292%22 r=%2220%22 fill=%22%23F08A4B%22/%3E %3Ccircle cx=%2276%22 cy=%2258%22 r=%2226%22 fill=%22%23F08A4B%22/%3E%3Ccircle cx=%22140%22 cy=%2264%22 r=%2226%22 fill=%22%23F08A4B%22/%3E%3Ccircle cx=%22108%22 cy=%2248%22 r=%2230%22 fill=%22%23F08A4B%22/%3E %3Cellipse cx=%22100%22 cy=%2288%22 rx=%2258%22 ry=%2232%22 fill=%22%23F08A4B%22 stroke=%22none%22/%3E %3Cpath d=%22M44 100 Q100 136 156 100 Q160 112 146 118 Q100 136 54 118 Q40 112 44 100 Z%22 fill=%22%23D9622E%22/%3E %3Ccircle cx=%2298%22 cy=%2238%22 r=%2210%22 fill=%22%23FFD9A8%22 stroke=%22none%22/%3E%3Ccircle cx=%2270%22 cy=%2252%22 r=%227%22 fill=%22%23FFD9A8%22 stroke=%22none%22/%3E %3C/g%3E %3Cpath d=%22M0 0 L210 0 Q190 420 176 760 Q166 900 130 990 Q80 1060 0 1080 Z%22 fill=%22url(%23curtainL)%22/%3E %3Cpath d=%22M0 1080 Q70 1060 124 1000 Q150 1320 190 1720 L0 1720 Z%22 fill=%22url(%23curtainL)%22/%3E %3Cg fill=%22none%22 stroke=%22%233E0E18%22 stroke-width=%225%22 opacity=%220.5%22%3E %3Cpath d=%22M60 0 Q70 500 50 1060 M130 0 Q140 520 100 1030 M180 0 Q172 480 160 900%22/%3E %3Cpath d=%22M60 1090 Q80 1400 70 1720 M130 1040 Q150 1380 160 1720%22/%3E %3C/g%3E %3Cpath d=%22M1080 0 L870 0 Q890 420 904 760 Q914 900 950 990 Q1000 1060 1080 1080 Z%22 fill=%22url(%23curtainR)%22/%3E %3Cpath d=%22M1080 1080 Q1010 1060 956 1000 Q930 1320 890 1720 L1080 1720 Z%22 fill=%22url(%23curtainR)%22/%3E %3Cg fill=%22none%22 stroke=%22%233E0E18%22 stroke-width=%225%22 opacity=%220.5%22%3E %3Cpath d=%22M1020 0 Q1010 500 1030 1060 M950 0 Q940 520 980 1030 M900 0 Q908 480 920 900%22/%3E %3Cpath d=%22M1020 1090 Q1000 1400 1010 1720 M950 1040 Q930 1380 920 1720%22/%3E %3C/g%3E %3Cg fill=%22%23F2C14E%22 stroke=%22%23B88A2E%22 stroke-width=%224%22%3E %3Cellipse cx=%22130%22 cy=%221000%22 rx=%2256%22 ry=%2220%22/%3E%3Cellipse cx=%22950%22 cy=%221000%22 rx=%2256%22 ry=%2220%22/%3E %3Cpath d=%22M110 1018 L92 1100 L148 1100 L130 1018 Z%22/%3E%3Cpath d=%22M930 1018 L912 1100 L968 1100 L950 1018 Z%22/%3E %3C/g%3E %3Cg transform=%22translate(110 930) scale(1.25)%22%3E %3Crect x=%22-14%22 y=%22292%22 width=%22108%22 height=%2230%22 rx=%228%22 fill=%22%233A4A72%22 stroke=%22%231C2742%22 stroke-width=%225%22/%3E %3Cpath d=%22M18 220 L-8 288 L22 282 Z M62 220 L88 288 L58 282 Z%22 fill=%22%238FA3BF%22 stroke=%22%231C2742%22 stroke-width=%224%22 stroke-linejoin=%22round%22/%3E %3Crect x=%2218%22 y=%2270%22 width=%2244%22 height=%22214%22 rx=%2210%22 fill=%22%23FFFFFF%22 stroke=%22%231C2742%22 stroke-width=%225%22/%3E %3Cg fill=%22%23D7263D%22%3E%3Crect x=%2220%22 y=%22124%22 width=%2240%22 height=%2218%22/%3E%3Crect x=%2220%22 y=%22166%22 width=%2240%22 height=%2218%22/%3E%3Crect x=%2220%22 y=%22208%22 width=%2240%22 height=%2218%22/%3E%3Crect x=%2220%22 y=%22250%22 width=%2240%22 height=%2218%22/%3E%3C/g%3E %3Cpath d=%22M18 76 Q18 12 40 -12 Q62 12 62 76 Z%22 fill=%22%23FF4D6D%22 stroke=%22%231C2742%22 stroke-width=%225%22 stroke-linejoin=%22round%22/%3E %3Ccircle cx=%2240%22 cy=%2298%22 r=%229%22 fill=%22%23FFD23F%22 stroke=%22%231C2742%22 stroke-width=%223%22/%3E %3Cpath d=%22M28 20 Q30 0 40 -6%22 stroke=%22%23FFD0D6%22 stroke-width=%225%22 stroke-linecap=%22round%22 fill=%22none%22/%3E %3Cpath d=%22M27 84 L27 276%22 stroke=%22%23E3E8F0%22 stroke-width=%225%22 stroke-linecap=%22round%22 fill=%22none%22/%3E %3C/g%3E %3Cg transform=%22translate(840 930) scale(1.25)%22%3E %3Crect x=%22-14%22 y=%22292%22 width=%22108%22 height=%2230%22 rx=%228%22 fill=%22%233A4A72%22 stroke=%22%231C2742%22 stroke-width=%225%22/%3E %3Cpath d=%22M18 220 L-8 288 L22 282 Z M62 220 L88 288 L58 282 Z%22 fill=%22%238FA3BF%22 stroke=%22%231C2742%22 stroke-width=%224%22 stroke-linejoin=%22round%22/%3E %3Crect x=%2218%22 y=%2270%22 width=%2244%22 height=%22214%22 rx=%2210%22 fill=%22%23FFFFFF%22 stroke=%22%231C2742%22 stroke-width=%225%22/%3E %3Cg fill=%22%23D7263D%22%3E%3Crect x=%2220%22 y=%22124%22 width=%2240%22 height=%2218%22/%3E%3Crect x=%2220%22 y=%22166%22 width=%2240%22 height=%2218%22/%3E%3Crect x=%2220%22 y=%22208%22 width=%2240%22 height=%2218%22/%3E%3Crect x=%2220%22 y=%22250%22 width=%2240%22 height=%2218%22/%3E%3C/g%3E %3Cpath d=%22M18 76 Q18 12 40 -12 Q62 12 62 76 Z%22 fill=%22%23FF4D6D%22 stroke=%22%231C2742%22 stroke-width=%225%22 stroke-linejoin=%22round%22/%3E %3Ccircle cx=%2240%22 cy=%2298%22 r=%229%22 fill=%22%23FFD23F%22 stroke=%22%231C2742%22 stroke-width=%223%22/%3E %3Cpath d=%22M28 20 Q30 0 40 -6%22 stroke=%22%23FFD0D6%22 stroke-width=%225%22 stroke-linecap=%22round%22 fill=%22none%22/%3E %3Cpath d=%22M27 84 L27 276%22 stroke=%22%23E3E8F0%22 stroke-width=%225%22 stroke-linecap=%22round%22 fill=%22none%22/%3E %3C/g%3E %3Cg%3E %3Ccircle cx=%22150%22 cy=%22250%22 r=%2280%22 fill=%22%237A2232%22 stroke=%22%231C2742%22 stroke-width=%226%22/%3E %3Ccircle cx=%22150%22 cy=%22250%22 r=%2270%22 fill=%22%23FFF6E8%22 stroke=%22%23F2C14E%22 stroke-width=%225%22/%3E %3Cpath d=%22M150 250 L150 184 A66 66 0 0 0 117.0 192.8 Z%22 fill=%22%23FF4D6D%22 opacity=%220.28%22/%3E %3Cg stroke=%22%231C2742%22 stroke-width=%225%22 stroke-linecap=%22round%22%3E%3Cpath d=%22M150 190 L150 206%22 transform=%22rotate(0 150 250)%22/%3E%3Cpath d=%22M150 190 L150 198%22 transform=%22rotate(30 150 250)%22/%3E%3Cpath d=%22M150 190 L150 198%22 transform=%22rotate(60 150 250)%22/%3E%3Cpath d=%22M150 190 L150 206%22 transform=%22rotate(90 150 250)%22/%3E%3Cpath d=%22M150 190 L150 198%22 transform=%22rotate(120 150 250)%22/%3E%3Cpath d=%22M150 190 L150 198%22 transform=%22rotate(150 150 250)%22/%3E%3Cpath d=%22M150 190 L150 206%22 transform=%22rotate(180 150 250)%22/%3E%3Cpath d=%22M150 190 L150 198%22 transform=%22rotate(210 150 250)%22/%3E%3Cpath d=%22M150 190 L150 198%22 transform=%22rotate(240 150 250)%22/%3E%3Cpath d=%22M150 190 L150 206%22 transform=%22rotate(270 150 250)%22/%3E%3Cpath d=%22M150 190 L150 198%22 transform=%22rotate(300 150 250)%22/%3E%3Cpath d=%22M150 190 L150 198%22 transform=%22rotate(330 150 250)%22/%3E%3C/g%3E %3Cpath d=%22M150 250 L150 211.5%22 stroke=%22%231C2742%22 stroke-width=%229%22 stroke-linecap=%22round%22 transform=%22rotate(-4 150 250)%22/%3E %3Cpath d=%22M150 250 L150 189.8%22 stroke=%22%23E8384F%22 stroke-width=%226%22 stroke-linecap=%22round%22 transform=%22rotate(-14 150 250)%22/%3E %3Ccircle cx=%22150%22 cy=%22250%22 r=%227%22 fill=%22%231C2742%22/%3E %3C/g%3E %3Cpath d=%22M0 0 L1080 0 L1080 56 Q1012 104 945 56 Q877 104 810 56 Q742 104 675 56 Q607 104 540 56 Q472 104 405 56 Q337 104 270 56 Q202 104 135 56 Q67 104 0 56 Z%22 fill=%22%237A2232%22/%3E %3Cpath d=%22M0 56 Q67 104 135 56 Q202 104 270 56 Q337 104 405 56 Q472 104 540 56 Q607 104 675 56 Q742 104 810 56 Q877 104 945 56 Q1012 104 1080 56%22 fill=%22none%22 stroke=%22%23F2C14E%22 stroke-width=%228%22 stroke-dasharray=%223 9%22 stroke-linecap=%22round%22/%3E %3C/svg%3E")}}
+/* Background: a plain, calm navy so the board and its multipliers stand out (the old Summit Hall art is in art/bg_base*.svg). A fixed layer, so it also stays put on iOS. */
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse 85% 75% at 50% 45%,#2B3B62 0%,#1C2745 55%,#0F162B 100%)}
 /* Reels sit on a near-solid panel with a purple rim so they pop off the hall; the title gets a soft white glow. */
 canvas{background:rgba(255,253,247,.92);box-shadow:0 0 0 4px rgba(255,255,255,.9),0 0 0 8px #C99A3A,0 12px 34px rgba(5,10,25,.55)}
 /* Text on the navy hall: warm cream title with an amber glow, light message line, steel badges. */
 h1{color:#FFE9B8;text-shadow:0 3px 0 #1C2742,0 0 12px rgba(242,169,59,.75)}
 .msg{color:#FFF4DC;text-shadow:0 1px 3px #0D1426}
 .badge:not(.warn){background:#3A4A72;box-shadow:0 0 0 1px #6F80A8}
-/* Free-spins background, "The Bunker" (sources: art/bg_free_wide.svg, art/bg_free.svg): fades in over the hall while body has .fs. */
-body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:0;transition:opacity .8s ease;background:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1920 1080%22 width=%221920%22 height=%221080%22 preserveAspectRatio=%22xMidYMid slice%22%3E %3Cdefs%3E %3ClinearGradient id=%22wall%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%232B1B4D%22/%3E%3Cstop offset=%220.6%22 stop-color=%22%231D1336%22/%3E%3Cstop offset=%221%22 stop-color=%22%23140D26%22/%3E %3C/linearGradient%3E %3CradialGradient id=%22glow%22 cx=%22960%22 cy=%22430%22 r=%22660%22 gradientUnits=%22userSpaceOnUse%22%3E %3Cstop offset=%220%22 stop-color=%22%233FD1C9%22 stop-opacity=%220.38%22/%3E%3Cstop offset=%220.6%22 stop-color=%22%233FD1C9%22 stop-opacity=%220.08%22/%3E%3Cstop offset=%221%22 stop-color=%22%233FD1C9%22 stop-opacity=%220%22/%3E %3C/radialGradient%3E %3ClinearGradient id=%22sweep%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%220%22%3E %3Cstop offset=%220%22 stop-color=%22%233FD1C9%22 stop-opacity=%220%22/%3E%3Cstop offset=%221%22 stop-color=%22%233FD1C9%22 stop-opacity=%220.55%22/%3E %3C/linearGradient%3E %3CradialGradient id=%22beam%22 cx=%220.5%22 cy=%220%22 r=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%23FF4D6D%22 stop-opacity=%220.45%22/%3E%3Cstop offset=%221%22 stop-color=%22%23FF4D6D%22 stop-opacity=%220%22/%3E %3C/radialGradient%3E %3ClinearGradient id=%22desk%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%23433A61%22/%3E%3Cstop offset=%221%22 stop-color=%22%232A2440%22/%3E %3C/linearGradient%3E %3C/defs%3E %3Crect width=%221920%22 height=%221080%22 fill=%22url(%23wall)%22/%3E %3Cg fill=%22none%22 stroke=%22%233A2A63%22 stroke-width=%224%22%3E %3Crect x=%2230%22 y=%22130%22 width=%22360%22 height=%22330%22 rx=%2210%22/%3E%3Crect x=%2230%22 y=%22480%22 width=%22360%22 height=%22330%22 rx=%2210%22/%3E %3Crect x=%221530%22 y=%22130%22 width=%22360%22 height=%22330%22 rx=%2210%22/%3E%3Crect x=%221530%22 y=%22480%22 width=%22360%22 height=%22330%22 rx=%2210%22/%3E %3C/g%3E %3Cg fill=%22%2347367A%22%3E %3Ccircle cx=%2250%22 cy=%22150%22 r=%225%22/%3E%3Ccircle cx=%22370%22 cy=%22150%22 r=%225%22/%3E%3Ccircle cx=%2250%22 cy=%22790%22 r=%225%22/%3E%3Ccircle cx=%22370%22 cy=%22790%22 r=%225%22/%3E %3Ccircle cx=%221550%22 cy=%22150%22 r=%225%22/%3E%3Ccircle cx=%221870%22 cy=%22150%22 r=%225%22/%3E%3Ccircle cx=%221550%22 cy=%22790%22 r=%225%22/%3E%3Ccircle cx=%221870%22 cy=%22790%22 r=%225%22/%3E %3C/g%3E %3Cg stroke-linecap=%22round%22%3E %3Cpath d=%22M0 60 L1920 60%22 stroke=%22%233E2F66%22 stroke-width=%2226%22/%3E%3Cpath d=%22M0 60 L1920 60%22 stroke=%22%2355448A%22 stroke-width=%226%22/%3E %3Cpath d=%22M0 100 L1920 100%22 stroke=%22%2334275A%22 stroke-width=%2216%22/%3E %3C/g%3E %3Cg fill=%22%232A1F4A%22%3E%3Crect x=%22420%22 y=%2240%22 width=%2222%22 height=%2280%22 rx=%224%22/%3E%3Crect x=%22960%22 y=%2240%22 width=%2222%22 height=%2280%22 rx=%224%22/%3E%3Crect x=%221480%22 y=%2240%22 width=%2222%22 height=%2280%22 rx=%224%22/%3E%3C/g%3E %3Crect width=%221920%22 height=%221080%22 fill=%22url(%23glow)%22/%3E %3Ccircle cx=%22960%22 cy=%22430%22 r=%22340%22 fill=%22%230E2F3A%22 stroke=%22%232C5560%22 stroke-width=%2214%22/%3E %3Cg fill=%22none%22 stroke=%22%233FD1C9%22 stroke-opacity=%220.35%22 stroke-width=%223%22%3E %3Ccircle cx=%22960%22 cy=%22430%22 r=%2285%22/%3E%3Ccircle cx=%22960%22 cy=%22430%22 r=%22170%22/%3E%3Ccircle cx=%22960%22 cy=%22430%22 r=%22255%22/%3E %3Cpath d=%22M620 430 L1300 430 M960 90 L960 770%22/%3E %3C/g%3E %3Cpath d=%22M960 430 L1280 320 A340 340 0 0 1 1298 450 Z%22 fill=%22url(%23sweep)%22/%3E %3Cg fill=%22%23FF5DA2%22%3E%3Ccircle cx=%221080%22 cy=%22290%22 r=%2210%22/%3E%3Ccircle cx=%22850%22 cy=%22570%22 r=%228%22/%3E%3Ccircle cx=%221140%22 cy=%22520%22 r=%227%22/%3E%3Ccircle cx=%22830%22 cy=%22310%22 r=%226%22/%3E%3C/g%3E %3Cg fill=%22%23FF5DA2%22 opacity=%220.25%22%3E%3Ccircle cx=%221080%22 cy=%22290%22 r=%2224%22/%3E%3Ccircle cx=%22850%22 cy=%22570%22 r=%2220%22/%3E%3C/g%3E %3Crect x=%22440%22 y=%22220%22 width=%22220%22 height=%22150%22 rx=%2210%22 fill=%22%230E2F3A%22 stroke=%22%232C5560%22 stroke-width=%226%22/%3E %3Cg fill=%22%233FD1C9%22 opacity=%220.6%22%3E%3Cpath d=%22M465 280 Q500 245 545 258 Q570 280 545 302 Q510 314 485 302 Z%22/%3E%3Cpath d=%22M575 312 Q610 290 640 308 Q630 334 598 338 Z%22/%3E%3C/g%3E %3Ccircle cx=%22520%22 cy=%22280%22 r=%226%22 fill=%22%23FF5DA2%22/%3E %3Crect x=%221260%22 y=%22220%22 width=%22220%22 height=%22150%22 rx=%2210%22 fill=%22%230E2F3A%22 stroke=%22%232C5560%22 stroke-width=%226%22/%3E %3Cg fill=%22%233FD1C9%22 opacity=%220.7%22%3E%3Crect x=%221285%22 y=%22310%22 width=%2224%22 height=%2240%22/%3E%3Crect x=%221320%22 y=%22286%22 width=%2224%22 height=%2264%22/%3E%3Crect x=%221355%22 y=%22262%22 width=%2224%22 height=%2288%22/%3E%3Crect x=%221390%22 y=%22240%22 width=%2224%22 height=%22110%22/%3E%3C/g%3E %3Crect x=%221425%22 y=%22232%22 width=%2224%22 height=%22118%22 fill=%22%23FF5DA2%22 opacity=%220.85%22/%3E %3Cg%3E%3Ccircle cx=%22480%22 cy=%22420%22 r=%2210%22 fill=%22%23F2B705%22/%3E%3Ccircle cx=%22515%22 cy=%22420%22 r=%2210%22 fill=%22%23FF4D6D%22/%3E%3Ccircle cx=%22550%22 cy=%22420%22 r=%2210%22 fill=%22%233FD1C9%22/%3E %3Ccircle cx=%221370%22 cy=%22420%22 r=%2210%22 fill=%22%23FF4D6D%22/%3E%3Ccircle cx=%221405%22 cy=%22420%22 r=%2210%22 fill=%22%23F2B705%22/%3E%3Ccircle cx=%221440%22 cy=%22420%22 r=%2210%22 fill=%22%23FF4D6D%22/%3E%3C/g%3E %3Cpath d=%22M170 170 L-40 640 L380 640 Z%22 fill=%22url(%23beam)%22/%3E %3Cpath d=%22M1750 170 L1540 640 L1960 640 Z%22 fill=%22url(%23beam)%22/%3E %3Cg stroke=%22%232A1F4A%22 stroke-width=%224%22%3E %3Crect x=%22138%22 y=%22166%22 width=%2264%22 height=%2218%22 rx=%224%22 fill=%22%234A3A78%22/%3E%3Cpath d=%22M144 166 Q144 120 170 116 Q196 120 196 166 Z%22 fill=%22%23E8384F%22/%3E %3Crect x=%221718%22 y=%22166%22 width=%2264%22 height=%2218%22 rx=%224%22 fill=%22%234A3A78%22/%3E%3Cpath d=%22M1724 166 Q1724 120 1750 116 Q1776 120 1776 166 Z%22 fill=%22%23E8384F%22/%3E %3C/g%3E %3Cg fill=%22%23FFB3BF%22 opacity=%220.8%22%3E%3Cellipse cx=%22160%22 cy=%22136%22 rx=%227%22 ry=%2212%22/%3E%3Cellipse cx=%221740%22 cy=%22136%22 rx=%227%22 ry=%2212%22/%3E%3C/g%3E %3Crect x=%220%22 y=%22830%22 width=%221920%22 height=%2230%22 fill=%22%232A2440%22/%3E %3Cg fill=%22%23C9A227%22 opacity=%220.55%22%3E %3Cpath d=%22M0 830 L26 830 L0 860 Z M60 830 L90 830 L60 860 L30 860 Z M120 830 L150 830 L120 860 L90 860 Z M180 830 L210 830 L180 860 L150 860 Z M240 830 L270 830 L240 860 L210 860 Z M300 830 L330 830 L300 860 L270 860 Z M360 830 L390 830 L360 860 L330 860 Z M1530 830 L1560 830 L1530 860 L1500 860 Z M1590 830 L1620 830 L1590 860 L1560 860 Z M1650 830 L1680 830 L1650 860 L1620 860 Z M1710 830 L1740 830 L1710 860 L1680 860 Z M1770 830 L1800 830 L1770 860 L1740 860 Z M1830 830 L1860 830 L1830 860 L1800 860 Z M1890 830 L1920 830 L1920 860 L1860 860 Z%22/%3E %3C/g%3E %3Cpath d=%22M0 860 L1920 860 L1920 950 L0 950 Z%22 fill=%22%234A4068%22/%3E %3Cpath d=%22M0 950 L1920 950 L1920 1080 L0 1080 Z%22 fill=%22url(%23desk)%22/%3E %3Cg stroke=%22%232A2440%22 stroke-width=%223%22%3E %3Crect x=%22120%22 y=%22884%22 width=%2260%22 height=%2234%22 rx=%228%22 fill=%22%23FF5DA2%22/%3E%3Crect x=%22200%22 y=%22884%22 width=%2260%22 height=%2234%22 rx=%228%22 fill=%22%234DB6FF%22/%3E %3Crect x=%22280%22 y=%22884%22 width=%2260%22 height=%2234%22 rx=%228%22 fill=%22%23F2B705%22/%3E%3Crect x=%221580%22 y=%22884%22 width=%2260%22 height=%2234%22 rx=%228%22 fill=%22%234DB6FF%22/%3E %3Crect x=%221660%22 y=%22884%22 width=%2260%22 height=%2234%22 rx=%228%22 fill=%22%23FF5DA2%22/%3E%3Crect x=%221740%22 y=%22884%22 width=%2260%22 height=%2234%22 rx=%228%22 fill=%22%23F2B705%22/%3E %3C/g%3E %3Cellipse cx=%221820%22 cy=%221000%22 rx=%2270%22 ry=%2222%22 fill=%22%232A2440%22/%3E %3Cellipse cx=%221820%22 cy=%22992%22 rx=%2256%22 ry=%2217%22 fill=%22%235A5A66%22 stroke=%22%232A2440%22 stroke-width=%224%22/%3E %3Cpath d=%22M1776 990 Q1776 954 1820 952 Q1864 954 1864 990 Z%22 fill=%22%23E8384F%22 stroke=%22%237A1426%22 stroke-width=%225%22/%3E %3Cellipse cx=%221806%22 cy=%22966%22 rx=%2214%22 ry=%226%22 fill=%22%23FF8C9E%22 opacity=%220.8%22/%3E %3C/svg%3E") center top/cover no-repeat}
-@media (orientation:portrait){body::after{background-image:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1080 1920%22 width=%221080%22 height=%221920%22 preserveAspectRatio=%22xMidYMid slice%22%3E %3Cdefs%3E %3ClinearGradient id=%22wall%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%232B1B4D%22/%3E%3Cstop offset=%220.55%22 stop-color=%22%231D1336%22/%3E%3Cstop offset=%221%22 stop-color=%22%23140D26%22/%3E %3C/linearGradient%3E %3CradialGradient id=%22glow%22 cx=%22540%22 cy=%22700%22 r=%22600%22 gradientUnits=%22userSpaceOnUse%22%3E %3Cstop offset=%220%22 stop-color=%22%233FD1C9%22 stop-opacity=%220.38%22/%3E%3Cstop offset=%220.6%22 stop-color=%22%233FD1C9%22 stop-opacity=%220.08%22/%3E%3Cstop offset=%221%22 stop-color=%22%233FD1C9%22 stop-opacity=%220%22/%3E %3C/radialGradient%3E %3ClinearGradient id=%22sweep%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%220%22%3E %3Cstop offset=%220%22 stop-color=%22%233FD1C9%22 stop-opacity=%220%22/%3E%3Cstop offset=%221%22 stop-color=%22%233FD1C9%22 stop-opacity=%220.55%22/%3E %3C/linearGradient%3E %3CradialGradient id=%22beam%22 cx=%220.5%22 cy=%220%22 r=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%23FF4D6D%22 stop-opacity=%220.45%22/%3E%3Cstop offset=%221%22 stop-color=%22%23FF4D6D%22 stop-opacity=%220%22/%3E %3C/radialGradient%3E %3ClinearGradient id=%22desk%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%23433A61%22/%3E%3Cstop offset=%221%22 stop-color=%22%232A2440%22/%3E %3C/linearGradient%3E %3C/defs%3E %3Crect width=%221080%22 height=%221920%22 fill=%22url(%23wall)%22/%3E %3Cg fill=%22none%22 stroke=%22%233A2A63%22 stroke-width=%224%22%3E %3Crect x=%2220%22 y=%22140%22 width=%22250%22 height=%22620%22 rx=%2210%22/%3E%3Crect x=%2220%22 y=%22780%22 width=%22250%22 height=%22620%22 rx=%2210%22/%3E %3Crect x=%22810%22 y=%22140%22 width=%22250%22 height=%22620%22 rx=%2210%22/%3E%3Crect x=%22810%22 y=%22780%22 width=%22250%22 height=%22620%22 rx=%2210%22/%3E %3C/g%3E %3Cg fill=%22%2347367A%22%3E %3Ccircle cx=%2240%22 cy=%22160%22 r=%225%22/%3E%3Ccircle cx=%22250%22 cy=%22160%22 r=%225%22/%3E%3Ccircle cx=%2240%22 cy=%22740%22 r=%225%22/%3E%3Ccircle cx=%22250%22 cy=%22740%22 r=%225%22/%3E %3Ccircle cx=%22830%22 cy=%22160%22 r=%225%22/%3E%3Ccircle cx=%221040%22 cy=%22160%22 r=%225%22/%3E%3Ccircle cx=%22830%22 cy=%22740%22 r=%225%22/%3E%3Ccircle cx=%221040%22 cy=%22740%22 r=%225%22/%3E %3Ccircle cx=%2240%22 cy=%22800%22 r=%225%22/%3E%3Ccircle cx=%22250%22 cy=%22800%22 r=%225%22/%3E%3Ccircle cx=%22830%22 cy=%22800%22 r=%225%22/%3E%3Ccircle cx=%221040%22 cy=%22800%22 r=%225%22/%3E %3C/g%3E %3Cg stroke-linecap=%22round%22%3E %3Cpath d=%22M0 70 L1080 70%22 stroke=%22%233E2F66%22 stroke-width=%2226%22/%3E%3Cpath d=%22M0 70 L1080 70%22 stroke=%22%2355448A%22 stroke-width=%226%22/%3E %3Cpath d=%22M0 112 L1080 112%22 stroke=%22%2334275A%22 stroke-width=%2216%22/%3E %3C/g%3E %3Cg fill=%22%232A1F4A%22%3E%3Crect x=%22200%22 y=%2250%22 width=%2222%22 height=%2280%22 rx=%224%22/%3E%3Crect x=%22540%22 y=%2250%22 width=%2222%22 height=%2280%22 rx=%224%22/%3E%3Crect x=%22860%22 y=%2250%22 width=%2222%22 height=%2280%22 rx=%224%22/%3E%3C/g%3E %3Crect width=%221080%22 height=%221920%22 fill=%22url(%23glow)%22/%3E %3Ccircle cx=%22540%22 cy=%22700%22 r=%22340%22 fill=%22%230E2F3A%22 stroke=%22%232C5560%22 stroke-width=%2214%22/%3E %3Cg fill=%22none%22 stroke=%22%233FD1C9%22 stroke-opacity=%220.35%22 stroke-width=%223%22%3E %3Ccircle cx=%22540%22 cy=%22700%22 r=%2285%22/%3E%3Ccircle cx=%22540%22 cy=%22700%22 r=%22170%22/%3E%3Ccircle cx=%22540%22 cy=%22700%22 r=%22255%22/%3E %3Cpath d=%22M200 700 L880 700 M540 360 L540 1040%22/%3E %3C/g%3E %3Cpath d=%22M540 700 L860 590 A340 340 0 0 1 878 720 Z%22 fill=%22url(%23sweep)%22/%3E %3Cg fill=%22%23FF5DA2%22%3E%3Ccircle cx=%22660%22 cy=%22560%22 r=%2210%22/%3E%3Ccircle cx=%22430%22 cy=%22840%22 r=%228%22/%3E%3Ccircle cx=%22720%22 cy=%22790%22 r=%227%22/%3E%3Ccircle cx=%22410%22 cy=%22580%22 r=%226%22/%3E%3C/g%3E %3Cg fill=%22%23FF5DA2%22 opacity=%220.25%22%3E%3Ccircle cx=%22660%22 cy=%22560%22 r=%2224%22/%3E%3Ccircle cx=%22430%22 cy=%22840%22 r=%2220%22/%3E%3C/g%3E %3Crect x=%2250%22 y=%22420%22 width=%22190%22 height=%22130%22 rx=%2210%22 fill=%22%230E2F3A%22 stroke=%22%232C5560%22 stroke-width=%226%22/%3E %3Cg fill=%22%233FD1C9%22 opacity=%220.6%22%3E%3Cpath d=%22M70 470 Q100 440 140 452 Q160 470 140 490 Q110 500 90 490 Z%22/%3E%3Cpath d=%22M160 500 Q190 480 220 496 Q210 520 180 524 Z%22/%3E%3C/g%3E %3Ccircle cx=%22120%22 cy=%22470%22 r=%226%22 fill=%22%23FF5DA2%22/%3E %3Crect x=%22840%22 y=%22420%22 width=%22190%22 height=%22130%22 rx=%2210%22 fill=%22%230E2F3A%22 stroke=%22%232C5560%22 stroke-width=%226%22/%3E %3Cg fill=%22%233FD1C9%22 opacity=%220.7%22%3E%3Crect x=%22865%22 y=%22500%22 width=%2222%22 height=%2234%22/%3E%3Crect x=%22897%22 y=%22480%22 width=%2222%22 height=%2254%22/%3E%3Crect x=%22929%22 y=%22460%22 width=%2222%22 height=%2274%22/%3E%3Crect x=%22961%22 y=%22440%22 width=%2222%22 height=%2294%22/%3E%3C/g%3E %3Crect x=%22993%22 y=%22430%22 width=%2222%22 height=%22104%22 fill=%22%23FF5DA2%22 opacity=%220.85%22/%3E %3Cg%3E%3Ccircle cx=%2280%22 cy=%22610%22 r=%2210%22 fill=%22%23F2B705%22/%3E%3Ccircle cx=%22115%22 cy=%22610%22 r=%2210%22 fill=%22%23FF4D6D%22/%3E%3Ccircle cx=%22150%22 cy=%22610%22 r=%2210%22 fill=%22%233FD1C9%22/%3E %3Ccircle cx=%22930%22 cy=%22610%22 r=%2210%22 fill=%22%23FF4D6D%22/%3E%3Ccircle cx=%22965%22 cy=%22610%22 r=%2210%22 fill=%22%23F2B705%22/%3E%3Ccircle cx=%221000%22 cy=%22610%22 r=%2210%22 fill=%22%23FF4D6D%22/%3E%3C/g%3E %3Cpath d=%22M110 200 L-60 640 L300 640 Z%22 fill=%22url(%23beam)%22/%3E %3Cpath d=%22M970 200 L780 640 L1140 640 Z%22 fill=%22url(%23beam)%22/%3E %3Cg stroke=%22%232A1F4A%22 stroke-width=%224%22%3E %3Crect x=%2278%22 y=%22196%22 width=%2264%22 height=%2218%22 rx=%224%22 fill=%22%234A3A78%22/%3E%3Cpath d=%22M84 196 Q84 150 110 146 Q136 150 136 196 Z%22 fill=%22%23E8384F%22/%3E %3Crect x=%22938%22 y=%22196%22 width=%2264%22 height=%2218%22 rx=%224%22 fill=%22%234A3A78%22/%3E%3Cpath d=%22M944 196 Q944 150 970 146 Q996 150 996 196 Z%22 fill=%22%23E8384F%22/%3E %3C/g%3E %3Cg fill=%22%23FFB3BF%22 opacity=%220.8%22%3E%3Cellipse cx=%22100%22 cy=%22166%22 rx=%227%22 ry=%2212%22/%3E%3Cellipse cx=%22960%22 cy=%22166%22 rx=%227%22 ry=%2212%22/%3E%3C/g%3E %3Crect x=%220%22 y=%221440%22 width=%221080%22 height=%2234%22 fill=%22%232A2440%22/%3E %3Cg fill=%22%23C9A227%22 opacity=%220.55%22%3E %3Cpath d=%22M0 1440 L30 1440 L0 1474 Z M60 1440 L94 1440 L60 1474 L26 1474 Z M128 1440 L162 1440 L128 1474 L94 1474 Z M196 1440 L230 1440 L196 1474 L162 1474 Z M264 1440 L298 1440 L264 1474 L230 1474 Z M332 1440 L366 1440 L332 1474 L298 1474 Z M400 1440 L434 1440 L400 1474 L366 1474 Z M468 1440 L502 1440 L468 1474 L434 1474 Z M536 1440 L570 1440 L536 1474 L502 1474 Z M604 1440 L638 1440 L604 1474 L570 1474 Z M672 1440 L706 1440 L672 1474 L638 1474 Z M740 1440 L774 1440 L740 1474 L706 1474 Z M808 1440 L842 1440 L808 1474 L774 1474 Z M876 1440 L910 1440 L876 1474 L842 1474 Z M944 1440 L978 1440 L944 1474 L910 1474 Z M1012 1440 L1046 1440 L1012 1474 L978 1474 Z M1080 1440 L1080 1474 L1046 1474 Z%22/%3E %3C/g%3E %3Cpath d=%22M0 1474 L1080 1474 L1080 1600 L0 1600 Z%22 fill=%22%234A4068%22/%3E %3Cpath d=%22M0 1600 L1080 1600 L1080 1920 L0 1920 Z%22 fill=%22url(%23desk)%22/%3E %3Cg stroke=%22%232A2440%22 stroke-width=%223%22%3E %3Crect x=%2280%22 y=%221510%22 width=%2260%22 height=%2234%22 rx=%228%22 fill=%22%23FF5DA2%22/%3E%3Crect x=%22160%22 y=%221510%22 width=%2260%22 height=%2234%22 rx=%228%22 fill=%22%234DB6FF%22/%3E %3Crect x=%22240%22 y=%221510%22 width=%2260%22 height=%2234%22 rx=%228%22 fill=%22%23F2B705%22/%3E%3Crect x=%22780%22 y=%221510%22 width=%2260%22 height=%2234%22 rx=%228%22 fill=%22%234DB6FF%22/%3E %3Crect x=%22860%22 y=%221510%22 width=%2260%22 height=%2234%22 rx=%228%22 fill=%22%23FF5DA2%22/%3E%3Crect x=%22940%22 y=%221510%22 width=%2260%22 height=%2234%22 rx=%228%22 fill=%22%23F2B705%22/%3E %3C/g%3E %3Cg stroke=%22%232A2440%22 stroke-width=%223%22 fill=%22%239E95BF%22%3E %3Crect x=%2296%22 y=%221560%22 width=%2212%22 height=%2226%22 rx=%224%22/%3E%3Crect x=%22176%22 y=%221560%22 width=%2212%22 height=%2226%22 rx=%224%22/%3E%3Crect x=%22256%22 y=%221560%22 width=%2212%22 height=%2226%22 rx=%224%22/%3E %3Crect x=%22796%22 y=%221560%22 width=%2212%22 height=%2226%22 rx=%224%22/%3E%3Crect x=%22876%22 y=%221560%22 width=%2212%22 height=%2226%22 rx=%224%22/%3E%3Crect x=%22956%22 y=%221560%22 width=%2212%22 height=%2226%22 rx=%224%22/%3E %3C/g%3E %3Cellipse cx=%22540%22 cy=%221560%22 rx=%22120%22 ry=%2234%22 fill=%22%232A2440%22/%3E %3Cellipse cx=%22540%22 cy=%221548%22 rx=%2296%22 ry=%2226%22 fill=%22%235A5A66%22 stroke=%22%232A2440%22 stroke-width=%224%22/%3E %3Cpath d=%22M466 1546 Q466 1490 540 1486 Q614 1490 614 1546 Z%22 fill=%22%23E8384F%22 stroke=%22%237A1426%22 stroke-width=%225%22/%3E %3Cellipse cx=%22520%22 cy=%221506%22 rx=%2224%22 ry=%229%22 fill=%22%23FF8C9E%22 opacity=%220.8%22/%3E %3Cpath d=%22M444 1550 Q444 1440 540 1434 Q636 1440 636 1550%22 fill=%22none%22 stroke=%22%23CFE8FF%22 stroke-width=%225%22 opacity=%220.55%22/%3E %3C/svg%3E")}}
+/* Free-spins background: the same plain look in deep purple, fading in while body has .fs (the old Bunker art is in art/bg_free*.svg). */
+body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:0;transition:opacity .8s ease;background:radial-gradient(ellipse 85% 75% at 50% 45%,#3B2868 0%,#25173F 55%,#130C24 100%)}
 body.fs::after{opacity:1}
 body.fs h1{color:#fff;text-shadow:0 2px 0 #4b1d8f,0 0 10px #3FD1C9}
 body.fs .msg{color:#fff;text-shadow:0 1px 2px #140d26}
@@ -252,13 +253,56 @@ body.fs canvas{background:rgba(26,19,46,.95)}
 @media (orientation:landscape) and (min-width:560px){
   .buycard{padding:12px 16px}.buycard .s{font-size:15px}.buycard b{font-size:16px}
 }
+/* ===== Cold War war room =====
+   A 1960s command bunker, kept quiet so the board stays the brightest thing on screen: a faint plotting
+   grid and radar rings on the navy, a blue West / red East tint at the edges, stencil lettering, and
+   teleprinter type for labels. Free spins switch the room to red alert. Fonts fall back to Impact and
+   Courier when Google Fonts can't load. */
+:root{--stencil:"Black Ops One",Impact,"Arial Black",sans-serif;--teletype:"Special Elite","Courier New",ui-monospace,monospace}
+body::before{background:
+  radial-gradient(ellipse 85% 75% at 50% 45%,rgba(8,12,24,0) 38%,rgba(8,12,24,.78) 100%),
+  repeating-radial-gradient(circle at 50% 45%,rgba(94,214,190,0) 0 118px,rgba(94,214,190,.075) 118px 120px),
+  repeating-linear-gradient(0deg,rgba(150,185,230,.055) 0 1px,transparent 1px 56px),
+  repeating-linear-gradient(90deg,rgba(150,185,230,.055) 0 1px,transparent 1px 56px),
+  linear-gradient(90deg,rgba(70,120,230,.18),rgba(70,120,230,0) 30%,rgba(220,60,60,0) 70%,rgba(220,60,60,.18)),
+  radial-gradient(ellipse 85% 75% at 50% 45%,#26365A 0%,#1A2441 55%,#0E1529 100%)}
+body::after{background:
+  radial-gradient(ellipse 85% 75% at 50% 45%,rgba(14,4,7,0) 38%,rgba(14,4,7,.8) 100%),
+  repeating-radial-gradient(circle at 50% 45%,rgba(255,96,84,0) 0 118px,rgba(255,96,84,.09) 118px 120px),
+  repeating-linear-gradient(0deg,rgba(255,130,120,.05) 0 1px,transparent 1px 56px),
+  repeating-linear-gradient(90deg,rgba(255,130,120,.05) 0 1px,transparent 1px 56px),
+  radial-gradient(ellipse 85% 75% at 50% 45%,#4A1622 0%,#2A0C16 55%,#14060B 100%)}
+body.fs canvas{background:rgba(18,17,30,.95)}
+/* Lettering: stencil for the title and big calls, teleprinter for labels */
+h1{font-family:var(--stencil);font-weight:400;letter-spacing:1.5px;color:#F1E3C2;text-shadow:0 3px 0 #0E1529,0 0 14px rgba(226,59,59,.45)}
+body.fs h1{color:#FFE9D6;text-shadow:0 2px 0 #2A0C16,0 0 12px rgba(255,90,80,.8)}
+.overlay .big{font-family:var(--stencil);font-weight:400;letter-spacing:1px;-webkit-text-stroke:2px #1B1014;text-shadow:0 4px 0 #B3261E}
+.overlay .sub{font-family:var(--teletype);font-weight:400;letter-spacing:1px;background:#F1E3C2;color:#2A1F14}
+.modebadge{font-family:var(--teletype);font-weight:400;font-size:11px;letter-spacing:1.5px;background:rgba(14,21,41,.88);color:#F1E3C2;box-shadow:0 0 0 1px #8C9AB3}
+.msg{font-family:var(--teletype);font-weight:400;letter-spacing:.5px}
+/* Launch codes: a classified manila folder with a red stamp */
+.buycard{position:relative;background:linear-gradient(#E6D19D,#CDB179);color:#3A2A14;border-radius:3px 12px 12px 12px;box-shadow:0 0 0 1px #8A6F3C,0 6px 14px rgba(0,0,0,.45)}
+.buycard::before{content:"";position:absolute;left:-1px;top:-9px;width:44%;height:10px;background:#E6D19D;border:1px solid #8A6F3C;border-bottom:0;border-radius:6px 6px 0 0}
+.buycard .t{font-family:var(--teletype);font-weight:400;color:#B3261E;border:2px solid #B3261E;border-radius:3px;padding:1px 6px;transform:rotate(-4deg);letter-spacing:1.5px;margin-bottom:3px}
+.buycard .s{font-family:var(--teletype);font-weight:400;color:#3A2A14}
+.buycard b{font-family:var(--teletype);font-weight:400;background:#2A1F14;color:#F2C230;border-radius:4px;padding:2px 10px}
+/* Spin: the big red launch button in a hazard-yellow collar; amber during free spins */
+#spin{background:radial-gradient(circle at 50% 35%,#FF6B57,#C4161C 72%);box-shadow:0 0 0 4px #1B1B1F,0 0 0 8px #F2C230,0 0 0 10px #1B1B1F,0 6px 0 10px #5E0A0D}
+#spin.free{background:radial-gradient(circle at 50% 35%,#FFC46B,#E0700C 72%);box-shadow:0 0 0 4px #1B1B1F,0 0 0 8px #F2C230,0 0 0 10px #1B1B1F,0 6px 0 10px #7A3A06}
+/* Free-spins box: a green phosphor readout */
+.featurebox .k{font-family:var(--teletype);font-weight:400;letter-spacing:1px}
+.featurebox.on{background:#06130C;border-color:#2FAF5A;box-shadow:0 0 0 1px #0B2416,0 0 18px rgba(47,175,90,.45)}
+.featurebox.on .k{color:#5FD884}.featurebox.on .v{color:#C2FFD2;text-shadow:0 0 6px rgba(120,255,160,.6)}
+/* Control bar: teleprinter labels on gunmetal */
+.bar{background:rgba(10,14,26,.95);box-shadow:0 -1px 0 rgba(140,154,179,.35)}
+.kv span{font-family:var(--teletype);font-weight:400;color:#F2C230;letter-spacing:1.5px}
 </style>
 </head>
 <body>
 <div class="cabinet" id="cabinet">
   <div class="logo">
     <h1>Nuclear Summit</h1>
-    <button class="modebadge" id="modeBadge" aria-label="Game mode, opens settings">Summit</button>
+    <button class="modebadge" id="modeBadge" aria-label="Game mode, opens settings">Brinkmanship</button>
   </div>
 
   <div class="board">
@@ -377,19 +421,23 @@ const PLAYER_AGE = 30; // placeholder: a real-money build takes the verified age
 const LADDER = betLadderFor(MARKET, PLAYER_AGE);
 
 // ===== Game spec. PLACEHOLDER MATH: roughly tuned by simulation only, not certified. =====
-// 6 columns x 8 rows, 5 leaders and 2 low-pay props, cluster pays with tumbles. Nukes go off in the base game too.
-//  - Base game: every Nuke that lands explodes and lights a fallout area for the rest of that spin's
-//    tumbles, then the board clears. Free spins come only from the nuclear meter (below) or a buy.
-//  - Nuclear meter (0-100): every Nuke pushes it up a random amount (the mode's meterRise range); a base
-//    spin with no Nukes lets it fall (meterDecay). A full meter starts the free spins, with that spin's
+// 6 columns x 8 rows, 5 leaders and 2 low-pay props, cluster pays with tumbles. All bombs are wild.
+//  - Bombs are wild. Each goes off once, in a winning cluster (after it pays) or in a chain of chainAt+
+//    touching bombs; its fallout multiplies wins from the next tumble on. Base-game fallout clears when the spin ends. Free
+//    spins come only from the nuclear meter (below) or a buy.
+//  - Nuclear meter (0-100): every bomb that goes off pushes it up a random amount (meterRise); a base
+//    spin where none go off lets it fall (meterDecay). A full meter starts the free spins, with that spin's
 //    fallout, and empties; if 4+ Nukes went off in the spin that filled it, they are Doomsday Protocol
 //    (Doomsday can land from the first free spin). It is kept per mode and bet for the session, and a
 //    buy leaves it where it is.
-//  - Launch codes (buy): a fixed price (buyPrice) for the free spins at a fixed stake of buyPrice / buyCostX.
-//  - Fallout squares: every blast rolls a random yield (the mode's `yields` table) and adds it to each
-//    square it hits; an unlit square counts as x1, so a first hit makes it x2 or more. Up to the mode's
-//    cap. Only the rare Doomsday doubles. A cluster pays its normal amount times the HIGHEST fallout
-//    square under it (x1 if it covers none).
+//  - Launch codes (buy): buyCostX times the bet (100x) for the free spins, played at that bet on their own
+//    reels (`buyBoost`: more Tsar Bombas), so the price pays back about the game's return on average.
+//  - Fallout squares: every blast rolls a value and adds it to each square it hits: a Nuke or Mini Nuke
+//    x1 or x2 (the mode's `yields`), the massive Tsar Bomba x10 to x100 over its whole area (`bigYields`,
+//    free spins only). Values add up, to the mode's cap. Only the rare Doomsday doubles. A cluster pays its
+//    normal amount times the SUM of the fallout squares under it (x1 if it covers none), up to the cap.
+//  - Nuke barrage (free spins): after the board lands, 2-4 extra Nukes (the `barrage` table) drop onto
+//    random symbols and go off with the rest. 7+ Nukes in one free spin, barrage included, retrigger.
 // Mode figures (RTP split, feature frequency, average feature) are in MODES below; see SIM NOTES.
 const SPEC = {
   cols: 6, rows: 8,
@@ -408,49 +456,55 @@ const SPEC = {
   premium: ['trump', 'putin', 'xi'], // the top three pays, drawn with a gold frame
   scatter: 'nuke',
   // Nuke types. `reach` is how many steps (up, down, left, right) a blast travels from its square.
-  // Only the plain Nuke lands in the base game.
-  nukeTypes: { mini: { reach: 0 }, nuke: { reach: 1 }, tsar: { reach: 2 }, doom: { reach: 0, doubleAll: true } },
-  protocolAt: 4, fsAward: 10, buyPrice: 20, // buyPrice: launch codes always cost 20 credits
-  fsRetrigger: 5, fsRetriggerAward: 5, // 5+ Nukes going off in one free spin add 5 free spins
+  // `big`: the massive bomb, which rolls on the mode's bigYields (x10 to x100) instead of yields (x1-x2).
+  nukeTypes: { mini: { reach: 0 }, nuke: { reach: 1 }, tsar: { reach: 2, big: true }, doom: { reach: 0, doubleAll: true } },
+  protocolAt: 4, fsAward: 10,
+  fsRetrigger: 5, fsRetriggerAward: 5, // 5+ bombs going off in one free spin add 5 free spins
+  chainAt: 3, // 3+ bombs touching each other go off together (a chain reaction), with or without a win
+  barrage: [[0, 30], [1, 50], [2, 20]], // Nuke barrage: most free spins get 1 or 2 extra (wild) Nukes dropped onto the landed board
   buildUpSpins: 5, // free spins 1-5: more Nukes, no Doomsday (except in Doomsday Protocol)
   meterMax: 100, // the nuclear meter is full at 100
   nukeStack: [70, 22, 8], // free-spin Nukes land alone, 2 or 3 on top of each other (% chance)
   stripSeed: 'nuclear-summit-v2-placeholder',
 };
 // Two modes on the same art: a volatility choice with the same return, not a price choice.
-// SIM NOTES (placeholder math: seeded placeholder strips run in Node, 2M spins a mode; not certified; 14 Nov 2026):
-//  Summit        RTP ~96% (base ~56, free spins ~40), hit 1 in 2.4, sd ~6x. Free spins only from the meter:
-//                1 in ~121 spins (Doomsday Protocol about 1 in 130,000), average feature ~48x, Doomsday in
-//                ~19% of features, hottest square ~x9. Best round seen ~380x (cap 1,000x).
-//                Buy: 20.00 at a 0.43 stake, ~97% back, about 64% of buys pay back less than 20.
-//  Brinkmanship  RTP ~96% (base ~54, free spins ~41), hit 1 in 2.2, sd ~9x. Free spins 1 in ~249 (Protocol
-//                about 1 in 300,000), average feature ~103x, Doomsday in ~22% of features, hottest ~x20.
-//                Best round seen ~800x (cap 2,500x). Buy: 20.00 at a 0.19 stake, ~96% back, about 66% under 20.
+// SIM NOTES (placeholder math: seeded placeholder strips run in Node, about 2.8M spins a mode; not certified; 15 Nov 2026):
+//  Bombs are wild and go off once: in a winning cluster (after it pays) or in a chain of 3+ touching bombs. Their
+//  fallout counts from the next tumble; a cluster is multiplied by the SUM of the squares it covers.
+//  Base game: about 1 spin in 12 has a bomb go off. Barrage: 0-2 extra Nukes per free spin.
+//  Summit        RTP ~99% (base ~57, free spins ~42), hit 1 in 2.3. 10 free spins, only from the meter: 1 in ~161
+//                spins, ~6 bombs go off per feature, average feature ~67x, retriggers rare (~4% of features),
+//                Doomsday in ~4%. Best round seen 10,000x (the cap). Buy: 100x the bet, ~95% back, ~83% under.
+//  Brinkmanship  RTP ~99% (base ~57, free spins ~43), hit 1 in 2.2. Free spins 1 in ~239, ~8 bombs go off per
+//                feature, average feature ~103x, retriggers ~8%, Doomsday ~4%. Best round seen ~12,000x; best buy
+//                ~15,700x the bet (cap 25,000x). Buy: 100x the bet, ~96% back, about 83% under the price.
 const LATE2 = { dove: 720, hotline: 600, ayat: 500, bibi: 440, xi: 340, putin: 280, trump: 240 }; // late reels: symbols doubled so the single Doomsday is rare
 const MODES = {
   summit: {
     key: 'summit', name: 'Summit', vol: 'Medium volatility',
     blurb: 'Free spins more often, smaller multipliers.',
-    yields: [[1, 60], [2, 30], [3, 10]], // a blast adds +1, +2 or +3 to each square it hits
-    payScale: 1.045, spotCap: 10, maxWinX: 1000, buyCostX: 47, fsAward: 15,
-    meterRise: [4, 10], meterDecay: 1,
+    yields: [[1, 60], [2, 40]], // a Nuke or Mini Nuke adds x1 or x2 to each square it hits
+    bigYields: [[10, 55], [20, 25], [50, 15], [100, 5]], // a Tsar Bomba adds x10 to x100 over its whole area
+    payScale: 1.045, spotCap: 500, maxWinX: 10000, buyCostX: 100, buyBoost: { tsar: 3, nuke: 6 }, buyBoostLate: { tsar: 2, nuke: 6 },
+    meterRise: [12, 23], meterDecay: 1, // per bomb that goes off; only bombs in winning clusters go off
     baseStrip: { dove: 360, hotline: 300, ayat: 250, bibi: 220, xi: 170, putin: 140, trump: 120, nuke: 7 },
-    freeStrip: { dove: 360, hotline: 300, ayat: 250, bibi: 220, xi: 170, putin: 140, trump: 120, nuke: 38, mini: 12, tsar: 3 },
-    lateStrip: Object.assign({}, LATE2, { nuke: 40, mini: 12, tsar: 4, doom: 1 }),
-    rtp: { game: 96, buy: 97, buyUnder: 64 }, // shown on the rules screen (from SIM NOTES)
+    freeStrip: { dove: 360, hotline: 300, ayat: 250, bibi: 220, xi: 170, putin: 140, trump: 120, nuke: 8, mini: 12, tsar: 1 },
+    lateStrip: Object.assign({}, LATE2, { nuke: 8, mini: 12, tsar: 2, doom: 1 }),
+    rtp: { game: 99, buy: 95, buyUnder: 83 }, // shown on the rules screen (from SIM NOTES)
   },
   // Shown as "Brinkmanship" (Doomsday is already a symbol and the Protocol). The key stays 'doomsday'
   // because it seeds the placeholder strips the SIM NOTES were measured on.
   doomsday: {
     key: 'doomsday', name: 'Brinkmanship', vol: 'High volatility',
     blurb: 'Rarer free spins, bigger multipliers.',
-    yields: [[1, 35], [2, 30], [3, 20], [5, 15]], // a blast adds +1, +2, +3 or +5
-    payScale: 0.867, spotCap: 25, maxWinX: 2500, buyCostX: 103, fsAward: 15,
-    meterRise: [3, 9], meterDecay: 1,
+    yields: [[1, 50], [2, 50]],
+    bigYields: [[10, 40], [25, 30], [50, 20], [100, 10]],
+    payScale: 0.948, spotCap: 1000, maxWinX: 25000, buyCostX: 100,
+    meterRise: [13, 26], meterDecay: 1,
     baseStrip: { dove: 360, hotline: 300, ayat: 250, bibi: 220, xi: 170, putin: 140, trump: 120, nuke: 6 },
-    freeStrip: { dove: 360, hotline: 300, ayat: 250, bibi: 220, xi: 170, putin: 140, trump: 120, nuke: 44, mini: 14, tsar: 8 },
-    lateStrip: Object.assign({}, LATE2, { nuke: 50, mini: 14, tsar: 12, doom: 1 }),
-    rtp: { game: 96, buy: 96, buyUnder: 66 },
+    freeStrip: { dove: 360, hotline: 300, ayat: 250, bibi: 220, xi: 170, putin: 140, trump: 120, nuke: 12, mini: 14, tsar: 1 },
+    lateStrip: Object.assign({}, LATE2, { nuke: 12, mini: 14, tsar: 3, doom: 1 }),
+    rtp: { game: 99, buy: 96, buyUnder: 83 },
   },
 };
 const SPECS = Object.fromEntries(Object.entries(MODES).map(([k, m]) => [k, Object.assign({}, SPEC, m)]));
@@ -504,22 +558,28 @@ function makeServer(spec) {
     late: buildStrips(spec.lateStrip, seed + '/late', spec.nukeStack),
     // Doomsday Protocol: the build-up reels plus the late reels' Doomsdays, from the first free spin.
     protocol: buildStrips(Object.assign({}, spec.freeStrip, { doom: spec.lateStrip.doom || 0 }), seed + '/protocol', spec.nukeStack),
+    // Bought free spins: the same reels with the buyBoost counts (buyBoostLate after the build-up, if set).
+    buyEarly: buildStrips(Object.assign({}, spec.freeStrip, spec.buyBoost), seed + '/buyEarly', spec.nukeStack),
+    buyLate: buildStrips(Object.assign({}, spec.lateStrip, spec.buyBoostLate || spec.buyBoost), seed + '/buyLate', spec.nukeStack),
   };
-  const freeStrips = (fsNo, protocol) => fsNo > spec.buildUpSpins ? STRIPS.late : protocol ? STRIPS.protocol : STRIPS.early;
+  const freeStrips = (fsNo, protocol, bought) => bought ? (fsNo > spec.buildUpSpins ? STRIPS.buyLate : STRIPS.buyEarly)
+    : fsNo > spec.buildUpSpins ? STRIPS.late : protocol ? STRIPS.protocol : STRIPS.early;
   const clone = (g) => g.map((col) => col.map((x) => ({ ...x })));
   const emptySpots = () => Array.from({ length: C }, () => Array(R).fill(0));
   const cloneSpots = (s) => s.map((col) => col.slice());
-  const hitSpot = (v, y) => Math.min(spec.spotCap, (v || 1) + y); // an unlit square counts as x1
-  // Each blast's yield: a weighted roll on the mode's yields table, e.g. [[1, 60], [2, 30], [3, 10]].
-  const yieldTotal = spec.yields.reduce((a, [, w]) => a + w, 0);
-  const rollYield = (rng) => { let r = rng.int(yieldTotal); for (const [y, w] of spec.yields) { if (r < w) return y; r -= w; } return spec.yields[0][0]; };
+  const hitSpot = (v, y) => Math.min(spec.spotCap, (v || 0) + y); // values add up; a cluster counts at least x1
+  // Each blast's value: a weighted roll on the mode's yields table (small bombs, x1 or x2) or, for the
+  // massive Tsar Bomba, on bigYields (x10 to x100).
+  const roll = (table, rng) => { let r = rng.int(table.reduce((a, [, w]) => a + w, 0)); for (const [y, w] of table) { if (r < w) return y; r -= w; } return table[0][0]; };
+  const rollYield = (rng, big) => roll(big ? spec.bigYields : spec.yields, rng);
   const doubleSpot = (v) => Math.min(spec.spotCap, v * 2);
 
-  // Cluster pays: flood-fill each symbol through touching cells (up, down, left, right). A cluster's
-  // multiplier is the highest fallout square under it (x1 if it covers none).
+  // Cluster pays: flood-fill each symbol through touching cells (up, down, left, right). Every bomb
+  // (Nuke, Mini Nuke, Tsar Bomba, Doomsday) is wild: it joins any symbol's cluster and counts toward its
+  // size; a cluster needs at least one real symbol. One bomb can complete clusters of different symbols.
   const NEIGHBOURS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
-  function evaluate(g, bet, spots) {
-    const wins = [], tiers = spec.clusterTiers;
+  function findClusters(g) {
+    const out = [];
     for (const s of Object.keys(spec.symbols)) {
       const seen = new Set();
       for (let c = 0; c < C; c++) for (let r = 0; r < R; r++) {
@@ -530,19 +590,42 @@ function makeServer(spec) {
           const [x, y] = stack.pop(); cells.push([x, y]);
           for (const [dx, dy] of NEIGHBOURS) {
             const nx = x + dx, ny = y + dy, k = nx * 10 + ny;
-            if (nx < 0 || nx >= C || ny < 0 || ny >= R || seen.has(k) || g[nx][ny].s !== s) continue;
+            if (nx < 0 || nx >= C || ny < 0 || ny >= R || seen.has(k)) continue;
+            const t = g[nx][ny].s; if (t !== s && !NUKES[t]) continue;
             seen.add(k); stack.push([nx, ny]);
           }
         }
-        if (cells.length < spec.minCluster) continue;
-        let tier = 0; for (let i = 0; i < tiers.length; i++) if (cells.length >= tiers[i]) tier = i;
-        let mult = 0; for (const [x, y] of cells) mult = Math.max(mult, spots[x][y]);
-        mult = mult || 1;
-        const base = round2(bet * spec.symbols[s].pays[tier] * spec.payScale);
-        wins.push({ s, count: cells.length, base, mult, pay: round2(base * mult), cells });
+        if (cells.length >= spec.minCluster) out.push({ s, cells });
       }
     }
-    return wins.sort((a, b) => b.pay - a.pay);
+    return out;
+  }
+  // Chain reactions: groups of chainAt+ bombs touching each other (up, down, left, right).
+  function findChains(g) {
+    const out = [], seen = new Set();
+    for (let c = 0; c < C; c++) for (let r = 0; r < R; r++) {
+      if (!NUKES[g[c][r].s] || seen.has(c * 10 + r)) continue;
+      const stack = [[c, r]], cells = []; seen.add(c * 10 + r);
+      while (stack.length) {
+        const [x, y] = stack.pop(); cells.push([x, y]);
+        for (const [dx, dy] of NEIGHBOURS) {
+          const nx = x + dx, ny = y + dy, k = nx * 10 + ny;
+          if (nx < 0 || nx >= C || ny < 0 || ny >= R || seen.has(k) || !NUKES[g[nx][ny].s]) continue;
+          seen.add(k); stack.push([nx, ny]);
+        }
+      }
+      if (cells.length >= spec.chainAt) out.push(cells);
+    }
+    return out;
+  }
+  // A cluster pays its band's amount times the SUM of the fallout squares under it (x1 if it covers none).
+  function price(cl, bet, spots) {
+    const tiers = spec.clusterTiers; let tier = 0;
+    for (let i = 0; i < tiers.length; i++) if (cl.cells.length >= tiers[i]) tier = i;
+    let mult = 0; for (const [x, y] of cl.cells) mult += spots[x][y];
+    mult = Math.min(mult, spec.spotCap) || 1;
+    const base = round2(bet * spec.symbols[cl.s].pays[tier] * spec.payScale);
+    return { s: cl.s, count: cl.cells.length, base, mult, pay: round2(base * mult), cells: cl.cells };
   }
 
   // Dev forcing (prototype only): plant symbols on the opening grid.
@@ -555,11 +638,17 @@ function makeServer(spec) {
       g[c][r] = { s: sym }; have++;
     }
   }
+  // A 2 x 4 block of one symbol with `n` bombs inside it, so the bombs complete a cluster and go off.
+  function armed(g, sym, n, rng) {
+    const c0 = rng.int(C - 1), r0 = rng.int(R - 3), cells = [];
+    for (let dc = 0; dc < 2; dc++) for (let dr = 0; dr < 4; dr++) { g[c0 + dc][r0 + dr] = { s: 'xi' }; cells.push([c0 + dc, r0 + dr]); }
+    for (let i = 0; i < Math.min(n, 6); i++) { const [c, r] = cells[(i * 3) % 8]; g[c][r] = { s: sym }; }
+  }
   function applyForce(g, force, mode, rng) {
-    if (mode === 'base' && /^fs[1-6]$/.test(force)) atLeast(g, NUKE, +force[2], rng);
+    if (mode === 'base' && /^fs[1-6]$/.test(force)) armed(g, NUKE, +force[2], rng);
     if (force === 'big') { const c0 = rng.int(C - 2), r0 = rng.int(R - 3); for (let dc = 0; dc < 3; dc++) for (let dr = 0; dr < 4; dr++) g[c0 + dc][r0 + dr] = { s: 'trump' }; }
-    if (mode === 'free' && force === 'n2') atLeast(g, NUKE, 2, rng);
-    if (mode === 'free' && ['mini', 'tsar', 'doom'].includes(force)) atLeast(g, force, 1, rng);
+    if (mode === 'free' && force === 'n2') armed(g, NUKE, 2, rng);
+    if (mode === 'free' && ['mini', 'tsar', 'doom'].includes(force)) armed(g, force, 1, rng);
   }
   // Take cells out and drop new ones in from above, continuing up each reel strip.
   function refill(g, removed, strips, pos) {
@@ -572,14 +661,15 @@ function makeServer(spec) {
     }
     return next;
   }
-  // Every Nuke on the grid goes off with a random yield and hits every square within its reach
-  // (overlapping blasts hit a square once per Nuke). A Doomsday hits its own square; spin() then
-  // doubles every lit square.
-  function blast(g, rng) {
+  // The bombs in `live` (cells inside winning clusters) go off, each with a random value, and hit every
+  // square within reach (overlapping blasts hit a square once per bomb). A Doomsday hits its own square;
+  // spin() then doubles every lit square.
+  function blast(g, rng, live) {
     const nukes = [], hits = []; let doom = 0;
     for (let c = 0; c < C; c++) for (let r = 0; r < R; r++) {
+      if (!live.has(c * 10 + r)) continue;
       const s = g[c][r].s, type = NUKES[s]; if (!type) continue;
-      const y = rollYield(rng);
+      const y = rollYield(rng, type.big);
       nukes.push([c, r, s, y]);
       if (type.doubleAll) doom++;
       const d = type.reach;
@@ -595,24 +685,45 @@ function makeServer(spec) {
   // One paid base spin or one free spin.
   //  base: `gauge` is the nuclear meter carried in (0-100); the spin starts on a clear board.
   //  free: `spots` is the feature's fallout grid carried in; fsNo and protocol pick the reels.
-  // Steps: 'blast' (Nukes explode, light squares, tumble), 'win' (clusters pay and tumble), then 'end'.
-  function spin({ bet, mode, force, rng, spots, fsNo = 1, protocol = false, gauge = 0 }) {
-    const free = mode === 'free', strips = free ? freeStrips(fsNo, protocol) : STRIPS.base, pos = [], grid = [];
+  // Each tumble ('win' step): the winning clusters (bombs are wild) pay with the fallout already on the
+  // board; then every bomb inside a winning cluster or in a chain of chainAt+ touching bombs goes off,
+  // once (`boom`), lighting fallout that counts from the next tumble on; then the clusters and bombs clear
+  // and new symbols tumble in. Bombs that are neither stay put and may connect later. Then 'end'.
+  function spin({ bet, mode, force, rng, spots, fsNo = 1, protocol = false, bought = false, gauge = 0 }) {
+    const free = mode === 'free', strips = free ? freeStrips(fsNo, protocol, bought) : STRIPS.base, pos = [], grid = [];
     for (let c = 0; c < C; c++) {
       const L = strips[c].length, p = rng.int(L); pos.push(p);
       grid.push(Array.from({ length: R }, (_, r) => ({ s: strips[c][(p + r) % L] })));
     }
     if (force) applyForce(grid, force, mode, rng);
+    const steps = [];
+    if (free && spec.barrage) { // Nuke barrage: extra Nukes drop onto random symbols once the board has landed
+      const n = roll(spec.barrage, rng), cells = [], before = clone(grid);
+      for (let tries = 0; cells.length < n && tries < 200; tries++) {
+        const c = rng.int(C), r = rng.int(R);
+        if (NUKES[grid[c][r].s]) continue;
+        grid[c][r] = { s: NUKE }; cells.push([c, r]);
+      }
+      steps.push({ kind: 'barrage', grid: before, cells });
+    }
     const sp = free && spots ? cloneSpots(spots) : emptySpots();
     let detonations = 0, win = 0, guard = 0;
-    const steps = []; let g = grid;
+    let g = grid;
     for (;;) {
       if (++guard > 200) break;
-      const b = blast(g, rng);
-      if (b.nukes.length) {
+      const clusters = findClusters(g), chains = findChains(g);
+      if (!clusters.length && !chains.length) break;
+      const wins = clusters.map((cl) => price(cl, bet, sp)).sort((a, b) => b.pay - a.pay);
+      const gone = new Set(), removed = [], live = new Set();
+      const take = (c, r) => { if (!gone.has(c * 10 + r)) { gone.add(c * 10 + r); removed.push([c, r]); } };
+      for (const w of wins) for (const [c, r] of w.cells) { take(c, r); if (NUKES[g[c][r].s]) live.add(c * 10 + r); }
+      for (const ch of chains) for (const [c, r] of ch) { take(c, r); live.add(c * 10 + r); } // a bomb in both still goes off once
+      let boom = null;
+      if (live.size) {
+        const b = blast(g, rng, live);
         detonations += b.nukes.length;
         for (const [c, r, y] of b.hits) sp[c][r] = hitSpot(sp[c][r], y);
-        let cells = b.hits;
+        let cells = b.hits.map(([c, r]) => [c, r]);
         if (b.doom) { // Doomsday: every lit square on the board doubles (once per Doomsday)
           cells = [];
           for (let c = 0; c < C; c++) for (let r = 0; r < R; r++) {
@@ -621,14 +732,9 @@ function makeServer(spec) {
             cells.push([c, r]);
           }
         }
-        steps.push({ kind: 'blast', grid: clone(g), nukes: b.nukes, cells, doom: b.doom, spots: cloneSpots(sp), detonations });
-        g = refill(g, b.nukes, strips, pos);
-        continue;
+        boom = { nukes: b.nukes, cells, doom: b.doom, spots: cloneSpots(sp) };
       }
-      const wins = evaluate(g, bet, sp);
-      if (!wins.length) break;
-      const removed = []; for (const w of wins) for (const rc of w.cells) removed.push(rc);
-      steps.push({ kind: 'win', grid: clone(g), wins, removed });
+      steps.push({ kind: 'win', grid: clone(g), wins, removed, boom, detonations });
       for (const w of wins) win += w.pay;
       g = refill(g, removed, strips, pos);
     }
@@ -648,8 +754,8 @@ function makeServer(spec) {
     }
     return out;
   }
-  // Feature buy (launch codes): a fixed price for the free spins on a clear board, played at a fixed stake.
-  function buy() { const cost = spec.buyPrice; return { cost, stake: cost / spec.buyCostX, spins: spec.fsAward }; } // exact stake, shown to 2 decimals
+  // Feature buy (launch codes): buyCostX times the bet for the free spins on a clear board, played at that bet.
+  function buy(bet) { return { cost: round2(bet * spec.buyCostX), stake: bet, spins: spec.fsAward }; }
   return { spin, buy, STRIPS, emptySpots };
 }
 const SERVERS = Object.fromEntries(Object.entries(SPECS).map(([k, s]) => [k, makeServer(s)]));
@@ -658,11 +764,11 @@ const SERVERS = Object.fromEntries(Object.entries(SPECS).map(([k, s]) => [k, mak
 const spotStats = (s) => { let hot = 0, top = 0, sum = 0; for (const col of s) for (const v of col) { if (v) hot++; if (v > top) top = v; sum += v; } return { hot, top, sum }; };
 const WIN_BANDS = [0, 1, 5, 20, 100, Infinity]; // round win bands, times the bet: 0, <1, 1-5, 5-20, 20-100, 100+
 function newSim() { return { spins: 0, spent: 0, won: 0, sq: 0, baseWon: 0, fsWon: 0, hits: 0, triggers: 0, natural: 0, gaugeTrig: 0, protocols: 0, maxX: 0, hot: 0, top: 0, nukes: 0, baseNukes: 0, retriggers: 0, gauge: 0, bands: [0, 0, 0, 0, 0, 0] }; }
-function playFeature(server, st, bet, rng, already, cap, spins, spots, protocol) {
+function playFeature(server, st, bet, rng, already, cap, spins, spots, protocol, bought = false) {
   let left = spins, fw = 0, fsNo = 0, sp = spots || server.emptySpots();
   while (left > 0) {
     left--; fsNo++;
-    const f = server.spin({ bet, mode: 'free', rng, spots: sp, fsNo, protocol });
+    const f = server.spin({ bet, mode: 'free', rng, spots: sp, fsNo, protocol, bought });
     fw += f.totalWin; left += f.fsAwarded; if (f.fsAwarded) st.retriggers++; st.nukes += f.detonations; sp = f.spotsAfter;
     if (already + fw >= cap) { fw = cap - already; break; }
   }
@@ -689,11 +795,11 @@ function simChunk(server, spec, st, n, bet, rng) {
   return st;
 }
 function newBuySim() { return { buys: 0, spent: 0, won: 0, maxX: 0, hot: 0, top: 0, nukes: 0, retriggers: 0, under: 0 }; }
-function simBuyChunk(server, spec, st, n, bet, rng) { // bet is unused: a buy has its own fixed stake
-  const b = server.buy(), cap = spec.maxWinX * b.stake;
+function simBuyChunk(server, spec, st, n, bet, rng) {
+  const b = server.buy(bet), cap = spec.maxWinX * b.stake;
   for (let i = 0; i < n; i++) {
     st.buys++; st.spent += b.cost;
-    const round = playFeature(server, st, b.stake, rng, 0, cap, b.spins, null, false);
+    const round = playFeature(server, st, b.stake, rng, 0, cap, b.spins, null, false, true);
     st.won += round; st.maxX = Math.max(st.maxX, round / b.stake); if (round < b.cost) st.under++;
   }
   return st;
@@ -1285,6 +1391,13 @@ function prerender() {
     const o = oc.getContext('2d'), pad = 0.03, w = oc.width, h = oc.height;
     const s = Math.min(w * (1 - 2 * pad) / 200, h * (1 - 2 * pad) / 250);
     o.drawImage(IMG[k], (w - 200 * s) / 2, (h - 250 * s) / 2, 200 * s, 250 * s);
+    if (SPEC.nukeTypes[k]) { // every bomb is wild: a small WILD tag along the bottom
+      const fh = h * 0.15, bw = w * 0.6, bx = (w - bw) / 2, by = h - fh - h * 0.025;
+      rrc(o, bx, by, bw, fh, fh / 2); o.fillStyle = 'rgba(20,13,38,.92)'; o.fill();
+      o.lineWidth = Math.max(1, w * 0.014); o.strokeStyle = '#F2C230'; o.stroke();
+      o.font = `${Math.round(fh * 0.74)}px "Black Ops One", Impact, "Arial Black", sans-serif`; o.textAlign = 'center'; o.textBaseline = 'middle';
+      o.fillStyle = '#F2C230'; o.fillText('WILD', w / 2, by + fh / 2 + fh * 0.04);
+    }
     if (SPEC.premium.includes(k)) { // the three top pays: a gold frame and a star
       const lw = Math.max(2, w * 0.05), inset = lw / 2 + 1;
       rrc(o, inset, inset, w - 2 * inset, h - 2 * inset, w * 0.18);
@@ -1330,10 +1443,10 @@ function resize() {
 }
 
 let effects = [], shakeUntil = 0, activeWins = [], dimOthers = true;
-// Fallout heat: a stepped scale, yellow (x2), gold, coral, crimson, magenta, pink, then white-hot (x50 and
-// up), each step clearly different on the light base board and the dark bunker. It skips hazard orange,
-// which belongs to the Nukes themselves.
-const HEAT = [[2, '#FFE14D'], [3, '#FFB627'], [4, '#FF5A5F'], [6, '#E3245B'], [10, '#C21FD1'], [20, '#FF8FF0'], [50, '#FFFFFF']];
+// Fallout heat: a stepped scale, pale yellow (x1), yellow, gold, coral, then the massive-bomb range:
+// crimson (x10), magenta (x25), pink (x50) and white-hot (x100 and up). It skips hazard orange, which
+// belongs to the Nukes themselves.
+const HEAT = [[1, '#FFF1A8'], [2, '#FFE14D'], [3, '#FFB627'], [5, '#FF5A5F'], [10, '#E3245B'], [25, '#C21FD1'], [50, '#FF8FF0'], [100, '#FFFFFF']];
 function heat(v) { let i = 0; while (i < HEAT.length - 1 && v >= HEAT[i + 1][0]) i++; return { col: HEAT[i][1], step: i }; }
 const hexA = (hex, a) => `rgba(${parseInt(hex.slice(1, 3), 16)},${parseInt(hex.slice(3, 5), 16)},${parseInt(hex.slice(5, 7), 16)},${a})`;
 const spotTotals = (s) => { let sum = 0, top = 0, lit = 0; if (s) for (const col of s) for (const v of col) { sum += v; if (v > top) top = v; if (v) lit++; } return { sum, top, lit }; };
@@ -1344,12 +1457,14 @@ function drawSpots(t) {
   for (let c = 0; c < SPEC.cols; c++) for (let r = 0; r < SPEC.rows; r++) {
     const v = viewSpots[c][r]; if (!v) continue;
     const { col, step } = heat(v);
-    const x = c * CW + 2, y = r * CH + 2, w = CW - 4, h = CH - 4;
+    const f = spotFlash.get(c * 10 + r), age = f ? t - f : Infinity, k = age < 300 ? age / 300 : 1;
+    const pop = reduceMotion || k >= 1 ? 1 : 0.55 + 0.45 * ease.outBack(Math.max(0, k)); // lights with one pop, then holds still
+    const w = (CW - 4) * pop, h = (CH - 4) * pop, x = c * CW + (CW - w) / 2, y = r * CH + (CH - h) / 2;
     if (step === HEAT.length - 1) { ctx.shadowColor = '#ff3b3b'; ctx.shadowBlur = 14; }
     ctx.fillStyle = hexA(col, Math.min(0.92, 0.42 + 0.07 * step)); rr(x, y, w, h, 10); ctx.fill();
     ctx.shadowBlur = 0;
     ctx.lineWidth = 4; ctx.strokeStyle = col; ctx.stroke();
-    if (v === top && top > 2) { // the hottest square(s) on the board: a steady white ring
+    if (v === top && top >= 5) { // the hottest square(s) on the board: a steady white ring
       ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(255,255,255,.9)'; rr(x + 4, y + 4, w - 8, h - 8, 7); ctx.stroke();
     }
   }
@@ -1361,9 +1476,12 @@ function drawSpotLabels() {
   ctx.save(); ctx.globalAlpha = spotsAlpha; ctx.font = `900 ${fs}px system-ui,sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   for (let c = 0; c < SPEC.cols; c++) for (let r = 0; r < SPEC.rows; r++) {
     const v = viewSpots[c][r]; if (!v) continue;
-    const label = '×' + v, { col, step } = heat(v), bw = ctx.measureText(label).width + fs * 0.55, bh = fs * 1.25, bx = c * CW + 4, by = (r + 1) * CH - bh - 4;
-    ctx.fillStyle = step >= 4 ? 'rgba(150,20,45,.94)' : 'rgba(20,13,38,.86)'; rr(bx, by, bw, bh, bh / 2); ctx.fill();
-    ctx.fillStyle = step >= 4 ? '#FFFFFF' : col; ctx.fillText(label, bx + bw / 2, by + bh / 2 + 1);
+    const label = '×' + v, { col, step } = heat(v), big = v >= 10, f = big ? Math.round(fs * 1.45) : fs;
+    if (big) ctx.font = `900 ${f}px system-ui,sans-serif`;
+    const bw = ctx.measureText(label).width + f * 0.55, bh = f * 1.25, bx = c * CW + 4, by = (r + 1) * CH - bh - 4;
+    ctx.fillStyle = big ? 'rgba(150,20,45,.95)' : 'rgba(20,13,38,.86)'; rr(bx, by, bw, bh, bh / 2); ctx.fill();
+    ctx.fillStyle = big ? '#FFFFFF' : col; ctx.fillText(label, bx + bw / 2, by + bh / 2 + 1);
+    if (big) ctx.font = `900 ${fs}px system-ui,sans-serif`;
   }
   ctx.restore();
 }
@@ -1413,7 +1531,7 @@ function drawFloaters(t) {
     const fs = Math.max(14, Math.round(CH * 0.42));
     if (f.label) { // a blast's strength, rising from the Nuke
       ctx.globalAlpha = k < 0.7 ? 1 : (1 - k) / 0.3;
-      outlinedText(f.label, f.x, f.y - (reduceMotion ? 0 : CH * 0.5 * ease.outCubic(k)), Math.round(fs * 0.7), f.col);
+      outlinedText(f.label, f.x, f.y - (reduceMotion ? 0 : CH * 0.5 * ease.outCubic(k)), Math.round(fs * (f.big ? 1.5 : 0.7)), f.col);
       ctx.globalAlpha = 1; continue;
     }
     if (f.mult > 1 && k < SPLIT + MERGE) {
@@ -1449,6 +1567,11 @@ function render(t) {
       ctx.fillStyle = `rgba(255,255,255,${0.6 * sp.hl})`; rr(x + 3, y + 3, CW - 6, CH - 6, 12); ctx.fill();
       ctx.strokeStyle = `rgba(232,48,111,${sp.hl})`; ctx.lineWidth = 3; ctx.stroke();
     }
+    if (sp.trail) { // a falling bomb's streak
+      const g = ctx.createLinearGradient(0, y - CH * 1.5, 0, y + CH * 0.4);
+      g.addColorStop(0, 'rgba(255,190,90,0)'); g.addColorStop(1, 'rgba(255,200,110,.6)');
+      ctx.fillStyle = g; rr(x + CW * 0.36, y - CH * 1.5, CW * 0.28, CH * 1.9, CW * 0.14); ctx.fill();
+    }
     const img = PRE[sp.s]; if (!img) continue;
     const sc = sp.scale;
     ctx.globalAlpha = sp.alpha;
@@ -1463,6 +1586,11 @@ function render(t) {
     const e = effects[i], k = (t - e.t0) / e.dur;
     if (k >= 1) { effects.splice(i, 1); continue; }
     if (k < 0) continue;
+    if (e.kind === 'land') { // a barrage bomb landing: a flat dust ring at its base
+      ctx.globalAlpha = 1 - k; ctx.strokeStyle = 'rgba(255,226,180,.95)'; ctx.lineWidth = 3;
+      const rx = CW * (0.25 + 0.4 * ease.outCubic(k)); ctx.beginPath(); ctx.ellipse(e.x, e.y + CH * 0.36, rx, rx * 0.32, 0, 0, Math.PI * 2); ctx.stroke();
+      ctx.globalAlpha = 1; continue;
+    }
     const doom = e.kind === 'doom', big = e.kind === 'tsar' ? 2.1 : e.kind === 'mini' ? 0.55 : doom ? 1.3 : 1, g = reduceMotion ? 0.4 : ease.outCubic(k);
     const r = doom ? Math.max(W, H) * (0.2 + 1.1 * g) : Math.max(CW, CH) * (0.5 + 2.4 * g) * big;
     ctx.globalAlpha = 1 - k;
@@ -1491,9 +1619,9 @@ function confetti(n) {
 // ===== Animation helpers =====
 // PACE stretches every animation and pause; raise it to slow the whole game down. Reduced motion keeps
 // the same timings (it never speeds play up) and swaps movement for fades.
-const PACE = 1.6;
+const PACE = 1.25; // was 1.6; quicker so tumbles and blasts flow into each other
 const SPEED = PACE;
-const ease = { outCubic: (k) => 1 - Math.pow(1 - k, 3), inCubic: (k) => k * k * k, outBack: (k) => { const c1 = 1.4, c3 = c1 + 1; return 1 + c3 * Math.pow(k - 1, 3) + c1 * Math.pow(k - 1, 2); } };
+const ease = { outBackSoft: (k) => { const c1 = 0.8, c3 = c1 + 1; return 1 + c3 * Math.pow(k - 1, 3) + c1 * Math.pow(k - 1, 2); }, outCubic: (k) => 1 - Math.pow(1 - k, 3), inCubic: (k) => k * k * k, outBack: (k) => { const c1 = 1.4, c3 = c1 + 1; return 1 + c3 * Math.pow(k - 1, 3) + c1 * Math.pow(k - 1, 2); } };
 const wait = (ms) => new Promise((r) => setTimeout(r, ms * SPEED));
 // Animation frames drive tweens; a slow timer backs them up so play never stalls when frames pause
 // (a hidden tab or panel).
@@ -1539,77 +1667,115 @@ async function animateDrop(grid, mode, spec) {
 }
 // Pop the given cells and drop new symbols in: shared by winning clusters and exploding Nukes.
 async function popAndRefill(rm, nextGrid, sound) {
-  const popping = sprites.filter((sp) => rm.has(sp.c * 10 + Math.round(sp.row)));
+  const popping = sprites.filter((sp) => rm.has(sp.c * 10 + Math.round(sp.row))).map((sp) => ({ sp, a0: sp.alpha }));
   if (sound) sound();
-  await tween(200, (k) => { for (const sp of popping) { if (!reduceMotion) sp.scale = 1 - k * 0.9; sp.alpha = 1 - k; } });
-  sprites = sprites.filter((sp) => !popping.includes(sp));
-  const moves = [];
+  // Pop: a quick swell, then the symbol shrinks away.
+  await tween(220, (k) => {
+    for (const { sp, a0 } of popping) {
+      if (!reduceMotion) sp.scale = k < 0.3 ? 1 + 0.14 * (k / 0.3) : 1.14 * (1 - (k - 0.3) / 0.7);
+      sp.alpha = k < 0.3 ? a0 : a0 * (1 - (k - 0.3) / 0.7);
+    }
+  });
+  const gone = new Set(popping.map((p) => p.sp));
+  sprites = sprites.filter((sp) => !gone.has(sp));
+  // Refill: the columns with gaps fall in one after another and land softly.
+  const moves = [], active = [];
   for (let c = 0; c < SPEC.cols; c++) {
     const col = sprites.filter((sp) => sp.c === c).sort((a, b) => a.row - b.row), k = SPEC.rows - col.length;
+    if (k) active.push(c);
     col.forEach((sp, i) => moves.push({ sp, from: sp.row, to: k + i }));
     for (let i = 0; i < k; i++) { const sp = mkSprite(c, reduceMotion ? i : i - k - 0.2, nextGrid[c][i]); if (reduceMotion) sp.alpha = 0; sprites.push(sp); moves.push({ sp, from: sp.row, to: i, fresh: true }); }
   }
-  await tween(320, (k) => { const e = ease.outCubic(k); for (const mv of moves) { if (reduceMotion) { mv.sp.row = mv.to; if (mv.fresh) mv.sp.alpha = k; } else mv.sp.row = mv.from + (mv.to - mv.from) * e; } });
-  for (const mv of moves) { const cell = nextGrid[mv.sp.c][mv.to]; mv.sp.row = mv.to; mv.sp.s = cell.s; mv.sp.hl = 0; mv.sp.alpha = 1; }
+  const STEP = 30, DUR = 320, total = DUR + STEP * Math.max(0, active.length - 1);
+  await tween(total, (k) => {
+    const el = k * total;
+    for (const mv of moves) {
+      const lk = Math.max(0, Math.min(1, (el - STEP * Math.max(0, active.indexOf(mv.sp.c))) / DUR));
+      if (reduceMotion) { mv.sp.row = mv.to; if (mv.fresh) mv.sp.alpha = lk; }
+      else mv.sp.row = mv.from + (mv.to - mv.from) * ease.outBackSoft(lk);
+    }
+  });
+  for (const mv of moves) { const cell = nextGrid[mv.sp.c][mv.to]; mv.sp.row = mv.to; mv.sp.s = cell.s; mv.sp.hl = 0; mv.sp.alpha = 1; mv.sp.scale = 1; }
   SFX.thud();
 }
+const cellKey = (sp) => sp.c * 10 + Math.round(sp.row);
+// One tumble, as one beat: the winning clusters show and their pay rises (with the fallout already on the
+// board); then the bombs in them, or in a chain of touching bombs, arm and go off, and their fallout
+// ripples out for the tumbles after; then everything that won or blew up clears and new symbols fall in.
 async function animateTumble(step, nextGrid) {
   const rm = new Set(step.removed.map(([c, r]) => c * 10 + r));
-  for (const sp of sprites) { sp.hl = 0; sp.win = rm.has(sp.c * 10 + Math.round(sp.row)); }
-  activeWins = step.wins; dimOthers = !quiet;
-  const now = performance.now();
+  for (const sp of sprites) { sp.hl = 0; sp.win = rm.has(cellKey(sp)); }
+  activeWins = step.wins; dimOthers = !quiet && step.wins.length > 0;
   const centre = (w) => [w.cells.reduce((a, [c]) => a + c, 0) / w.cells.length, w.cells.reduce((a, [, r]) => a + r, 0) / w.cells.length];
-  await wait(quiet ? 380 : 600);
-  // Each cluster's pay rises from its middle as it pops (with its fallout multiplier, if any).
-  const t1 = performance.now();
-  for (const w of step.wins) {
-    const [cx, cy] = centre(w);
-    floaters.push({ x: Math.min(W - 1.5 * CW, Math.max(1.5 * CW, (cx + 0.5) * CW)), y: (cy + 0.5) * CH, base: w.base, mult: w.mult, pay: w.pay, t0: t1, dur: (w.mult > 1 ? 1300 : 800) * SPEED });
-  }
-  activeWins = [];
-  for (const sp of sprites) sp.win = false;
-  await popAndRefill(rm, nextGrid, quiet ? null : SFX.pop);
-}
-// Nukes explode: a flash and mushroom cloud each, the squares they hit light up with their fallout, then
-// the Nukes leave and new symbols tumble in. A Doomsday doubles every lit square in a wave rolling out
-// from where it landed.
-async function animateBlast(step, nextGrid) {
-  const nk = new Set(step.nukes.map(([c, r]) => c * 10 + r));
-  for (const sp of sprites) sp.hl = nk.has(sp.c * 10 + Math.round(sp.row)) ? 1 : 0;
-  await wait(180);
-  if (step.nukes.some((n) => n[2] === 'tsar')) SA.play('tsar'); else SFX.boom();
-  if (step.doom) SFX.doom();
-  const now = performance.now(); shakeUntil = now + (step.doom ? 900 : 450);
-  step.nukes.forEach(([c, r, s, y], i) => {
-    effects.push({ x: (c + 0.5) * CW, y: (r + 0.5) * CH, t0: now + i * 90 * SPEED, dur: (s === 'mini' ? 950 : s === 'nuke' ? 1250 : 1600) * SPEED, kind: s });
-    if (y) floaters.push({ label: `+${y}`, col: heat(y + 1).col, x: (c + 0.5) * CW, y: (r + 0.5) * CH, t0: now + 200 * SPEED, dur: 1000 * SPEED });
-  });
-  if (step.doom) { const st = $('.stage'); st.classList.add('doom'); st.classList.remove('flash'); void st.offsetWidth; st.classList.add('flash'); setTimeout(() => st.classList.remove('flash', 'doom'), 1000); }
-  await wait(step.doom ? 450 : 200);
-  if (step.doom) {
-    const [dc, dr] = step.nukes.find((n) => n[2] === 'doom');
-    const vs = viewSpots ? viewSpots.map((col) => col.slice()) : step.spots.map((col) => col.map(() => 0));
-    viewSpots = vs;
-    let maxd = 0;
-    for (let c = 0; c < SPEC.cols; c++) for (let r = 0; r < SPEC.rows; r++) if (step.spots[c][r] !== vs[c][r]) maxd = Math.max(maxd, Math.abs(c - dc) + Math.abs(r - dr));
-    for (let d = 0; d <= maxd; d++) {
-      let any = 0; const at = performance.now();
-      for (let c = 0; c < SPEC.cols; c++) for (let r = 0; r < SPEC.rows; r++) {
-        if (Math.abs(c - dc) + Math.abs(r - dr) !== d || step.spots[c][r] === vs[c][r]) continue;
-        vs[c][r] = step.spots[c][r]; spotFlash.set(c * 10 + r, at); any = Math.max(any, vs[c][r]);
-      }
-      if (any) { SA.play('fallout', any); await wait(60); }
+  if (step.wins.length) {
+    await wait(quiet ? 300 : 460);
+    const t1 = performance.now();
+    for (const w of step.wins) {
+      const [cx, cy] = centre(w);
+      floaters.push({ x: Math.min(W - 1.5 * CW, Math.max(1.5 * CW, (cx + 0.5) * CW)), y: (cy + 0.5) * CH, base: w.base, mult: w.mult, pay: w.pay, t0: t1, dur: (w.mult > 1 ? 1300 : 800) * SPEED });
     }
-    viewSpots = step.spots;
-    await wait(420);
-  } else {
-    viewSpots = step.spots;
-    const flashAt = performance.now(); let hot = 0;
-    for (const [c, r] of step.cells) { spotFlash.set(c * 10 + r, flashAt); hot = Math.max(hot, step.spots[c][r]); }
-    SA.play('fallout', hot);
-    await wait(300);
   }
-  await popAndRefill(nk, nextGrid, null);
+  const clear = () => { activeWins = []; for (const sp of sprites) sp.win = false; return popAndRefill(rm, nextGrid, !quiet ? SFX.pop : null); };
+  if (!step.boom) { await wait(quiet ? 100 : 160); await clear(); return; }
+  // With bombs: arm and blast, then the fallout ripples out while the cluster clears and new symbols fall.
+  await armAndBlast(step.boom);
+  await Promise.all([rippleFallout(step.boom), wait(90).then(clear)]);
+}
+// Bombs going off: they swell and glow for a beat, explode (flash, mushroom cloud, their value rising)
+// and vanish in the flash.
+async function armAndBlast(boom) {
+  const nk = new Set(boom.nukes.map(([c, r]) => c * 10 + r));
+  const bombs = sprites.filter((sp) => nk.has(cellKey(sp)));
+  SFX.clank();
+  await tween(reduceMotion ? 60 : 240, (k) => { for (const sp of bombs) { sp.hl = k; if (!reduceMotion) sp.scale = 1 + 0.2 * ease.outCubic(k); } });
+  if (boom.nukes.some((n) => n[2] === 'tsar')) SA.play('tsar'); else SFX.boom();
+  if (boom.doom) SFX.doom();
+  const now = performance.now(); shakeUntil = now + (boom.doom ? 900 : 380);
+  boom.nukes.forEach(([c, r, s, y], i) => {
+    effects.push({ x: (c + 0.5) * CW, y: (r + 0.5) * CH, t0: now + i * 70 * SPEED, dur: (s === 'mini' ? 950 : s === 'nuke' ? 1250 : 1600) * SPEED, kind: s });
+    if (y) floaters.push({ label: `×${y}`, col: heat(y).col, big: y >= 10, x: (c + 0.5) * CW, y: (r + 0.5) * CH, t0: now + (140 + i * 70) * SPEED, dur: (y >= 10 ? 1600 : 1000) * SPEED });
+  });
+  for (const sp of bombs) { sp.alpha = 0; sp.hl = 0; sp.scale = 1; } // gone in the flash
+  activeWins = [];
+  if (boom.doom) { const st = $('.stage'); st.classList.add('doom'); st.classList.remove('flash'); void st.offsetWidth; st.classList.add('flash'); setTimeout(() => st.classList.remove('flash', 'doom'), 1000); }
+}
+// Their fallout ripples out from the blasts, one ring of squares at a time, nearest first (a Doomsday's
+// doubling rolls across the whole board the same way).
+async function rippleFallout(boom) {
+  const target = boom.spots, vs = viewSpots ? viewSpots.map((col) => col.slice()) : target.map((col) => col.map(() => 0));
+  viewSpots = vs;
+  const dist = (c, r) => Math.min(...boom.nukes.map(([nc, nr]) => Math.abs(c - nc) + Math.abs(r - nr)));
+  const changed = [];
+  for (let c = 0; c < SPEC.cols; c++) for (let r = 0; r < SPEC.rows; r++) if (target[c][r] !== vs[c][r]) changed.push([c, r, dist(c, r)]);
+  const maxd = changed.reduce((m, x) => Math.max(m, x[2]), 0);
+  await wait(80);
+  for (let d = 0; d <= maxd; d++) {
+    let any = 0; const at = performance.now();
+    for (const [c, r, dd] of changed) if (dd === d) { vs[c][r] = target[c][r]; spotFlash.set(c * 10 + r, at); any = Math.max(any, vs[c][r]); }
+    if (any) { SA.play('fallout', any); if (!reduceMotion) await wait(boom.doom ? 55 : 75); }
+  }
+  viewSpots = target;
+  await wait(boom.doom ? 320 : 60);
+}
+// Nuke barrage (free spins): the extra Nukes fall in from above the board one after another with a
+// streak behind them; the symbol underneath squashes away as each lands with a thud and a dust ring.
+async function animateBarrage(step, nextGrid) {
+  await Promise.all(step.cells.map(async ([c, r], i) => {
+    await wait(i * 160);
+    const sp = Object.assign(mkSprite(c, reduceMotion ? r : -1.6, nextGrid[c][r]), { alpha: reduceMotion ? 0 : 1, trail: !reduceMotion });
+    sprites.push(sp); // drawn last, so it falls in front of the board
+    const under = sprites.filter((x) => x !== sp && x.c === c && Math.round(x.row) === r);
+    await tween(reduceMotion ? 200 : 460, (k) => {
+      if (reduceMotion) { sp.alpha = k; return; }
+      sp.row = -1.6 + (r + 1.6) * ease.inCubic(k);
+      if (k > 0.8) for (const u of under) u.scale = 1 - 0.8 * (k - 0.8) / 0.2;
+    });
+    sprites = sprites.filter((x) => !under.includes(x));
+    sp.row = r; sp.alpha = 1; sp.trail = false; SFX.clank();
+    effects.push({ x: (c + 0.5) * CW, y: (r + 0.5) * CH, t0: performance.now(), dur: 380 * SPEED, kind: 'land' });
+    if (!reduceMotion) await tween(170, (k) => { sp.scale = 1.14 - 0.14 * ease.outCubic(k); });
+  }));
+  await wait(120);
 }
 // A base spin's fallout fades out when the spin ends (it lasts for that spin only).
 async function clearFallout() {
@@ -1662,7 +1828,7 @@ const audioInit = () => SA.init();
 
 // ===== Game state =====
 const G = {
-  balance: MARKET.startCredits, start: MARKET.startCredits, betIdx: Math.min(1, LADDER.length - 1), modeKey: 'summit', mode: 'base',
+  balance: MARKET.startCredits, start: MARKET.startCredits, betIdx: Math.min(1, LADDER.length - 1), modeKey: 'doomsday', mode: 'base', // Brinkmanship by default
   fsLeft: 0, fsPlayed: 0, fsTotal: 0, featureBet: 0, roundWin: 0, lastWin: 0, busy: false, state: 'idle', spinNo: 0,
   spots: null, boughtFor: 0, protocol: false, gaugeShown: null,
   // Nuclear meters (0-100), kept per mode and per bet for this session.
@@ -1720,7 +1886,7 @@ function updateUI() {
   for (const id of ['#fbK2', '#fbV2', '#fbK3', '#fbV3']) $(id).hidden = !free;
   $('#fbTag').hidden = !(free && G.protocol);
   renderMeter(G.gaugeShown ?? gaugeNow());
-  const bb = $('#buy'), cost = spec.buyPrice;
+  const bb = $('#buy'), cost = round2(LADDER[G.betIdx] * spec.buyCostX);
   bb.hidden = !MARKET.allowBuy;
   $('#buyCost').textContent = fmt(cost);
   bb.disabled = G.busy || free || G.balance + 1e-9 < cost;
@@ -1767,15 +1933,15 @@ async function play(replay) {
   let o;
   if (replay) {
     viewSpots = replay.spots ? replay.spots.map((col) => col.slice()) : null;
-    o = server.spin({ bet, mode, force: replay.force, spots: replay.spots, fsNo: replay.fsNo, protocol: replay.protocol, gauge: replay.gauge, rng: ReplayRNG(replay.tape) });
+    o = server.spin({ bet, mode, force: replay.force, spots: replay.spots, fsNo: replay.fsNo, protocol: replay.protocol, bought: replay.bought, gauge: replay.gauge, rng: ReplayRNG(replay.tape) });
   } else {
     let force = DEV ? ($('#force').value || null) : null;
     if (DEV) $('#force').value = '';
     if (force === 'gauge' || force === 'protocol') { const n = force === 'gauge' ? 'fs1' : 'fs4'; force = free ? null : n; if (!free) { G.gauges[modeKey][G.betIdx] = spec.meterMax - 1; updateUI(); } }
     if (force && ((/^fs/.test(force) && free) || (['n2', 'mini', 'tsar', 'doom'].includes(force) && !free))) force = null;
-    const tape = [], spots = free ? G.spots : null, fsNo = free ? G.fsPlayed : 0, protocol = free && G.protocol, gauge = free ? 0 : gaugeNow();
-    o = server.spin({ bet, mode, force, spots, fsNo, protocol, gauge, rng: TapeRNG(CryptoRNG, tape) });
-    LOG.unshift({ n: ++G.spinNo, modeKey, mode, bet, force, spots, fsNo, protocol, gauge, tape, win: o.totalWin, cost: 0, nukes: o.nukes, tumbles: o.steps.filter((s) => s.kind === 'win').length });
+    const tape = [], spots = free ? G.spots : null, fsNo = free ? G.fsPlayed : 0, protocol = free && G.protocol, bought = free && G.boughtFor > 0, gauge = free ? 0 : gaugeNow();
+    o = server.spin({ bet, mode, force, spots, fsNo, protocol, bought, gauge, rng: TapeRNG(CryptoRNG, tape) });
+    LOG.unshift({ n: ++G.spinNo, modeKey, mode, bet, force, spots, fsNo, protocol, bought, gauge, tape, win: o.totalWin, cost: 0, nukes: o.nukes, tumbles: o.steps.filter((s) => s.kind === 'win').length });
     if (LOG.length > 40) LOG.pop(); renderLog();
   }
 
@@ -1790,10 +1956,10 @@ async function play(replay) {
   for (let i = 0; i < o.steps.length - 1; i++) {
     setState('presenting');
     const st = o.steps[i], next = o.steps[i + 1].grid;
-    if (st.kind === 'win') await animateTumble(st, next);
+    if (st.kind === 'barrage') await animateBarrage(st, next);
     else {
-      await animateBlast(st, next);
-      if (free && !replay) { G.spots = st.spots; updateUI(); }
+      await animateTumble(st, next);
+      if (st.boom && free && !replay) { G.spots = st.boom.spots; updateUI(); }
     }
   }
 
@@ -1851,7 +2017,7 @@ async function endFeature(bet) {
   setState('feature'); updateUI();
   const total = G.fsTotal, cost = G.boughtFor, stake = cost || bet;
   if (total > stake) await celebrate(total, total / stake, { title: 'FEATURE WIN', cue: 'featureEnd', capped: G.roundWin >= S().maxWinX * bet - 1e-9 });
-  else { SA.play('featureEndQuiet'); await overlay('FREE SPINS OVER', `Paid ${fmt(total)}`, 1800, cost ? `Launch codes cost ${fmt(cost)}` : ''); }
+  else { SA.play('featureEndQuiet'); await overlay('FREE SPINS OVER', `Paid ${fmt(total)}`, 1800); }
   G.lastWin = total; G.mode = 'base'; G.fsLeft = 0; G.spots = null; G.boughtFor = 0; G.protocol = false;
   updateUI(); SA.music('base');
   await clearFallout();
@@ -1920,12 +2086,12 @@ function confirmBuy(b) {
 }
 async function buyFeature() {
   if (G.busy || G.mode === 'free' || !MARKET.allowBuy) return;
-  const b = SV().buy();
+  const b = SV().buy(LADDER[G.betIdx]);
   if (G.balance + 1e-9 < b.cost) { msg('Not enough credits for launch codes.'); return; }
   if (!(await confirmBuy(b))) return;
   if (G.busy || G.mode === 'free') return;
   G.busy = true; audioInit(); SFX.click(); msg('');
-  // The bought free spins play at the buy's own stake; the nuclear meter keeps its level.
+  // The bought free spins play at the current bet on their own reels; the nuclear meter keeps its level.
   G.balance = round2(G.balance - b.cost); G.lastWin = 0; G.roundWin = 0; viewSpots = null;
   LOG.unshift({ n: ++G.spinNo, modeKey: G.modeKey, mode: 'buy', bet: b.stake, cost: b.cost, win: 0, nukes: 0, tumbles: 0 }); renderLog();
   updateUI(); setState('feature');
@@ -1953,14 +2119,15 @@ function renderRules() {
   const items = [
     '**Clusters pay:** 5 or more of the same symbol touching up, down, left or right. Bigger clusters pay more. Pays shown are at your current bet.',
     'Winning clusters blow away and new symbols tumble in. Tumbles repeat until there are no new wins.',
-    `**Nukes go off on every spin.** Each Nuke that lands lights its own square and the 4 touching it with **fallout**. In the base game that fallout lasts for the rest of the spin and clears when the spin ends.`,
-    `**Fallout squares:** every blast adds a random amount (+${s.yields.map(([y]) => y).join(', +')}) to each square it hits; an unlit square counts as ×1, up to ×${s.spotCap}. Only Doomsday doubles, and it is rare. A winning cluster is multiplied by the **highest** fallout square it covers.`,
+    `**Nukes are wild.** A Nuke stands in for any symbol and counts toward a cluster's size (a cluster still needs at least one leader or prop). It goes off, once, in either of two ways: as part of a winning cluster, or when ${s.chainAt} or more bombs touch each other (a chain reaction, which doesn't pay by itself). The cluster pays first; then the bombs go off and light **fallout** around them, which multiplies wins from the next tumble on. A Nuke that does neither stays where it is and may connect after a tumble. In the base game fallout clears when the spin ends.`,
+    `**Fallout squares:** a Nuke or Mini Nuke adds ×${s.yields.map(([y]) => y).join(' or ×')} to each square it hits. The massive **Tsar Bomba** (free spins only) adds ×${s.bigYields[0][0]} to ×${s.bigYields[s.bigYields.length - 1][0]} to every square in its area. Values add up, to a cap of ×${s.spotCap}. Only Doomsday doubles, and it is rare. A winning cluster is multiplied by the **sum** of all the fallout squares it covers (up to ×${s.spotCap}).`,
 
-    `**Nuclear meter** (beside the board): each Nuke pushes it up by a random amount; a spin without Nukes lets it fall a little. When it fills, **${s.fsAward} free spins** start with that spin's fallout, and the meter empties. If ${s.protocolAt}+ Nukes went off in the spin that filled it, the free spins are **Doomsday Protocol**: Doomsday can land from the first free spin. The meter is kept separately for each mode and bet during this session, a buy leaves it where it is, and it resets if you reload the page.`,
-    `**In free spins** fallout squares keep their value until the free spins end. Nuke types: a **Mini Nuke** hits its own square, a **Nuke** its own square and the 4 touching it, a **Tsar Bomba** every square up to 2 steps away, and a **Doomsday** doubles every lit square on the board.`,
+    `**Nuclear meter** (beside the board): each Nuke that goes off pushes it up by a random amount; a spin where none go off lets it fall a little. When it fills, **${s.fsAward} free spins** start with that spin's fallout, and the meter empties. If ${s.protocolAt}+ Nukes went off in the spin that filled it, the free spins are **Doomsday Protocol**: Doomsday can land from the first free spin. The meter is kept separately for each mode and bet during this session, a buy leaves it where it is, and it resets if you reload the page.`,
+    `**Nuke barrage:** in most free spins, once the board lands, up to ${s.barrage[s.barrage.length - 1][0]} extra Nukes drop onto it. Like every Nuke they are wild and go off the same two ways.`,
+    `**In free spins** fallout squares keep their value until the free spins end. Nuke types: a **Mini Nuke** hits its own square, a **Nuke** its own square and the 4 touching it, a **Tsar Bomba** every square up to 2 steps away, and a **Doomsday** doubles every lit square on the board. All of them are wild and go off the same way.`,
     `**Build-up:** free spins 1–${s.buildUpSpins} have more Nukes and no Doomsday. From spin ${s.buildUpSpins + 1} Nukes are rarer and Doomsday can land, so the squares lit early are the ones it doubles.`,
-    `**${s.fsRetrigger}+ Nukes in one free spin** add **${s.fsRetriggerAward} more free spins**. Free spins play automatically, one after another, once you tap to start.`,
-    `**Launch codes** (feature buy): ${fmt(s.buyPrice)} buys ${s.fsAward} free spins on a clear board, played at a ${fmt(round2(s.buyPrice / s.buyCostX))} stake whatever your bet. Average return about ${s.rtp.buy}%; about ${s.rtp.buyUnder}% of buys pay back less than the price. Only in markets that allow feature buys.`,
+    `**${s.fsRetrigger}+ bombs going off in one free spin** add **${s.fsRetriggerAward} more free spins**. Free spins play automatically, one after another, once you tap to start.`,
+    `**Launch codes** (feature buy): ${s.buyCostX}× your bet buys ${s.fsAward} free spins on a clear board, played at your bet${s.buyBoost ? ', with more Tsar Bombas than free spins from the meter' : ''}. Average return about ${s.rtp.buy}%; about ${s.rtp.buyUnder}% of buys pay back less than the price. Only in markets that allow feature buys.`,
     `**Maximum win** ${s.maxWinX.toLocaleString('en-US')}× the bet per round (a base spin and the free spins it triggers). The round ends when it is reached.`,
     `**Return to player:** about ${s.rtp.game}% in this mode (${Object.values(SPECS).map((m) => `${m.name} about ${m.rtp.game}%`).join(', ')}). Placeholder math from rough simulation, not a certified figure. Play credits have no cash value.`,
   ];
@@ -1974,10 +2141,10 @@ function renderPaytable() {
   const s = S(), bet = G.mode === 'free' ? G.featureBet : LADDER[G.betIdx], pt = $('#pt'); pt.textContent = '';
   const tiers = s.clusterTiers, bands = tiers.map((lo, i) => i === tiers.length - 1 ? `${lo}+` : tiers[i + 1] - 1 === lo ? `${lo}` : `${lo}-${tiers[i + 1] - 1}`);
   const rows = Object.entries(s.symbols).map(([k, v]) => [k, v.name + (s.premium.includes(k) ? ' ★' : ''), bands.map((b, i) => [b, fmt(v.pays[i] * s.payScale * bet)])]);
-  rows.push(['nuke', 'Nuke', `Goes off wherever it lands: lights its own square and the 4 touching it, and pushes the nuclear meter up. A full meter starts ${s.fsAward} free spins.`]);
-  rows.push(['mini', 'Mini Nuke', 'Free spins only. Lights just the square it lands on.']);
-  rows.push(['tsar', 'Tsar Bomba', 'Free spins only. Blasts every square up to 2 steps away.']);
-  rows.push(['doom', 'Doomsday', `Free spin ${s.buildUpSpins + 1} on (from spin 1 in Doomsday Protocol). Doubles every lit square on the board.`]);
+  rows.push(['nuke', 'Nuke', `Wild. Goes off once, in a winning cluster (after it pays) or in a chain of ${s.chainAt}+ touching bombs: lights its own square and the 4 touching it for the tumbles after, and pushes the nuclear meter up. A full meter starts ${s.fsAward} free spins.`]);
+  rows.push(['mini', 'Mini Nuke', 'Wild, free spins only. When it goes off it lights just its own square.']);
+  rows.push(['tsar', 'Tsar Bomba', `Wild, free spins only. The massive one: when it goes off it adds ×${s.bigYields[0][0]} to ×${s.bigYields[s.bigYields.length - 1][0]} to every square up to 2 steps away.`]);
+  rows.push(['doom', 'Doomsday', `Wild, free spin ${s.buildUpSpins + 1} on (from spin 1 in Doomsday Protocol). When it goes off it doubles every lit square on the board.`]);
   for (const [k, n, p] of rows) {
     const d = document.createElement('div'); d.className = 's' + (typeof p === 'string' ? ' wide' : '');
     const im = document.createElement('img'); im.src = IMG[k] ? IMG[k].src : ''; im.alt = '';
@@ -2017,7 +2184,7 @@ function runSim() {
     out.textContent = `${s.name}: RTP ${rtp.toFixed(2)}%  (base ${(st.baseWon / st.spent * 100).toFixed(2)}% + free spins ${(st.fsWon / st.spent * 100).toFixed(2)}%)\n` +
       `Hit rate 1 in ${(st.spins / st.hits).toFixed(2)} · Free spins 1 in ${st.triggers ? Math.round(st.spins / st.triggers) : '∞'} (3+ Nukes ${st.natural}, meter ${st.gaugeTrig}, Protocol ${st.protocols}) · Avg feature ${(st.fsWon / tr).toFixed(1)}× bet\n` +
       `Per feature: ${(st.nukes / tr).toFixed(1)} Nukes, ${(st.hot / tr).toFixed(1)} fallout squares, hottest ×${(st.top / tr).toFixed(1)} · retriggers ${(st.retriggers / tr).toFixed(2)} · base Nukes ${(st.baseNukes / st.spins).toFixed(3)} a spin\n` +
-      `Feature buy at ${fmt(s.buyPrice)} (stake ${fmt(round2(s.buyPrice / s.buyCostX))}): RTP ${(bs.won / bs.spent * 100).toFixed(1)}% · avg back ${fmt(bs.won / bs.buys)} · under the price ${(bs.under / bs.buys * 100).toFixed(0)}% · best ${bs.maxX.toFixed(0)}× stake\n` +
+      `Feature buy at ${s.buyCostX}× (${fmt(round2(bet * s.buyCostX))} at this bet): RTP ${(bs.won / bs.spent * 100).toFixed(1)}% · avg back ${fmt(bs.won / bs.buys)} · under the price ${(bs.under / bs.buys * 100).toFixed(0)}% · best ${bs.maxX.toFixed(0)}× stake\n` +
       `Biggest round ${st.maxX.toFixed(1)}× bet · Placeholder math, single run of ${total.toLocaleString()}, not a certified figure.`;
     btn.disabled = false;
   };
@@ -2057,7 +2224,8 @@ window.addEventListener('resize', () => { resize(); clearTimeout(refitTimer); re
 (async function init() {
   $('#dev').hidden = !DEV;
   await loadArt();
-  resize(); setTimeout(resize, 300); // second fit once an embedding page has settled its size
+  resize(); setTimeout(resize, 300);
+  if (document.fonts) document.fonts.ready.then(() => { if (CW) prerender(); }); // WILD tags in the stencil font once it has loaded // second fit once an embedding page has settled its size
   // Starting screen: a random, unevaluated view of the base strips.
   const grid = SV().STRIPS.base.map((strip) => { const p = CryptoRNG.int(strip.length); return Array.from({ length: SPEC.rows }, (_, r) => ({ s: strip[(p + r) % strip.length] })); });
   sprites = []; grid.forEach((col, c) => col.forEach((cell, r) => sprites.push(mkSprite(c, r, cell))));
