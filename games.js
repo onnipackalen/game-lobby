@@ -157,4 +157,16 @@ window.GAMES = [
     badge: "NEW",
     accent: "#6fd3a5",
   },
+  {
+    id: "serve-return",
+    title: "Serve & Return",
+    tagline: "Type two tennis players and it prices the match.",
+    description:
+      "A tennis match pricing model that runs in your browser: pick two players, and optionally the tournament, surface and format, and it gives each player's chance to win. Ratings as of 15 Nov 2026, from Jeff Sackmann's ATP data (CC BY-NC-SA 4.0). For study only, not betting advice. The first visit downloads about 30 MB.",
+    url: "https://onnipackalen.github.io/tennis/",   // its own site on GitHub Pages, so it stays up to date on its own
+    category: "tools",
+    sidebarOnly: true,   // not a game: only a link in the sidebar
+    badge: "NEW",
+    accent: "#d4e157",
+  },
 ];

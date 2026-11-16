@@ -246,8 +246,8 @@ input.hid:checked+.sw::after{transform:translateX(16px);background:#04210f}
 .formula b{color:var(--text)}
 h4{margin:4px 0 0;font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
 
-.toasts{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);display:flex;flex-direction:column;gap:8px;z-index:60;align-items:center;pointer-events:none}
-.toast{background:#1b3342;border:1px solid #2d5568;padding:9px 14px;border-radius:10px;font-weight:600;font-size:13px;box-shadow:0 10px 30px -10px rgba(0,0,0,.6);animation:pop .2s ease both}
+.toasts{position:fixed;left:50%;top:74px;transform:translateX(-50%);display:flex;flex-direction:column;gap:8px;z-index:60;align-items:center;pointer-events:none;max-width:calc(100% - 32px)}
+.toast{background:#1b3342;border:1px solid #2d5568;padding:7px 13px;border-radius:999px;font-weight:600;font-size:12.5px;white-space:nowrap;box-shadow:0 10px 30px -10px rgba(0,0,0,.6);animation:pop .2s ease both}
 .modal{position:fixed;inset:0;background:rgba(3,10,15,.7);display:grid;place-items:center;z-index:70;padding:16px}
 .modal .box{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px;width:min(400px,100%);display:flex;flex-direction:column;gap:12px;animation:pop .2s ease both}
 .modal h3{margin:0;font-size:18px}
@@ -273,6 +273,20 @@ h4{margin:4px 0 0;font-size:11px;text-transform:uppercase;letter-spacing:.12em;c
   .dgrid{grid-template-columns:repeat(5,1fr)}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+/* split hands: compact grid so 3-4 hands (or 2 on a phone) fit; the hands area scrolls as a safety net */
+.hands{flex:0 1 auto;min-height:0;overflow-y:auto}
+.hands.multi{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,max-content));justify-content:center;gap:8px 10px}
+.hands.compact{--cw:54px;--ch:76px;grid-template-columns:repeat(auto-fit,minmax(136px,max-content));padding:4px 8px 8px}
+.hands.compact .card .mid{font-size:24px}
+.hands.compact .card .tl{font-size:13px;left:4px;top:5px;width:16px}
+.hands.compact .card .tl i{font-size:10px}
+.hands.compact .card .tag{font-size:7.5px;padding:1px 4px}
+.hands.compact .cards .card+.card{margin-left:calc(var(--cw) * -0.6)}
+.hands.compact .hand{padding:6px 8px;gap:6px;border-radius:12px}
+.hands.compact .hand-foot{gap:5px;font-size:11px}
+.hands.compact .total{font-size:12px;padding:2px 8px}
+.hands.compact .stake,.hands.compact .res{padding:2px 7px}
+.hands.compact .shield{font-size:10px;padding:2px 7px}
 </style>
 </head>
 <body>
@@ -439,7 +453,8 @@ function splitHalf(x, s, canDbl, ex) {
   }
   return e;
 }
-// One split; the block (if any) protects the first split hand's second card.
+// Value of splitting a pair (priced as two hands, without further re-splits);
+// the block (if any) protects the first split hand's second card.
 const splitEV = (x, s, canDbl, ex) => splitHalf(x, s, canDbl, ex) + splitHalf(x, s, canDbl, null);
 
 // Pre-deal expected value of one round (per unit bet).
@@ -514,7 +529,7 @@ const RANKS = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
 const RV = [1,2,3,4,5,6,7,8,9,10,10,10,10];
 const VL = ['', 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
 const SUITS = ['♠','♥','♦','♣']; const RED = new Set(['♥','♦']);
-const MIN_POOL = 20, MIN_PRE = 40;
+const MIN_POOL = 20, MIN_PRE = 40, MAX_HANDS = 4;
 
 const S = {
   balance: 1000, start: 1000, bet: 10, decks: 6, preRemoved: new Set(),
@@ -597,10 +612,9 @@ function handOptions(x, hd, h, a, isCur, ex) {
   const o = { stand: x.st[b] };
   if (b < 21) o.hit = hitEV(x, h, a, ex);
   if (two && afford && b < 21) o.double = dblEV(x, h, a, ex);
-  if (isCur && two && S.hands.length === 1) {
-    o.surrender = -0.5;
-    if (hd.cards[0].v === hd.cards[1].v && afford) o.split = splitEV(x, hd.cards[0].v, true, ex);
-  }
+  if (isCur && two && S.hands.length === 1) o.surrender = -0.5;
+  // Pairs can be split, and re-split, up to MAX_HANDS hands.
+  if (isCur && two && S.hands.length < MAX_HANDS && hd.cards[0].v === hd.cards[1].v && afford) o.split = splitEV(x, hd.cards[0].v, true, ex);
   o.best = Math.max(...Object.values(o));
   return o;
 }
@@ -673,10 +687,10 @@ const evalNow = (o) => S.phase === 'dealer' ? dealerEval(o) : inHandEval(o);
 function applyFee(fee, label, fair) {
   fee = r2(fee);
   if (fair !== undefined) S.stats.house += fee - fair;
-  if (Math.abs(fee) < 0.005) { toast(label + ' · free'); return; }
+  if (Math.abs(fee) < 0.005) { toast(label + ' · free', label, 0); return; }
   S.balance = r2(S.balance - fee); S.roundFees = r2(S.roundFees + fee);
   if (fee > 0) S.stats.feesPaid += fee; else S.stats.feesRecv += -fee;
-  toast(label + ' · ' + (fee > 0 ? 'paid ' + fmt(fee) : 'received ' + fmt(fee)));
+  toast(label + ' · ' + (fee > 0 ? 'paid ' + fmt(fee) : 'received ' + fmt(fee)), label, fee);
 }
 function feeTag(f, suffix = '') {
   f = r2(f);
@@ -752,18 +766,20 @@ function doubleDown() {
 }
 async function split() {
   if (S.phase !== 'player') return;
-  const hd = curHand();
-  if (S.hands.length !== 1 || hd.cards.length !== 2 || hd.cards[0].v !== hd.cards[1].v || S.balance < S.base) return;
+  const hd = curHand(), i = S.cur;
+  if (S.hands.length >= MAX_HANDS || hd.cards.length !== 2 || hd.cards[0].v !== hd.cards[1].v || S.balance < S.base) return;
   S.balance = r2(S.balance - S.base); S.roundStake += S.base;
   const t = S.token;
-  S.hands = hd.cards.map(c => ({ cards: [c], stake: S.base, done: false, result: null, natural: false, doubled: false, split: true }));
+  // Replace the current hand with two one-card hands, in place (works for re-splits too).
+  const half = c => ({ cards: [c], stake: S.base, done: false, result: null, natural: false, doubled: false, split: true });
+  S.hands.splice(i, 1, half(hd.cards[0]), half(hd.cards[1]));
   S.phase = 'dealing'; render();
   await pace(280); if (t !== S.token) return;
-  S.hands[0].cards.push(drawFor('player')); S.pShield.clear(); render();
+  S.hands[i].cards.push(drawFor('player')); S.pShield.clear(); render();
   await pace(280); if (t !== S.token) return;
-  S.hands[1].cards.push(drawFor()); render();
+  S.hands[i + 1].cards.push(drawFor()); render();
   await pace(200); if (t !== S.token) return;
-  S.cur = 0; nextHand();
+  S.cur = i; nextHand();
 }
 function surrender() {
   if (S.phase !== 'player') return;
@@ -1079,6 +1095,9 @@ function renderTable(E) {
   }
   $('center').innerHTML = center;
 
+  const nH = S.hands.length, narrow = matchMedia('(max-width:780px)').matches;
+  const compact = nH >= 3 || (nH >= 2 && narrow);
+  $('hands').className = 'hands' + (nH > 1 ? ' multi' : '') + (compact ? ' compact' : '');
   $('hands').innerHTML = S.hands.map((hd, i) => {
     const active = inHand() && i === S.cur;
     const offer = active && S.offer ? S.offer.card : null;
@@ -1090,10 +1109,17 @@ function renderTable(E) {
     }
     return `<div class="hand ${active && S.hands.length > 1 ? 'active' : ''}">
       <div class="cards">${hd.cards.map(c => cardHTML(c)).join('')}${offer ? cardHTML(offer, { offered: true }) : ''}</div>
-      <div class="hand-foot">${S.hands.length > 1 ? `<span>Hand ${i + 1}</span>` : ''}${totalBadge(hd.cards)}<span class="stake num">${fmt(hd.stake)}${hd.doubled ? ' · 2×' : ''}</span>${label ? `<span class="res ${hd.result}">${label}</span>` : ''}${preview}</div>
+      <div class="hand-foot">${nH > 1 && !compact ? `<span>Hand ${i + 1}</span>` : ''}${totalBadge(hd.cards)}<span class="stake num">${fmt(hd.stake)}${hd.doubled ? ' · 2×' : ''}</span>${label ? `<span class="res ${hd.result}">${label}</span>` : ''}${preview}</div>
       ${active && S.pShield.size && !offer ? `<span class="shield">Your next card won't be ${vlist(S.pShield)}</span>` : ''}
     </div>`;
   }).join('');
+  // keep the hand you're playing in view if the hands area has to scroll
+  const H = $('hands'), act = H.querySelector('.hand.active');
+  if (act) {
+    const top = act.offsetTop - H.offsetTop, bottom = top + act.offsetHeight;
+    if (top < H.scrollTop) H.scrollTop = top;
+    else if (bottom > H.scrollTop + H.clientHeight) H.scrollTop = bottom - H.clientHeight;
+  }
   renderSubActs(E); renderBar(E); renderSheet(E);
 }
 
@@ -1254,10 +1280,25 @@ function renderSettings(first) { $('modalRoot').innerHTML = S.settingsOpen ? set
 function afterSetting() { saveSettings(); render(); if (S.settingsOpen) renderSettings(); }
 
 /* ---------- toasts / modal ---------- */
-function toast(t) {
-  const el = document.createElement('div'); el.className = 'toast'; el.textContent = t;
-  $('toasts').appendChild(el); setTimeout(() => el.remove(), 2400);
-  while ($('toasts').children.length > 3) $('toasts').firstChild.remove();
+// One pop-up at a time, at the top of the screen. Repeats of the same fee merge into one line
+// ("Reshuffled ×3 · paid $13.51") instead of stacking.
+let toastState = null;
+function toast(t, key, amount = 0) {
+  const box = $('toasts');
+  if (key && toastState && toastState.key === key && toastState.el.isConnected) {
+    toastState.count++; toastState.net += amount;
+    const n = r2(toastState.net);
+    toastState.el.textContent = `${key} ×${toastState.count} · ${Math.abs(n) < 0.005 ? 'free' : n > 0 ? 'paid ' + fmt(n) : 'received ' + fmt(n)}`;
+  } else {
+    box.innerHTML = '';
+    const el = document.createElement('div'); el.className = 'toast'; el.textContent = t;
+    box.appendChild(el);
+    if (toastState) clearTimeout(toastState.timer);
+    toastState = { key, count: 1, net: amount, el };
+  }
+  clearTimeout(toastState.timer);
+  const el = toastState.el;
+  toastState.timer = setTimeout(() => el.remove(), 2200);
 }
 function sessionOut() {
   if (!betPhase()) cashOut();
@@ -1332,6 +1373,8 @@ document.addEventListener('keydown', e => {
     else if (S.waiting) { e.preventDefault(); letDealerDraw(); }
   } else if (map[k]) { e.preventDefault(); map[k](); }
 });
+let resizeTimer;
+window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(render, 150); });
 loadSettings();
 render();
 </script>
